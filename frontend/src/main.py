@@ -1,6 +1,7 @@
-import tkinter as tk
+import customtkinter as ctk
 import sys
 import os
+
 
 from dashboard import DashboardFrame
 
@@ -20,13 +21,14 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from config import APP_NAME, BACKGROUND_COLOR
 
-class MainApp(tk.Tk):
+class MainApp(ctk.CTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.title(APP_NAME)
         self.attributes('-fullscreen', True)
         self.configure(bg=BACKGROUND_COLOR)
-
+        ctk.set_appearance_mode("dark")
+    
         # Session Attributes
         self.__user_id = ""
         self.__username = ""
@@ -50,13 +52,13 @@ class MainApp(tk.Tk):
         self.init_loginFrame()
 
     def create_mainScreen(self):
-        # Dashboarad Frme
+        # Dashboard Frame
         self.dashboard_frame = DashboardFrame(self)
         self.dashboard_frame.create_widgets()
         self.dashboard_frame.pack(side='left', expand=True, fill='both')
 
         # Main Container Frame for SCAM App Features
-        self.container = tk.Frame(self)
+        self.container = ctk.CTkFrame(self)
         self.container.pack(side='left', expand=True)
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
