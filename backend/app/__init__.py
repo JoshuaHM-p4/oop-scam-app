@@ -27,6 +27,7 @@ def create_app():
     # from .routes.notes import notes_bp
     # from .routes.templates import templates_bp
     # from .routes.calendar import calendar_bp
+    # from .routes.progress import progress_bp
     # from .routes.tasks import tasks_bp
     # from .routes.flashcards import flashcards_bp
     # from .routes.collaboration import collaboration_bp
