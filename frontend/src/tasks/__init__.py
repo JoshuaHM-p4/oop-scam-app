@@ -1,2 +1,2 @@
 from .tasks_gui import TasksFrame
-from .tasks_model import TaskModel
+from .tasks_model import TasksModel

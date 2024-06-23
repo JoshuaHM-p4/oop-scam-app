@@ -1,8 +1,7 @@
 import tkinter as tk
-from tkcalendar import Calendar
-from .calendar_model import CalendarModel, EventModel
+from .templates_model import TemplateModel, HomeworkModel, MathModel, LetterModel, EssayModel
 
-class CalendarWindow:
+class TemplatesFrame(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller

@@ -1,5 +1,5 @@
 import tkinter as tk
-from .tasks_gui import TasksModel
+from .tasks_model import TasksModel
 
 class TasksFrame(tk.Frame):
     def __init__(self, parent, controller):
