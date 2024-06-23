@@ -16,7 +16,7 @@ def register():
 
     if user:
         return jsonify({'message': 'Username already exists'}), 400
-    
+
     new_user = User(username=username, email=email)
     new_user.set_password(password)
     db.session.add(new_user)
@@ -34,13 +34,9 @@ def login():
 
     if user and user.check_password(password):
         access_token = create_access_token(identity=user.id)
-        user_data = {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email
-        }
+        user_data = user.to_json()
         return jsonify({'access_token': access_token, "user": user_data}), 200
-    
+
     return jsonify({'message': 'Invalid credentials'}), 401
 
 @auth_bp.route('/logout', methods=['POST'])
