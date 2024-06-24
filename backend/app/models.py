@@ -21,3 +21,34 @@ class User(db.Model):
             "username": self.username,
             "email": self.email
         }
+class FlashcardSet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    name = db.Column(db.String(64), index=True, nullable=False)
+
+    def __repr__(self):
+        return f'<Card {self.name}>'
+
+    def to_json(self) -> dict:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "name": self.name
+        }
+
+class Flashcard(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    flashcard_set_id = db.Column(db.Integer, db.ForeignKey(FlashcardSet.id), nullable=False)
+    word = db.Column(db.Text, nullable=False)
+    definition = db.Column(db.Text, nullable=False)
+
+    def __rep__(self):
+        return f'{self.word} - {self.definition}'
+
+    def to_json(self) -> dict:
+        return {
+            "id": self.id,
+            "flashcard_set_id": self.flashcard_set_id,
+            "word": self.word,
+            "definition": self.definition
+        }
