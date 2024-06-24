@@ -2,8 +2,9 @@ import customtkinter as ctk
 import sys
 import os
 
-
-from dashboard import DashboardFrame
+from app_gui import AppFrame
+from dashboard_gui import DashboardFrame
+from user_model import UserModel
 
 # Module Frames for SCAM App Features
 from auth import LoginFrame
@@ -26,80 +27,51 @@ class MainApp(ctk.CTk):
         super().__init__(*args, **kwargs)
         self.title(APP_NAME)
         self.attributes('-fullscreen', True)
+        self.geometry(f"{self.winfo_screenwidth()}x{self.winfo_screenheight()}+0+0")
         self.configure(bg=BACKGROUND_COLOR)
         ctk.set_appearance_mode("dark")
-    
+
         # Session Attributes
-        self.__user_id = ""
-        self.__username = ""
-        self.__email = ""
-        self.__access_token = ""
+        self.user = UserModel()
 
-        # Main Screen Widgets
-        self.module_frames = (
-            HomeFrame,
-            NotesFrame,
-            TemplatesFrame,
-            CalendarFrame,
-            TasksFrame,
-            FlashcardsFrame,
-            ProgressFrame,
-            CollaborationFrame
-        )
-        self.main_screen_frames = {}
-        self.container = self.dashboard_frame = None
+        ### Frames ###
+        # Login
+        self.login_frame = LoginFrame(self, callback=self.set_session_data)
 
-        self.init_loginFrame()
+        # Main App Frame for SCAM App Features
+        self.app_frame = AppFrame(self)
 
-    def create_mainScreen(self):
         # Dashboard Frame
-        self.dashboard_frame = DashboardFrame(self)
-        self.dashboard_frame.create_widgets()
+        self.dashboard_frame = DashboardFrame(self,
+            command=self.app_frame.show_frame,
+            frames=self.app_frame.module_frames
+        )
+
+        self.pack_login()
+
+    def pack_mainscreen(self):
+        # Dashboard Frame
         self.dashboard_frame.pack(side='left', expand=True, fill='both')
 
-        # Main Container Frame for SCAM App Features
-        self.container = ctk.CTkFrame(self)
-        self.container.pack(side='left', expand=True)
-        self.container.grid_rowconfigure(0, weight=1)
-        self.container.grid_columnconfigure(0, weight=1)
+        # Main App Frame for SCAM App Features
+        self.app_frame.pack(side='left', expand=True)
 
-    def init_loginFrame(self) -> None:
+    def pack_login(self) -> None:
         # Add the Login Frame
-        self.login_frame = LoginFrame(self.container, callback=self.set_session_data)
         self.login_frame.pack(expand=True)
 
     def on_login_success(self) -> None:
-        print(f'Login Successful!, Welcome {self.__username}')
+        print(f'Login Successful!, Welcome {self.user.username}')
         self.login_frame.destroy()
-
-        self.create_mainScreen()
-        self.init_moduleFrames()
-        self.show_frame("HomeFrame")
+        self.pack_mainscreen()
 
     def set_session_data(self, data) -> None:
-        self.__user_id = data['user_id']
-        self.__username = data['username']
-        self.__email = data['email']
-        self.__access_token = data['access_token']
+        try:
+            self.user = UserModel.from_json(data)
+        except Exception as e: # Catch all exceptions, for now, will add when user fails login
+            print(e)
+            return
         self.on_login_success()
-
-    def init_moduleFrames(self) -> None:
-        # Initialize frames for each modules
-        for frame in self.module_frames:
-            frame_name = frame.__name__
-
-            frame_object = frame(self.container, self)
-
-            self.main_screen_frames[frame_name] = frame_object
-
-            frame_object.grid(row=0, column=0, sticky="nsew")
-
-            print(f"{frame_name} loaded successfully!")
-
-    def show_frame(self, frame_name: str):
-        """Show a frame for the given module class to the container."""
-        frame = self.main_screen_frames[frame_name]
-        frame.tkraise()
 
 if __name__ == "__main__":
     app = MainApp()

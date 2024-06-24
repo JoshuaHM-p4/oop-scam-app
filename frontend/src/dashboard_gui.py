@@ -1,5 +1,6 @@
 import customtkinter as ctk
 
+
 class ProfileFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
@@ -16,7 +17,6 @@ class ProfileFrame(ctk.CTkFrame):
     def pack(self, *args, **kwargs):
         # Profile Image
         # Profile Username
-
         # Profile Email
 
         super().pack(*args, **kwargs)
@@ -27,33 +27,30 @@ class ProfileFrame(ctk.CTkFrame):
         self.__user_id = user_id
 
 class ButtonsFrame(ctk.CTkFrame):
-    def __init__(self, master, main_app, *args, **kwargs):
-        super().__init__(master, *args, **kwargs)
-        self.main_app = main_app # main app
-        self.feature_frames = main_app.module_frames
+    def __init__(self, master, command, frames):
+        super().__init__(master)
+        self.module_frames = frames
+        show_frame = command
 
-    def pack(self, *args, **kwargs):
-        # Dashboard Buttons
-        for i, feature in enumerate(self.feature_frames):
+        for i, feature in enumerate(self.module_frames):
             frame_name = feature.__name__
             button = ctk.CTkButton(
                 self,
                 text=frame_name,
-                command=lambda frame_name=frame_name: self.main_app.show_frame(frame_name)
+                command=lambda frame_name=frame_name: show_frame(frame_name)
             ) # Lambda function assigns button to show_frame method
-            button.grid(row=i, column=0, sticky="ew")
-
-        super().pack(*args, **kwargs)
+            button.pack(side='top', fill='x', expand=True)
 
 class DashboardFrame(ctk.CTkFrame):
-    def __init__(self, master):
-        super().__init__(master) # self: Parent Dashboard Frame
-
+    def __init__(self, master, command, frames: list[ctk.CTkFrame],  *args, **kwargs):
+        super().__init__(master, *args, **kwargs) # self: Parent Dashboard Frame
         self.label = ctk.CTkLabel(self, text="Dashboard")
         self.profile_frame = ProfileFrame(self) # profile_frame: Profile Frame
-        self.button_container = ButtonsFrame(self, main_app=master) # button_Continer: Container for Dashboard Buttons
+        self.button_container = ButtonsFrame(self, command=command, frames=frames) # button_Continer: Container for Dashboard Buttons
 
-    def create_widgets(self):
+    def pack(self, *args, **kwargs):
         self.label.pack()
         self.profile_frame.pack()
         self.button_container.pack()
+        super().pack(*args, **kwargs)
+
