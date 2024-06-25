@@ -26,10 +26,11 @@ class MainApp(ctk.CTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.title(APP_NAME)
-        self.attributes('-fullscreen', True)
+        
         width = self.winfo_screenwidth() * 100
         height = self.winfo_screenheight() * 100
         self.geometry(f"{width}x{height}")
+        self.attributes('-fullscreen', True)
         self.configure(bg=BACKGROUND_COLOR)
         ctk.set_appearance_mode("dark")
 
