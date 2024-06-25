@@ -11,6 +11,8 @@ from flashcards import FlashcardsFrame
 from progress import ProgressFrame
 from collaboration import CollaborationFrame
 
+from config import APP_NAME, BACKGROUND_COLOR
+
 
 # Refactor for MainApp class separating self.container frame from the MainApp
 class AppFrame(ctk.CTkFrame):
@@ -35,7 +37,7 @@ class AppFrame(ctk.CTkFrame):
             frame_name = frame.__name__
             frame_object = frame(self, self.master)
             self.main_screen_frames[frame_name] = frame_object
-            frame_object.grid(row=0, column=0, sticky="nsew")
+            frame_object.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
             print(f"{frame_name} loaded successfully!")
 
