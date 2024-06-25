@@ -5,6 +5,7 @@ from flask_cors import CORS
 from config import Config
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
+from app.utils.error_handler import register_error_handlers
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -22,6 +23,8 @@ def create_app():
     jwt.init_app(app)
 
     from app import models
+
+    register_error_handlers(app)
 
     from .routes.auth import auth_bp
     # from .routes.notes import notes_bp
