@@ -1,4 +1,6 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import get_jwt_identity
 
 from app import db
 from app.models import FlashcardSet, Flashcard
@@ -32,6 +34,7 @@ def get_flashcard_set():
     return jsonify(result), 200
 
 @flashcards_bp.route('/flashcard_sets/<int:id>', methods=['GET'])
+@jwt_required()
 def get_flashcard_set_details(id):
     flashcard_set = FlashcardSet.query.get(id)
 
@@ -41,18 +44,17 @@ def get_flashcard_set_details(id):
     return jsonify(flashcard_set.to_json()), 200
 
 @flashcards_bp.route('/flashcard_sets', methods=['POST'])
+@jwt_required()
 def create_flashcard_set():
     try:
         data = request.get_json()
-
-        required_fields = ['name', 'user_id']
-
-        for field in required_fields:
-            if not data.get(field, ""):
-                return jsonify({'error': f'Missing {field} field'}), 400
-
+        
         name = data.get('name')
-        user_id = data.get('user_id')
+
+        if not name:
+            return jsonify({'error': f'Missing name field'}), 400
+
+        user_id = get_jwt_identity().id
 
         new_flashcard_set = FlashcardSet(name=name, user_id=user_id)
         db.session.add(new_flashcard_set)
@@ -64,10 +66,17 @@ def create_flashcard_set():
         return jsonify({'error': f'An error occurred while creating the flashcard set: {e}'}), 500
 
 @flashcards_bp.route('/flashcard_sets/<int:id>', methods=['PATCH'])
+@jwt_required()
 def update_flashcard_set(id):
     try:
         # Get the flashcard set from the database
         flashcard_set = FlashcardSet.query.get(id)
+
+        owner = flashcard_set.user_id
+
+        # Check if the user is the owner of the flashcard set
+        if owner != get_jwt_identity().id:
+            return jsonify({"error": "You do not have permission to update this flashcard set."}), 403
 
         if flashcard_set is None:
             return jsonify({"error": f"Flashcard Set ID: {id} not found."}), 404
@@ -86,9 +95,15 @@ def update_flashcard_set(id):
         return jsonify({"error": f"An error has occured while updating the flashcard set: {e}"}), 500
 
 @flashcards_bp.route('/flashcard_sets/<int:id>', methods=['DELETE'])
+@jwt_required()
 def delete_flashcard_set(id):
     try:
         flashcard_set = FlashcardSet.query.get(id)
+        owner = flashcard_set.user_id
+        # Check if the user is the owner of the flashcard set
+        if owner != get_jwt_identity().id:
+            return jsonify({"error": "You do not have permission to delete this flashcard set."}), 403
+        # Check if the flashcard set exists
         if flashcard_set is None:
             return jsonify({"error": f"Flashcard Set ID {id} not found."}), 404
         db.session.delete(flashcard_set)
