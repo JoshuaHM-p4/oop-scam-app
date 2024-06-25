@@ -27,9 +27,13 @@ class MainApp(ctk.CTk):
         super().__init__(*args, **kwargs)
         self.title(APP_NAME)
         self.attributes('-fullscreen', True)
-        self.geometry(f"{self.winfo_screenwidth()}x{self.winfo_screenheight()}+0+0")
+        width = self.winfo_screenwidth() * 100
+        height = self.winfo_screenheight() * 100
+        self.geometry(f"{width}x{height}")
         self.configure(bg=BACKGROUND_COLOR)
         ctk.set_appearance_mode("dark")
+
+        print(f"width: {width}, height: {height}")
 
         # Session Attributes
         self.user = UserModel()
@@ -44,17 +48,18 @@ class MainApp(ctk.CTk):
         # Dashboard Frame
         self.dashboard_frame = DashboardFrame(self,
             command=self.app_frame.show_frame,
-            frames=self.app_frame.module_frames
+            frames=self.app_frame.module_frames,
+            width=200,
         )
 
         self.pack_login()
 
     def pack_mainscreen(self):
         # Dashboard Frame
-        self.dashboard_frame.pack(side='left', expand=True, fill='both')
+        self.dashboard_frame.pack(side='left', fill='y')
 
         # Main App Frame for SCAM App Features
-        self.app_frame.pack(side='left', expand=True)
+        self.app_frame.pack(side='left', expand=True, fill='both')
 
     def pack_login(self) -> None:
         # Add the Login Frame
