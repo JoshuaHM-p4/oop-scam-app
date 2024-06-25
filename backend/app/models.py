@@ -35,7 +35,6 @@ class FlashcardSet(db.Model):
             "user_id": self.user_id,
             "name": self.name
         }
-
 class Flashcard(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     flashcard_set_id = db.Column(db.Integer, db.ForeignKey(FlashcardSet.id), nullable=False)
@@ -51,4 +50,36 @@ class Flashcard(db.Model):
             "flashcard_set_id": self.flashcard_set_id,
             "word": self.word,
             "definition": self.definition
+        }
+
+class Notebook(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    title = db.Column(db.VARCHAR(64), nullable=False)
+
+    def __repr__(self):
+        return f'<Notebook {self.title}>'
+
+    def to_json(self) -> dict:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "title": self.title
+        }
+
+class Note(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    note_id = db.Column(db.Integer, db.ForeignKey(Notebook.id), nullable=False)
+    title = db.Column(db.VARCHAR(64), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        return f'<Note {self.title}>'
+
+    def to_json(self) -> dict:
+        return {
+            "id": self.id,
+            "note_id": self.note_id,
+            "title": self.title,
+            "content": self.content
         }
