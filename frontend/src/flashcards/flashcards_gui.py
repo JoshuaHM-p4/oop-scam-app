@@ -125,7 +125,7 @@ class Container(ctk.CTkScrollableFrame):
             label.bind("<Button-1>", lambda event, i=i: self.on_flashcard_set_click(i))
         
     def on_flashcard_set_click(self, set_id):
-        tk.messagebox.showinfo("Flashcard Set", f"Flashcard Set {set_id} clicked!")
+        print("Flashcard Set", f"Flashcard Set {set_id} clicked!")
             
     
     
