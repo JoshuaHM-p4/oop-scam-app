@@ -38,7 +38,10 @@ class AppFrame(ctk.CTkFrame):
             frame_object = frame(self, self.master)
             self.main_screen_frames[frame_name] = frame_object
             frame_object.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
-
+            
+            # Set the background color for each frame
+            frame_object.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+            
             print(f"{frame_name} loaded successfully!")
 
     def pack(self, *args, **kwargs):
