@@ -10,6 +10,7 @@ from tasks import TasksFrame
 from flashcards import FlashcardsFrame
 from progress import ProgressFrame
 from collaboration import CollaborationFrame
+from settings import SettingsFrame
 
 from config import APP_NAME, BACKGROUND_COLOR
 
