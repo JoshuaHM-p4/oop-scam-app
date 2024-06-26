@@ -45,6 +45,7 @@ class TopMenu(ctk.CTkFrame):
     def __init__(self, master, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
         self.master = master
+        self.hamburger_is_open : bool= False
         self.setup_ui()
     
     def setup_ui(self):
@@ -97,7 +98,21 @@ class TopMenu(ctk.CTkFrame):
         self.bookmark_button.configure(image=self.ribbon_image)  # Ensure self.ribbon_image is the original sized image
     
     def on_menu_click(self):
-        tk.messagebox.showinfo("Menu", "Hamburger menu clicked!")
+        #tk.messagebox.showinfo("Menu", "Hamburger menu clicked!")
+
+        if self.hamburger_is_open == False:
+            self.hamburger_menu_options = ctk.CTkSegmentedButton(self, 
+                                                                 values=["Add Set", "Select Set","Share Set"], 
+                                                                 command=self.hamburger_menu_options_click)
+            self.hamburger_menu_options.pack(side="left", padx=(0, 13))
+            self.hamburger_is_open = True
+        elif self.hamburger_is_open == True:
+            self.hamburger_menu_options.pack_forget()
+            self.hamburger_is_open = False
+            
+
+    def hamburger_menu_options_click(self, event):
+        print(f"{event} was clicked")
         
     def on_menu_hover_enter(self, event):
         # Change the button image to the zoomed version on hover
