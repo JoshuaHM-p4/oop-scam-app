@@ -32,7 +32,7 @@ class MainApp(ctk.CTk):
         height = self.winfo_screenheight() * 100
         self.geometry(f"{width}x{height}")
         self.attributes('-fullscreen', True)
-        self.configure(bg=BACKGROUND_COLOR)
+        self.configure(fg_color='#222B36')
         ctk.set_appearance_mode("dark")
 
         # Session Attributes
@@ -60,6 +60,8 @@ class MainApp(ctk.CTk):
 
         # Main App Frame for SCAM App Features
         self.app_frame.pack(side='left', expand=True, fill='both')
+        self.app_frame.pack_configure(padx=1, pady=1)
+        self.app_frame.configure(fg_color='#222B36')
 
     def pack_login(self) -> None:
         # Add the Login Frame
