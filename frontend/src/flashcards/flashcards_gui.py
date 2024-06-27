@@ -22,20 +22,29 @@ class FlashcardsFrame(ctk.CTkFrame):
         self.configure(fg_color=BACKGROUND_COLOR,
                        corner_radius=10)
         self.grid_configure(padx=10, pady=10)
-        self.back_button = ctk.CTkButton(self, text="Back", command=self.show_menu_and_container)
+        self.back_image = ctk.CTkImage(Image.open("assets/images/back_arrow.png"), size=(30, 30))
+        self.back_button = ctk.CTkButton(self, text="", 
+                                         command=self.show_first_page,
+                                         image=self.back_image,
+                                         corner_radius=20,
+                                         fg_color=BACKGROUND_COLOR,
+                                         hover_color="#2B5EB2",
+                                         width=30)
+        self.progressbar = ctk.CTkProgressBar(self, orientation="horizontal", mode="determinate")
         
-    def show_menu_and_container(self):
+    def show_first_page(self):
         if self.flashcard_set_frame:
             self.flashcard_set_frame.pack_forget()  # Hide the FlashcardSetFrame
         self.top_menu.pack(fill="x", padx=2, pady=(9, 0))  # Reapply padding
         self.container.pack(fill="both", expand=True, padx=2, pady=(0, 3))  # Reapply padding
         self.back_button.pack_forget()
+        self.progressbar.pack_forget()  
         
     def show_flashcard_set(self, flashcard_set):
         if self.flashcard_set_frame:
             self.flashcard_set_frame.pack_forget()  # Hide the previous FlashcardSetFrame
-        self.back_button.pack(side="top", anchor="nw", padx=13, pady=(10,5))
-        self.flashcard_set_frame = FlashcardSetFrame(self, flashcard_set)
+        self.back_button.pack(side="top", anchor="nw", padx=5, pady=(10,3))
+        self.flashcard_set_frame = FlashcardSetFrame(self, flashcard_set, self.progressbar)  # Create a new FlashcardSetFrame
         self.flashcard_set_frame.pack(fill="both", expand=True, padx=2, pady=2)
         self.top_menu.pack_forget()
         self.container.pack_forget()
@@ -133,9 +142,6 @@ class Container(ctk.CTkScrollableFrame):
         self.setup_ui()
     
     def setup_ui(self):
-        # Assuming fg_color is meant to be a property of the Container class or passed via kwargs
-        # If fg_color is intended to be a global or passed variable, ensure it's defined or passed correctly
-     # Default to 'white' if fg_color not in kwargs
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.pack(fill="both", expand=True, padx=2, pady=(0,3))
         self.load_flashcard_sets()
@@ -161,11 +167,12 @@ class Container(ctk.CTkScrollableFrame):
         self.flashcards_frame.show_flashcard_set(f"Flashcard Set {set_id}")
         
 class FlashcardSetFrame(ctk.CTkFrame):
-    def __init__(self, master, flashcard_set=None):
+    def __init__(self, master, flashcard_set=None, progressbar=None):
         super().__init__(master)
         self.flashcard_set = flashcard_set
         self.current_index = 0
         self.is_front = True
+        self.progressbar = progressbar
 
         # Dummy flashcards
         self.flashcards = [
@@ -189,32 +196,62 @@ class FlashcardSetFrame(ctk.CTkFrame):
         
     def setup_ui(self):
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
-        self.container = ctk.CTkFrame(master=self)
-        self.container.pack(fill="both", expand=True, padx=10, pady=5)
+        
+        # Load disabled images
+        self.prev_image_disabled = ctk.CTkImage(Image.open("assets/images/left_arrow_disabled.png"), size=(30, 30))
+        self.next_image_disabled = ctk.CTkImage(Image.open("assets/images/right_arrow_disabled.png"), size=(30, 30))
+        
+        self.prev_image = ctk.CTkImage(Image.open("assets/images/left_arrow.png"), size=(30, 30))
+        self.prev_button = ctk.CTkButton(self, text="", 
+                                            image=self.prev_image, 
+                                            command=self.on_previous,
+                                            corner_radius=20,
+                                            fg_color=BACKGROUND_COLOR,
+                                            hover_color="#2B5EB2")
+        
+        self.prev_button.pack(side='left', padx=(8,5), pady=5)
+    
+        self.container = ctk.CTkFrame(master=self, corner_radius=10)
+        self.container.pack(side='left', fill="both", expand=True, padx=10, pady=5)
         
         self.label = ctk.CTkLabel(master=self.container, text="", font=("Arial", 24))
         self.label.pack(fill="both", expand=True, padx=5, pady=5)
         
+        self.next_image = ctk.CTkImage(Image.open("assets/images/right_arrow.png"), size=(30, 30))
+        
+        self.next_button = ctk.CTkButton(master=self, text="", 
+                                         image=self.next_image, 
+                                         command=self.on_next,
+                                         corner_radius=20,
+                                         fg_color=BACKGROUND_COLOR,
+                                         hover_color="#2B5EB2")
+        
+        self.next_button.pack(side='left', padx=(8,5), pady=5)
+        
         self.label.bind("<Button-1>", lambda e: self.flip_frame())
         
-        self.setup_buttons()
-        
-    def setup_buttons(self):
-        self.frame_buttons = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR, corner_radius=10)
-        self.frame_buttons.pack(side="top", fill="x", padx=2, pady=(0,2))
-        
-        self.prev_button = ctk.CTkButton(master=self.frame_buttons, text="Previous", command=self.on_previous)
-        self.prev_button.pack(side='left', fill="x", expand=True, padx=(8,5), pady=5)
-        
-        self.next_button = ctk.CTkButton(master=self.frame_buttons, text="Next", command=self.on_next)
-        self.next_button.pack(side='left', fill="x", expand=True, padx=(8,5), pady=5)
+        self.progressbar.pack(side='bottom', pady=10, fill='x', padx=10)
         
         self.update_flashcard()
+        self.update_progressbar()  
     
     def update_flashcard(self):
         front, back = self.flashcards[self.current_index]
         self.label.configure(text=front if self.is_front else back)
         self.container.configure(fg_color=self.front_color if self.is_front else self.back_color)
+        
+        # Update buttons state
+        if self.current_index == 0:
+            self.prev_button.configure(state='disabled', image=self.prev_image_disabled)
+        else:
+            self.prev_button.configure(state='normal', image=self.prev_image)
+
+        # Correctly configure the state and image of next_button
+        if self.current_index == len(self.flashcards) - 1:
+            self.next_button.configure(state='disabled', image=self.next_image_disabled)
+        else:
+            self.next_button.configure(state='normal', image=self.next_image)
+        
     
     def flip_frame(self):
         self.is_front = not self.is_front
@@ -225,9 +262,15 @@ class FlashcardSetFrame(ctk.CTkFrame):
             self.current_index += 1
             self.is_front = True
             self.update_flashcard()
+            self.update_progressbar()
     
     def on_previous(self):
         if self.current_index > 0:
             self.current_index -= 1
             self.is_front = True
             self.update_flashcard()
+            self.update_progressbar()
+            
+    def update_progressbar(self):
+        progress = (self.current_index + 1) / len(self.flashcards)
+        self.progressbar.set(progress)
