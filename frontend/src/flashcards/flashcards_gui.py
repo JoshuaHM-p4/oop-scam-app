@@ -46,6 +46,7 @@ class TopMenu(ctk.CTkFrame):
         super().__init__(master, *args, **kwargs)
         self.master = master
         self.hamburger_is_open : bool= False
+        self.hamburger_option_is_active : bool= False
         self.setup_ui()
     
     def setup_ui(self):
@@ -98,22 +99,57 @@ class TopMenu(ctk.CTkFrame):
         self.bookmark_button.configure(image=self.ribbon_image)  # Ensure self.ribbon_image is the original sized image
     
     def on_menu_click(self):
-        #tk.messagebox.showinfo("Menu", "Hamburger menu clicked!")
-
+        # Show menu when hamburger button is clicked
         if self.hamburger_is_open == False:
+
+            # To access the selected value, not the return value
+            self.hamburger_menu_var = ctk.StringVar()
             self.hamburger_menu_options = ctk.CTkSegmentedButton(self, 
-                                                                 values=["Add Set", "Select Set","Share Set"], 
-                                                                 command=self.hamburger_menu_options_click)
+                                                                 values=["Add Set", "Edit Set","Share Set"], 
+                                                                 command=self.hamburger_menu_options_click,
+                                                                 variable=self.hamburger_menu_var)
             self.hamburger_menu_options.pack(side="left", padx=(0, 13))
             self.hamburger_is_open = True
         elif self.hamburger_is_open == True:
             self.hamburger_menu_options.pack_forget()
             self.hamburger_is_open = False
-            
 
-    def hamburger_menu_options_click(self, event):
-        print(f"{event} was clicked")
+    # Selected is the return of the segmented button, automatically returns the value with the command attribute
+    def hamburger_menu_options_click(self, selected):
+        # Call designated functions for options clicked
+        def show_add_set_frame():
+            self.master.container.pack_forget()
+            self.active_set = AddSetFrame(self.master)
+
+        def show_edit_set_frame():
+            self.master.container.pack_forget()
+            self.active_set = EditSetFrame(self.master)
         
+        def show_share_set_frame():
+            self.master.container.pack_forget()
+            self.active_set = ShareSetFrame(self.master)
+
+        # To reset the selected value of segmented button
+        self.hamburger_menu_var.set("")
+
+        def activate_frame():
+            if selected == "Add Set":
+                return show_add_set_frame()
+            elif selected == "Edit Set":
+                return show_edit_set_frame()
+            elif selected == "Share Set":
+                return show_share_set_frame()
+
+        # If no active frames
+        if self.hamburger_option_is_active == False:
+            self.hamburger_option_is_active = True
+            activate_frame()
+            
+        # If there is no active frames
+        elif self.hamburger_option_is_active == True:
+            self.active_set.pack_forget()
+            activate_frame()
+
     def on_menu_hover_enter(self, event):
         # Change the button image to the zoomed version on hover
         self.hamburger_menu_button.configure(image=self.hamburger_menu_image_hovered)
@@ -231,3 +267,207 @@ class FlashcardSetFrame(ctk.CTkFrame):
             self.current_index -= 1
             self.is_front = True
             self.update_flashcard()
+
+class AddSetFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master)
+        self.setup_ui()
+        self.create_widgets()
+        self.layout_widgets()
+
+        # Create new frame
+    def setup_ui(self):
+        self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.pack(fill="both", expand=True, padx=2, pady=(0,3))
+
+        # Create widgets
+    def create_widgets(self):
+        self.left_frame = ctk.CTkFrame(self)
+        self.middle_frame = ctk.CTkFrame(self)
+        self.right_frame = ctk.CTkFrame(self)
+
+        self.upper_frame = ctk.CTkFrame(self.middle_frame)
+
+        self.set_name_label = ctk.CTkLabel(self.upper_frame, text="Set Name:")
+        self.set_name_entry = ctk.CTkEntry(self.upper_frame, placeholder_text="Enter Set Name")
+        self.word_label = ctk.CTkLabel(self.upper_frame, text="Word:")
+        self.word_entry = ctk.CTkEntry(self.upper_frame, placeholder_text="Enter Word")
+        self.definition_label = ctk.CTkLabel(self.upper_frame, text="Definition:")
+        self.definition_entry = ctk.CTkEntry(self.upper_frame, placeholder_text="Enter the definition of the word (Backside)")
+
+        self.lower_frame = ctk.CTkFrame(self.middle_frame)
+
+        self.add_word_button = ctk.CTkButton(self.lower_frame, text="Add Word", command=self.add_word)
+        self.save_set_button = ctk.CTkButton(self.lower_frame, text="Save Set", command=self.save_set)
+        self.back_button = ctk.CTkButton(self.lower_frame, text="Back", command=self.back_command)
+
+    def layout_widgets(self):
+        self.left_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.left_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+        self.middle_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.middle_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+        self.right_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.right_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+
+        self.upper_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.upper_frame.pack(side='top', fill="x", padx=2, pady=(100,50))
+
+        self.set_name_label.pack()
+        self.set_name_entry.configure(width=200, height=35)
+        self.set_name_entry.pack()
+        self.word_label.pack()
+        self.word_entry.configure(width=200, height=35)
+        self.word_entry.pack()
+        self.definition_label.pack()
+        self.definition_entry.configure(width=400, height=40)
+        self.definition_entry.pack()
+
+        self.lower_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.lower_frame.pack(side='top', fill="x", padx=2, pady=(0,3))
+
+        self.add_word_button.configure(height=35)
+        self.add_word_button.pack(side='left')
+        self.back_button.configure(height=35)
+        self.back_button.pack(side='right')
+        self.save_set_button.configure(height=35)
+        self.save_set_button.pack()
+
+    def add_word(self):
+        tk.messagebox.showinfo("Add Word Button Response", "Add Word button was clicked")
+
+    def save_set(self):
+        tk.messagebox.showinfo("Save Set Button Response", "Save Set button was clicked")
+
+    # Destroys the active frame and layouts the main frame of flashcards
+    def back_command(self):
+        self.pack_forget()
+        self.master.container.pack(fill="both", expand=True, padx=2, pady=(0, 3))
+        # To set the value of hamburger_option_is_active to false, accessing through the parent frame
+        self.master.top_menu.hamburger_option_is_active = False
+
+class EditSetFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master)
+        self.setup_ui()
+        self.create_widgets()
+        self.layout_widgets()
+
+    # Create new frame
+    def setup_ui(self):
+        self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.pack(fill="both", expand=True, padx=2, pady=(0,3))
+
+    # Create combobox and button for selecting and user actions
+    def create_widgets(self):
+        self.left_frame = ctk.CTkFrame(self)
+        self.middle_frame = ctk.CTkFrame(self)
+        self.right_frame = ctk.CTkFrame(self)
+
+        self.upper_frame = ctk.CTkFrame(self.middle_frame)
+
+        self.set_selection = ctk.CTkComboBox(self.upper_frame, values=["set 1", "set 2", "set 3"])
+
+        self.lower_frame = ctk.CTkFrame(self.middle_frame)
+
+        self.edit_set_button = ctk.CTkButton(self.lower_frame, text="Edit Set", command=self.edit_set)
+        self.delete_set_button = ctk.CTkButton(self.lower_frame, text="Delete Set", command=self.delete_set)
+        self.back_button = ctk.CTkButton(self.lower_frame, text="Back", command=self.back_command)
+
+    # placing the widgets
+    def layout_widgets(self):
+        self.left_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.left_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+        self.middle_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.middle_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+        self.right_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.right_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+
+        self.upper_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.upper_frame.pack(side='top', fill="x", padx=2, pady=(125,50))
+
+        self.set_selection.configure(width=400, height=31)
+        self.set_selection.pack()
+
+        self.lower_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.lower_frame.pack(side='top', fill="x", padx=2, pady=(200,3))
+
+        self.edit_set_button.configure(height=35)
+        self.edit_set_button.pack(side='left')
+        self.back_button.configure(height=35)
+        self.back_button.pack(side='right')
+        self.delete_set_button.configure(height=35)
+        self.delete_set_button.pack()
+
+    def edit_set(self):
+        tk.messagebox.showinfo("Edit Set Button Response", "Edit Set button was clicked")
+
+    def delete_set(self):
+        tk.messagebox.showinfo("Delete Set Button Response", "Delete Set button was clicked")
+
+    # Destroys the active frame and layouts the main frame of flashcards
+    def back_command(self):
+        self.pack_forget()
+        self.master.container.pack(fill="both", expand=True, padx=2, pady=(0, 3))
+        # To set the value of hamburger_option_is_active to false, accessing through the parent frame
+        self.master.top_menu.hamburger_option_is_active = False
+
+class ShareSetFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master)
+        self.setup_ui()
+        self.create_widgets()
+        self.layout_widgets()
+
+    def setup_ui(self):
+        self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.pack(fill="both", expand=True, padx=2, pady=(0,3))
+
+    # Create combobox and button for selecting, sharing, and back actions
+    def create_widgets(self):
+        self.left_frame = ctk.CTkFrame(self)
+        self.middle_frame = ctk.CTkFrame(self)
+        self.right_frame = ctk.CTkFrame(self)
+
+        self.upper_frame = ctk.CTkFrame(self.middle_frame)
+
+        self.set_selection = ctk.CTkComboBox(self.upper_frame, values=["set 1", "set 2", "set 3"])
+
+        self.lower_frame = ctk.CTkFrame(self.middle_frame)
+
+        self.share_set_button = ctk.CTkButton(self.lower_frame, text="Share Set", command=self.share_set)
+        self.back_button = ctk.CTkButton(self.lower_frame, text="Back", command=self.back_command)
+
+    # Making widgets visible
+    def layout_widgets(self):
+        self.left_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.left_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+        self.middle_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.middle_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+        self.right_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.right_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+
+        self.upper_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.upper_frame.pack(side='top', fill="x", padx=2, pady=(125,50))
+
+        self.set_selection.configure(width=400, height=31)
+        self.set_selection.pack()
+
+        self.lower_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.lower_frame.pack(side='top', fill="x", padx=2, pady=(200,3))
+
+        self.share_set_button.configure(height=35)
+        self.share_set_button.pack(side='left')
+        self.back_button.configure(height=35)
+        self.back_button.pack(side='right')
+
+    def share_set(self):
+        tk.messagebox.showinfo("Share Set Button Response", "Share Set button was clicked")
+    
+    # Destroys the active frame and layouts the main frame of flashcards
+    def back_command(self):
+        self.pack_forget()
+        self.master.container.pack(fill="both", expand=True, padx=2, pady=(0, 3))
+        # To set the value of hamburger_option_is_active to false, accessing through the parent frame
+        self.master.top_menu.hamburger_option_is_active = False
+
+
