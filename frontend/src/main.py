@@ -16,7 +16,6 @@ from tasks import TasksFrame
 from flashcards import FlashcardsFrame
 from progress import ProgressFrame
 from collaboration import CollaborationFrame
-from settings import SettingsFrame
 
 # Append the parent directory to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -66,6 +65,8 @@ class MainApp(ctk.CTk):
     def pack_login(self) -> None:
         # Add the Login Frame
         self.login_frame.pack(expand=True)
+        self.dashboard_frame.pack_forget()
+        
 
     def on_login_success(self) -> None:
         print(f'Login Successful!, Welcome {self.user.username}')
