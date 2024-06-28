@@ -41,7 +41,6 @@ class MainApp(ctk.CTk):
         ### Frames ###
         # Login
         self.login_frame = LoginFrame(self, callback=self.set_session_data)
-        self.signup_frame = SignupFrame(self)
 
         # Main App Frame for SCAM App Features
         self.app_frame = AppFrame(self)
@@ -67,7 +66,6 @@ class MainApp(ctk.CTk):
     def pack_login(self) -> None:
         # Add the Login Frame
         self.login_frame.pack(expand=True)
-        self.signup_frame.pack(side='right',expand=True) # temporary signup access
         self.dashboard_frame.pack_forget()
 
     def on_login_success(self) -> None:
