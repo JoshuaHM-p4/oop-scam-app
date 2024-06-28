@@ -62,17 +62,18 @@ class SettingsButton(ctk.CTkFrame):
     def __init__(self, master, command, buttons_container):
         super().__init__(master)
         self.buttons_container = buttons_container
-        settings_button_image = ctk.CTkImage(Image.open("assets/images/settings_logo.png"), size=(15, 15))  
+        settings_button_image = ctk.CTkImage(Image.open("assets/images/settings_logo.png"), size=(15, 15))
+        show_frame = command
         self.settings_button = ctk.CTkButton(
             self,
-            image=settings_button_image,    
+            image=settings_button_image,
             text="Settings",
             width=200,
             height=40,
             corner_radius=25,
             fg_color='transparent',
             hover_color='#222B36',
-            command=command
+            command=lambda: show_frame("SettingsFrame")
         )
         self.settings_button.pack(side='bottom', pady=3, fill='x', expand=True)
         self.settings_button.bind("<Button-1>", self.create_click_handler(self.settings_button))
@@ -87,7 +88,6 @@ class DashboardFrame(ctk.CTkFrame):
     def __init__(self, master, command, frames: list[ctk.CTkFrame],  *args, **kwargs):
         super().__init__(master, *args, **kwargs) # self: Parent Dashboard Frame
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
-        self.pack_configure(padx=15, pady=15)
         self.profile_frame = ProfileFrame(self) # profile_frame: Profile Frame
         dashboard_image = ctk.CTkImage(Image.open("assets/images/dashboard_logo.png"), size=(250, 50))
         self.label = ctk.CTkLabel(self, image=dashboard_image, text=" ")
@@ -96,6 +96,7 @@ class DashboardFrame(ctk.CTkFrame):
 
     def pack(self, *args, **kwargs):
         self.profile_frame.pack()
+        self.pack_configure(padx=(10,0), pady=10)
         self.profile_frame.configure(width=200, height=80, fg_color=BACKGROUND_COLOR)
         self.label.pack()
         self.button_container.pack(padx=8, pady=8)
