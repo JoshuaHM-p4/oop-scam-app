@@ -58,13 +58,9 @@ class MainApp(ctk.CTk):
         self.dashboard_frame.pack(side='left', fill='y')
 
         # Main App Frame for SCAM App Features
-<<<<<<< Updated upstream
         self.app_frame.pack(side='left', expand=True, fill='both')
         self.app_frame.pack_configure(padx=1, pady=1)
         self.app_frame.configure(fg_color='#222B36')
-=======
-        self.app_frame.pack(side='left', expand=True, fill="both")
->>>>>>> Stashed changes
 
     def pack_login(self) -> None:
         # Add the Login Frame
