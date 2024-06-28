@@ -3,7 +3,7 @@ import requests
 from tkinter import messagebox # remove this once complete front-end is implemented
 from PIL import Image
 
-SIGNUP_ENDPOINT = "http://localhost:5000/auth/login"
+SIGNUP_ENDPOINT = "http://localhost:5000/auth/register"
 class SignupFrame(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -78,7 +78,7 @@ class SignupFrame(ctk.CTkFrame):
 
         response = requests.post(SIGNUP_ENDPOINT, json=signup_data, timeout=10)
 
-        if response.status_code == 200:
+        if response.status_code == 201:
             messagebox.showinfo("Signup Successful", response.json()['message'])
         else:
             print("Signup Error:", response.json()['message'])
