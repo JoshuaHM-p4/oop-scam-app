@@ -1,9 +1,8 @@
 class UserModel:
-    def __init__(self, user_id: int = 0, username: str = '', email: str = '', access_token: str = ''):
+    def __init__(self, user_id: int = 0, username: str = '', email: str = ''):
         self.__user_id = user_id
         self.__username = username
         self.__email = email
-        self.__access_token = access_token
 
     # Getters
     @property
@@ -30,20 +29,11 @@ class UserModel:
     def email(self, email: str) -> None:
         self.__email = email
 
-    @property
-    def access_token(self) -> str:
-        return self.__access_token
-
-    @access_token.setter
-    def access_token(self, access_token: str) -> None:
-        self.__access_token = access_token
-
     # From JSON
     @classmethod
-    def from_json(cls, data: dict):
+    def from_json(cls, data: dict) -> 'UserModel':
         return cls(
-            user_id=data['user_id'],
+            user_id=data['id'],
             username=data['username'],
-            email=data['email'],
-            access_token=data['access_token']
+            email=data['email']
         )
