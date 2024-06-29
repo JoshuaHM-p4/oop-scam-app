@@ -1,5 +1,5 @@
 import customtkinter as ctk
-import requests
+import requests, threading
 from tkinter import messagebox # remove this once complete front-end is implemented
 from PIL import Image
 
@@ -58,18 +58,27 @@ class SignupFrame(ctk.CTkFrame):
         self.password_entry.pack(anchor='w', pady=(0, 5))
 
         # Signup Button
-        self.signup_button = ctk.CTkButton(self.container_frame, text="Signup", command=self.signup, hover_color='navy blue',
+        self.signup_button = ctk.CTkButton(self.container_frame, text="Signup", command=self.signup_button_click, hover_color='navy blue',
                                            width=120, height=40, corner_radius=10)
         self.signup_button.pack(pady=15)
 
     def return_login(self):
         print('Return to login page')
 
-    def signup(self):
+    def signup_button_click(self, event=None):
         username = self.username_entry.get()
         password = self.password_entry.get()
         email = self.email_entry.get()
 
+        # <Validation Here>
+
+        print(F'SIGNUP GUI: Registering {username} - {email}...')
+
+        signup_thread = threading.Thread(target=self.signup, args=(username, password, email))
+        signup_thread.start()
+
+
+    def signup(self, username, password, email):
         signup_data = {
             'username': username,
             'password': password,
@@ -80,7 +89,10 @@ class SignupFrame(ctk.CTkFrame):
 
         if response.status_code == 201:
             messagebox.showinfo("Signup Successful", response.json()['message'])
+            # <Signup Successful Here>
+            # <Back to Login Screen>
         else:
             print("Signup Error:", response.json()['message'])
+            # <Signup >
 
 

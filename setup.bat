@@ -17,6 +17,16 @@ call venv\Scripts\activate
 REM Install required packages if necessary
 pip install -r requirements.txt
 
+REM Check if .flaskenv already exists
+if exist .flaskenv (
+    echo .flaskenv already exists.
+) else (
+    REM Create .flaskenv and add content
+    echo FLASK_APP=run.py > .flaskenv
+    echo FLASK_ENV=development >> .flaskenv
+    echo .flaskenv file created.
+)
+
 REM Deactivate virtual environment if activated
 call venv\Scripts\deactivate.bat
 

@@ -120,6 +120,7 @@ def create_admin():
         # Define admin user data
         admin_user = User(username='admin', email='admin')
         admin_user.set_password('1234')
-        with db.session.begin():
+        with db.session.begin_nested():
             db.session.add(admin_user)
+        db.session.commit()
         print("Admin user added successfully.")
