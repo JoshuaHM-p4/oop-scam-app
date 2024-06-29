@@ -22,12 +22,15 @@ class FlashcardsFrame(ctk.CTkFrame):
         self.flashcard_set_frame = None
         self.starred_flashcard_sets = []
         self.starred_frame = None
+        
+        self.top_menu.active_set = None
     
-        self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.configure(fg_color="white", corner_radius=10)
         self.grid_configure(padx=10, pady=10)
 
         # Back button with an image
         self.back_image = ctk.CTkImage(Image.open("assets/images/back_arrow.png"), size=(30, 30))
+        
         self.back_button = ctk.CTkButton(self, text="", 
                                          command=self.show_first_page,
                                          image=self.back_image,
@@ -43,6 +46,8 @@ class FlashcardsFrame(ctk.CTkFrame):
             self.flashcard_set_frame.pack_forget()
         if self.starred_frame:
             self.starred_frame.pack_forget()
+        if self.top_menu.active_set:
+            self.top_menu.active_set.pack_forget()
         self.top_menu.pack(fill="x", padx=2, pady=(9, 0))
         self.container.pack(fill="both", expand=True, padx=2, pady=(0, 3))
         self.back_button.pack_forget()
@@ -67,9 +72,14 @@ class FlashcardsFrame(ctk.CTkFrame):
             self.flashcard_set_frame.pack_forget()
         if self.starred_frame:
             self.starred_frame.pack_forget()
+        if self.top_menu.active_set:
+            self.top_menu.active_set.pack_forget()
+        
         self.starred_frame = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.starred_frame.pack(fill="both", expand=True, padx=2, pady=2)
         self.container.pack_forget()
+    
+    
 
 # TopMenu: Top menu bar containing search bar and menu buttons
 class TopMenu(ctk.CTkFrame):
@@ -122,16 +132,18 @@ class TopMenu(ctk.CTkFrame):
 
     # Method to handle star button click
     def on_star_click(self):
-        if self.top_menu_star_button_state:
-            self.star_button.configure(image=self.star_before)
-            self.top_menu_star_button_state = False
-            self.master.show_first_page()
-        else:
+        if self.top_menu_star_button_state == False:
             self.star_button.configure(image=self.star_after)
             self.top_menu_star_button_state = True
             self.master.show_starred_flashcards()
-
-        print("Star button clicked!")
+        elif self.top_menu_star_button_state == True:
+            self.star_button.configure(image=self.star_before)
+            self.top_menu_star_button_state = False
+            if self.active_set:
+                self.master.starred_frame.pack_forget()
+                self.active_set.pack(fill="both", expand=True, padx=2, pady=(0,3))
+            else:
+                self.master.show_first_page()
     
     # Method to handle hamburger menu button click
     def on_menu_click(self):
@@ -156,8 +168,10 @@ class TopMenu(ctk.CTkFrame):
     def hamburger_menu_options_click(self, selected):
         # Call designated functions for options clicked
         def show_add_set_frame():
+            
             self.master.container.pack_forget()
             self.active_set = AddSetFrame(self.master)
+            
 
         def show_edit_set_frame():
             self.master.container.pack_forget()
@@ -171,11 +185,22 @@ class TopMenu(ctk.CTkFrame):
         self.hamburger_menu_var.set("")
 
         def activate_frame():
+            self.star_button.configure(image=self.star_before)
+            self.top_menu_star_button_state = False
             if selected == "Add Set":
+                if self.master.starred_frame:
+                    self.master.starred_frame.pack_forget()
+                    
                 return show_add_set_frame()
             elif selected == "Edit Set":
+                if self.master.starred_frame:
+                    self.master.starred_frame.pack_forget()
+                    
                 return show_edit_set_frame()
             elif selected == "Share Set":
+                if self.master.starred_frame:
+                    self.master.starred_frame.pack_forget()
+                    
                 return show_share_set_frame()
 
         # If no active frames
