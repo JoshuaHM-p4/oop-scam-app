@@ -24,6 +24,12 @@ def create_app():
 
     from app import models
 
+    with app.app_context():
+        db.create_all()
+        db.session.commit()
+
+        models.create_admin()
+
     register_error_handlers(app)
 
     from .routes.auth import auth_bp

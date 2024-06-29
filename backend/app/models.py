@@ -115,6 +115,7 @@ class UserNotebook(db.Model):
             "user_id": self.user_id,
             "notebook_id": self.notebook_id
         }
+
     
 class QuickNote(db.Model):
     id = db.Column(db.Integer, primary_key=True) # quick note id
@@ -147,3 +148,16 @@ class UserQuickNotes(db.Model):
             "user_id": self.user_id,
             "quick_note_id": self.quick_note_id
         }
+
+
+def create_admin():
+    # Check if the admin user already exists to avoid duplicates
+    if not User.query.filter_by(username='admin').first():
+        # Define admin user data
+        admin_user = User(username='admin', email='admin')
+        admin_user.set_password('1234')
+        with db.session.begin_nested():
+            db.session.add(admin_user)
+        db.session.commit()
+        print("Admin user added successfully.")
+

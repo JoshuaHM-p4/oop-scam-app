@@ -5,3 +5,5 @@ class ProgressModel:
         self.description = description
         self.steps = steps
         self.motivation = motivation
+
+        
