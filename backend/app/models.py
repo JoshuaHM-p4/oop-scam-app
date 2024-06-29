@@ -67,9 +67,11 @@ class UserFlashcardSet(db.Model):
             "flashcard_set_id": self.flashcard_set_id
         }
 
+# Notebook, Note, UserNotebook, QuickNote, UserQuickNotes
+
 class Notebook(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
     title = db.Column(db.VARCHAR(64), nullable=False)
 
     def __repr__(self):
@@ -98,7 +100,7 @@ class Note(db.Model):
             "title": self.title,
             "content": self.content
         }
-
+    
 class UserNotebook(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
@@ -114,6 +116,40 @@ class UserNotebook(db.Model):
             "notebook_id": self.notebook_id
         }
 
+    
+class QuickNote(db.Model):
+    id = db.Column(db.Integer, primary_key=True) # quick note id
+    title = db.Column(db.VARCHAR(64), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+
+    def __repr__(self):
+        return f'<QuickNote {self.title}>'
+
+    def to_json(self) -> dict:
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "owner_id": self.owner_id,
+        }
+
+class UserQuickNotes(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    quick_note_id = db.Column(db.Integer, db.ForeignKey(QuickNote.id), nullable=False)
+
+    def __repr__(self):
+        return f'<UserQuickNotes {self.user_id} - {self.quick_note_id}>'
+    
+    def to_json(self) -> dict:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "quick_note_id": self.quick_note_id
+        }
+
+
 def create_admin():
     # Check if the admin user already exists to avoid duplicates
     if not User.query.filter_by(username='admin').first():
@@ -124,3 +160,4 @@ def create_admin():
             db.session.add(admin_user)
         db.session.commit()
         print("Admin user added successfully.")
+
