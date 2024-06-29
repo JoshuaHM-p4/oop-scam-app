@@ -56,7 +56,7 @@ class MainApp(ctk.CTk):
 
     def pack_mainscreen(self):
         # Dashboard Frame
-        self.dashboard_frame.pack(side='left', fill='y')
+        self.dashboard_frame.pack(side='left', fill='y', padx=15, pady=15)
 
         # Main App Frame for SCAM App Features
         self.app_frame.pack(side='left', expand=True, fill='both')
