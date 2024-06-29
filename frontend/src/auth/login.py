@@ -4,6 +4,7 @@ from PIL import Image
 import tkinter as tk
 import os
 import sys
+import threading
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_dir)
@@ -18,6 +19,7 @@ LOGIN_ENDPOINT = "http://localhost:5000/auth/login"
 class LoginFrame(ctk.CTkFrame):
     def __init__(self, master, callback):
         super().__init__(master)
+        self.master = master
         self.configure(fg_color='#222B36', bg_color='#222B36')
         self.callback = callback
 
@@ -78,11 +80,11 @@ class LoginFrame(ctk.CTkFrame):
         self.signup_button.pack(side='right', padx=5)
 
         # Login Button
-        self.login_button = ctk.CTkButton(self.login_frame, text="Login", command=self.login, corner_radius=24,
+        self.login_button = ctk.CTkButton(self.login_frame, text="Login", command=self.login_button_click, corner_radius=24,
                                           width=120, height=45, fg_color='white', text_color='#141A1F')
         self.login_button.pack(padx=10, pady=20)
 
-        self.login_button.bind("<Return>", self.login)
+        self.login_button.bind("<Return>", self.login_button_click)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -136,23 +138,27 @@ class LoginFrame(ctk.CTkFrame):
 
         self.signup_frame.back_button.configure(command=self.return_to_login)
 
-
     def return_to_login(self):
         self.signup_frame.pack_forget()
         self.login_frame.pack(side='left', fill='both', padx=40, pady=20)
         self.google_signup_frame.pack(side='right', fill='both', padx=(0, 40), pady=20, expand=True)
 
-
     def google_signup(self):
         print('Google sign up button clicked!')
 
-
-    def login(self, event=None): # response.json, response.status_code
+    def login_button_click(self, event=None):
         email = self.email_entry.get()
         password = self.password_entry.get()
 
-        print(f"Logging in {email}...")
+        # <Validation Here>
 
+        print(f"LOGIN GUI: Logging in {email}...")
+
+        # Start a new thread to make the request
+        login_thread = threading.Thread(target=self.login, args=(email, password))
+        login_thread.start()
+
+    def login(self, email: str, password: str): # response.json, response.status_code
         login_data = {
             'email': email,
             'password': password,
@@ -162,8 +168,10 @@ class LoginFrame(ctk.CTkFrame):
             response = requests.post(LOGIN_ENDPOINT, json=login_data, timeout=10)
 
             if response.status_code == 200:
-                self.callback(response.json())
+                self.master.after(0, self.callback, response.json())
             else:
+                # <Login Error Here>
                 messagebox.showerror("Login Error", response.json()['message'])
         except ConnectionError:
+            # <Connection Error Here >
             messagebox.showerror("Connection Error", "Could not connect to server")
