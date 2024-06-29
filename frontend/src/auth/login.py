@@ -1,3 +1,4 @@
+from tkinter import messagebox # remove this once complete front-end is implemented
 import customtkinter as ctk
 from PIL import Image
 import tkinter as tk
@@ -9,6 +10,10 @@ sys.path.append(script_dir)
 
 from signup import SignupFrame
 
+from typing import Tuple
+import requests
+
+LOGIN_ENDPOINT = "http://localhost:5000/auth/login"
 
 class LoginFrame(ctk.CTkFrame):
     def __init__(self, master, callback):
@@ -48,10 +53,10 @@ class LoginFrame(ctk.CTkFrame):
         self.welcome_label.pack(padx=10, pady=5)
 
         # Entries
-        self.username_entry = ctk.CTkEntry(self.login_frame, placeholder_text='E-mail',
-                                           placeholder_text_color='#141A1F', corner_radius=22, border_color='white',
+        self.email_entry = ctk.CTkEntry(self.login_frame, placeholder_text='E-mail',
+                                             placeholder_text_color='#141A1F', corner_radius=22, border_color='white',
                                            fg_color='white', width=300, height=35, text_color='#141A1F')
-        self.username_entry.pack(padx=20, pady=10)
+        self.email_entry.pack(padx=20, pady=10)
 
         self.password_entry = ctk.CTkEntry(self.login_frame, show="*", placeholder_text='Password',
                                            placeholder_text_color='#141A1F', corner_radius=22, border_color='white',
@@ -142,9 +147,23 @@ class LoginFrame(ctk.CTkFrame):
         print('Google sign up button clicked!')
 
 
-    def login(self, event=None):
-        print(f"Logging in {self.username_entry.get()}...")
+    def login(self, event=None): # response.json, response.status_code
+        email = self.email_entry.get()
+        password = self.password_entry.get()
 
-        test_data = {"user_id": "1", "username": "JoshuaHM", "access_token": "123456789",
-                     "email": "joshuahm.2004@gmail.com"}
-        self.callback(test_data)
+        print(f"Logging in {email}...")
+
+        login_data = {
+            'email': email,
+            'password': password,
+        }
+
+        try:
+            response = requests.post(LOGIN_ENDPOINT, json=login_data, timeout=10)
+
+            if response.status_code == 200:
+                self.callback(response.json())
+            else:
+                messagebox.showerror("Login Error", response.json()['message'])
+        except ConnectionError:
+            messagebox.showerror("Connection Error", "Could not connect to server")
