@@ -86,7 +86,7 @@ class Notebook(db.Model):
 
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    note_id = db.Column(db.Integer, db.ForeignKey(Notebook.id), nullable=False)
+    notebook_id = db.Column(db.Integer, db.ForeignKey(Notebook.id), nullable=False)
     title = db.Column(db.VARCHAR(64), nullable=False)
     content = db.Column(db.Text, nullable=False)
 
