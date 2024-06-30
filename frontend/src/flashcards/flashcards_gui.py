@@ -4,13 +4,15 @@ import tkinter as tk
 import sys
 import os
 from PIL import Image
+import requests
+
 
 # Add the common directory to the sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'searchbar')))  # src/common/searchbar
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))  # frontend/
 
 from searchbar import SearchBar
-from config import APP_NAME, BACKGROUND_COLOR
+from config import APP_NAME, BACKGROUND_COLOR, FLASHCARDS_ENDPOINT
 
 # FlashcardsFrame: Main frame for the flashcards application
 class FlashcardsFrame(ctk.CTkFrame):
@@ -22,6 +24,7 @@ class FlashcardsFrame(ctk.CTkFrame):
         self.flashcard_set_frame = None
         self.starred_flashcard_sets = []
         self.starred_frame = None
+        self.flashcard_sets = []
         
         self.top_menu.active_set = None
     
@@ -205,8 +208,8 @@ class TopMenu(ctk.CTkFrame):
 
         # If no active frames
         if self.hamburger_option_is_active == False:
-            self.hamburger_option_is_active = True
             activate_frame()
+            self.hamburger_option_is_active = True
             
         # If there is no active frames
         elif self.hamburger_option_is_active == True:
@@ -417,6 +420,9 @@ class FlashcardSetFrame(ctk.CTkFrame):
 class AddSetFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
+        self.set_name_var = ctk.StringVar()
+        self.word_var = ctk.StringVar()
+        self.definition_var = ctk.StringVar()
         self.setup_ui()
         self.create_widgets()
         self.layout_widgets()
@@ -435,11 +441,11 @@ class AddSetFrame(ctk.CTkFrame):
         self.upper_frame = ctk.CTkFrame(self.middle_frame)
 
         self.set_name_label = ctk.CTkLabel(self.upper_frame, text="Set Name:")
-        self.set_name_entry = ctk.CTkEntry(self.upper_frame, placeholder_text="Enter Set Name")
+        self.set_name_entry = ctk.CTkEntry(self.upper_frame, placeholder_text="Enter Set Name", textvariable=self.set_name_var)
         self.word_label = ctk.CTkLabel(self.upper_frame, text="Word:")
-        self.word_entry = ctk.CTkEntry(self.upper_frame, placeholder_text="Enter Word")
+        self.word_entry = ctk.CTkEntry(self.upper_frame, placeholder_text="Enter Word", textvariable=self.word_var)
         self.definition_label = ctk.CTkLabel(self.upper_frame, text="Definition:")
-        self.definition_entry = ctk.CTkEntry(self.upper_frame, placeholder_text="Enter the definition of the word (Backside)")
+        self.definition_entry = ctk.CTkEntry(self.upper_frame, placeholder_text="Enter the definition of the word (Backside)",textvariable=self.definition_var)
 
         self.lower_frame = ctk.CTkFrame(self.middle_frame)
 
@@ -480,6 +486,46 @@ class AddSetFrame(ctk.CTkFrame):
 
     def add_word(self):
         tk.messagebox.showinfo("Add Word Button Response", "Add Word button was clicked")
+        token = self.master.controller.access_token
+
+        set_name = self.set_name_var.get()
+        word = self.word_var.get()
+        definition = self.definition_var.get()
+
+        if set_name:
+            data = {
+                "name": set_name,
+            }
+        else:
+            return None
+        
+        flashcard_data = {
+                "word": word,
+                "definition": definition
+            }
+
+        header = {
+            "Authorization": f"Bearer {token}",
+        }
+
+        if word and definition:
+            if data not in self.master.flashcard_sets:
+                response = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", json=data, headers=header)
+                flashcard_set = FlashcardSetModel.from_json(response.json()["data"])
+
+                self.master.flashcard_sets.append(data)
+            
+            adding = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{flashcard_set.id}/flashcards", json=flashcard_data, headers=header)
+
+            if response.status_code == 200:
+                # <handle dito ng succesful request>
+                data = adding.json()
+                print(data['msg'])
+            else:
+                # <handle dito yung bad request>
+                pass
+
+        
 
     def save_set(self):
         tk.messagebox.showinfo("Save Set Button Response", "Save Set button was clicked")

@@ -1,11 +1,18 @@
 class FlashcardSetModel:
-    def __init__(self, id):
+    def __init__(self, id, name):
         self.id = id
-        self.name = None
+        self.name = name
         self.flashcards = []
 
     def add_flashcard(self, flashcard):
-        pass
+        self.flashcards.append(flashcard)
+
+    @classmethod
+    def from_json(cls, data: dict) -> 'FlashcardSetModel':
+        return cls(
+        id = data["id"],
+        name = data["name"]
+        )
 
 class FlashcardModel:
     def __init__(self, id, set_id, word, definition):
