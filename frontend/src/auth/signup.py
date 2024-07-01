@@ -9,6 +9,7 @@ class SignupFrame(ctk.CTkFrame):
         super().__init__(parent)
         self.configure(fg_color='#141A1F')
         self.controller = controller
+        self.request_lock = threading.Lock()
 
         self.setup_ui()
 
