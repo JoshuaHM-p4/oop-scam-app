@@ -22,6 +22,7 @@ class LoginFrame(ctk.CTkFrame):
         self.master = master
         self.configure(fg_color='#222B36', bg_color='#222B36')
         self.callback = callback
+        self.request_lock = threading.Lock()  # Initialize the lock
 
         # Container
         self.container_frame = ctk.CTkFrame(self, fg_color='#141A1F', corner_radius=22)
@@ -158,13 +159,12 @@ class LoginFrame(ctk.CTkFrame):
         login_thread = threading.Thread(target=self.login, args=(email, password))
         login_thread.start()
 
-    def login(self, email: str, password: str): # response.json, response.status_code
-        login_data = {
-            'email': email,
-            'password': password,
-        }
+    def login(self, email: str, password: str):
+        if not self.request_lock.acquire(blocking=False):
+            print("LOGIN GUI: Login Request Prevented. A login request is already being processed.")
 
         try:
+            login_data = {'email': email, 'password': password}
             response = requests.post(LOGIN_ENDPOINT, json=login_data, timeout=10)
 
             if response.status_code == 200:
@@ -173,5 +173,7 @@ class LoginFrame(ctk.CTkFrame):
                 # <Login Error Here>
                 messagebox.showerror("Login Error", response.json()['message'])
         except ConnectionError:
-            # <Connection Error Here >
+            # <Connection Error Here>
             messagebox.showerror("Connection Error", "Could not connect to server")
+        finally:
+            self.request_lock.release()  # Release the lock
