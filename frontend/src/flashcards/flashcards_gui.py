@@ -21,6 +21,7 @@ class FlashcardsFrame(ctk.CTkFrame):
         self.container = Container(self, self)
         self.flashcard_set_frame = None
         self.starred_flashcard_sets = []
+        self.reference = {}
         self.starred_frame = None
         
         self.top_menu.active_set = None
@@ -74,11 +75,12 @@ class FlashcardsFrame(ctk.CTkFrame):
             self.starred_frame.pack_forget()
         if self.top_menu.active_set:
             self.top_menu.active_set.pack_forget()
-        
-        self.starred_frame = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR, corner_radius=10)
-        self.starred_frame.pack(fill="both", expand=True, padx=2, pady=2)
+            
         self.container.pack_forget()
-    
+        
+        self.starred_frame = StarredFlashcardsFrame(self, starred_flashcards=self.starred_flashcard_sets)
+        self.starred_frame.pack(fill="both", expand=True, padx=2, pady=2)
+
     
 
 # TopMenu: Top menu bar containing search bar and menu buttons
@@ -89,6 +91,8 @@ class TopMenu(ctk.CTkFrame):
         self.hamburger_is_open : bool= False
         self.hamburger_option_is_active : bool= False
         self.top_menu_star_button_state = False
+        self.active_set = None
+        self.last_active_set = None
         self.setup_ui()
     
     # Method to set up UI elements of the top menu
@@ -132,16 +136,19 @@ class TopMenu(ctk.CTkFrame):
 
     # Method to handle star button click
     def on_star_click(self):
+        print(self.last_active_set)
         if self.top_menu_star_button_state == False:
             self.star_button.configure(image=self.star_after)
             self.top_menu_star_button_state = True
+            self.last_active_set = self.active_set
+            
             self.master.show_starred_flashcards()
         elif self.top_menu_star_button_state == True:
             self.star_button.configure(image=self.star_before)
             self.top_menu_star_button_state = False
-            if self.active_set:
+            if self.last_active_set:
                 self.master.starred_frame.pack_forget()
-                self.active_set.pack(fill="both", expand=True, padx=2, pady=(0,3))
+                self.last_active_set.pack(fill="both", expand=True, padx=2, pady=(0,3))
             else:
                 self.master.show_first_page()
     
@@ -168,16 +175,20 @@ class TopMenu(ctk.CTkFrame):
     def hamburger_menu_options_click(self, selected):
         # Call designated functions for options clicked
         def show_add_set_frame():
-            
+            if self.active_set:
+                self.active_set.pack_forget()
             self.master.container.pack_forget()
             self.active_set = AddSetFrame(self.master)
-            
-
+         
         def show_edit_set_frame():
+            if self.active_set:
+                self.active_set.pack_forget()
             self.master.container.pack_forget()
             self.active_set = EditSetFrame(self.master)
-        
+
         def show_share_set_frame():
+            if self.active_set:
+                self.active_set.pack_forget()
             self.master.container.pack_forget()
             self.active_set = ShareSetFrame(self.master)
 
@@ -187,21 +198,19 @@ class TopMenu(ctk.CTkFrame):
         def activate_frame():
             self.star_button.configure(image=self.star_before)
             self.top_menu_star_button_state = False
-            if selected == "Add Set":
-                if self.master.starred_frame:
-                    self.master.starred_frame.pack_forget()
-                    
-                return show_add_set_frame()
-            elif selected == "Edit Set":
-                if self.master.starred_frame:
-                    self.master.starred_frame.pack_forget()
-                    
-                return show_edit_set_frame()
-            elif selected == "Share Set":
-                if self.master.starred_frame:
-                    self.master.starred_frame.pack_forget()
-                    
-                return show_share_set_frame()
+            if self.master.starred_frame:
+                self.master.starred_frame.pack_forget()
+        
+            # Mapping of selections to their respective functions
+            action_map = {
+                "Add Set": show_add_set_frame,
+                "Edit Set": show_edit_set_frame,
+                "Share Set": show_share_set_frame
+            }
+        
+            # Execute the function based on the selected action
+            if selected in action_map:
+                return action_map[selected]()
 
         # If no active frames
         if self.hamburger_option_is_active == False:
@@ -232,17 +241,14 @@ class Container(ctk.CTkScrollableFrame):
         self.flashcards_frame = flashcards_frame  
         self.setup_ui()
     
-    # Method to set up UI elements of the container
     def setup_ui(self):
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.pack(fill="both", expand=True, padx=2, pady=(0,3))
         self.load_flashcard_sets()
         
-    # Method to load flashcard sets from the database
     def load_flashcard_sets(self):
         colors = ["red", "green", "blue", "gray14", "purple", "orange", "pink", "light blue", "grey"]
         
-        # Create a frame for each flashcard set
         for i in range(1, 5):
             frame_color = colors[i % len(colors)]
             frame = ctk.CTkFrame(self, fg_color=frame_color, height=300, corner_radius=10, border_color=frame_color, border_width=20)
@@ -267,7 +273,10 @@ class Container(ctk.CTkScrollableFrame):
 
             star_image_btn.pack(side='top', padx=2, pady=3, ipadx=0, ipady=0, anchor='ne')
             
-            label = ctk.CTkLabel(frame, text=f"Set {i}", text_color="black", font=("Arial", 20))
+            # self.flashcards_frame.star_buttons[f"Flashcard Set {i}"] = star_image_btn
+            
+            i = f"Flashcard Set {i}"
+            label = ctk.CTkLabel(frame, text=i, text_color="black", font=("Arial", 20))
             label.pack(fill='both', expand=True, padx=5, pady=5)
             
             frame.pack_propagate(False)
@@ -291,16 +300,58 @@ class Container(ctk.CTkScrollableFrame):
             self.flashcards_frame.starred_flashcard_sets.append(i)
         print(f"Star button {i} clicked!")
 
-# class StarredFlashcardsFrame(ctk.CTkFrame):
-#     def __init__(self, master):
-#         super().__init__(master)
-#         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
-#         self.pack(fill="both", expand=True, padx=2, pady=2)
-#         self.load_starred_flashcards()
+class StarredFlashcardsFrame(ctk.CTkFrame):
+    def __init__(self, master, starred_flashcards = []):
+        super().__init__(master)
+        self.starred_flashcards = starred_flashcards
+        self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.load_starred_flashcards()
         
-#     def load_starred_flashcards(self):
-#         # Load the starred flashcards from the database
-#         pass
+    def load_starred_flashcards(self):
+        for widget in self.winfo_children():
+            widget.destroy()
+            
+        colors = ["red", "green", "blue", "gray14", "purple", "orange", "pink", "light blue", "grey"]
+        if self.starred_flashcards:
+            for i in self.starred_flashcards:
+                frame_color = colors[int(str(i).split()[-1]) % len(colors)]
+                frame = ctk.CTkFrame(self, fg_color=frame_color, height=300, corner_radius=10, border_color=frame_color, border_width=20)
+                frame.pack(padx=(0, 5), pady=5, fill="both")
+                
+                star_image = ctk.CTkImage(Image.open("assets/images/star_white.png"), size=(23, 23))
+                star_image_active = ctk.CTkImage(Image.open("assets/images/star_after.png"), size=(23, 23))
+                
+                star_image_btn = ctk.CTkButton(frame, text="",
+                                            image=star_image_active,
+                                            corner_radius=10,
+                                            fg_color=frame_color,
+                                            width=40, height=40)
+                
+                star_image_btn.is_active = True
+                
+                star_image_btn.configure(command=lambda 
+                                        btn=star_image_btn, 
+                                        star_active=star_image_active, 
+                                        star_inactive=star_image, i=i: 
+                                        self.toggle_star_image(btn, star_active, star_inactive, i))
+
+                star_image_btn.pack(side='top', padx=2, pady=3, ipadx=0, ipady=0, anchor='ne')
+                
+                label = ctk.CTkLabel(frame, text=i, text_color="black", font=("Arial", 20))
+                label.pack(fill='both', expand=True, padx=5, pady=5)
+                
+                frame.pack_propagate(False)
+            
+    def toggle_star_image(self, btn, star_active, star_inactive, i):
+        if btn.is_active:
+            btn.configure(image=star_inactive)
+            btn.is_active = False
+            self.master.starred_flashcard_sets.remove(i)
+            
+        # Reload the starred flashcards to update the display
+        self.load_starred_flashcards()
+           
+           
         
 # FlashcardSetFrame: Frame to display flashcards in a set
 class FlashcardSetFrame(ctk.CTkFrame):
@@ -490,6 +541,9 @@ class AddSetFrame(ctk.CTkFrame):
         self.master.container.pack(fill="both", expand=True, padx=2, pady=(0, 3))
         # To set the value of hamburger_option_is_active to false, accessing through the parent frame
         self.master.top_menu.hamburger_option_is_active = False
+        self.back_to_container = True
+        self.master.top_menu.active_set = None
+    
 
 class EditSetFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -556,6 +610,8 @@ class EditSetFrame(ctk.CTkFrame):
         self.master.container.pack(fill="both", expand=True, padx=2, pady=(0, 3))
         # To set the value of hamburger_option_is_active to false, accessing through the parent frame
         self.master.top_menu.hamburger_option_is_active = False
+        self.master.top_menu.active_set = None
+        
 
 class ShareSetFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -615,3 +671,5 @@ class ShareSetFrame(ctk.CTkFrame):
         self.master.container.pack(fill="both", expand=True, padx=2, pady=(0, 3))
         # To set the value of hamburger_option_is_active to false, accessing through the parent frame
         self.master.top_menu.hamburger_option_is_active = False
+        self.master.top_menu.active_set = None
+        
