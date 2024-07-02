@@ -2,8 +2,10 @@ import customtkinter as ctk
 import os, sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'searchbar')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))  # frontend/
 
 from searchbar import SearchBar
+from config import BACKGROUND_COLOR
 
 bg_color = "#222B36"
 main_bg_color = "#333333"
@@ -13,9 +15,10 @@ class HomeFrame(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
 
         self.main_frame = ctk.CTkFrame(self, fg_color = second_main_bg_color)
-        self.main_frame.pack(side="top", fill="both", expand=True)
+        self.main_frame.pack(side="top", fill="both", expand=True, padx=10, pady=10)
 
         self.frame_top_top = ctk.CTkFrame(self.main_frame, fg_color = second_main_bg_color, corner_radius = 100)
         self.frame_top_top.pack(side="top", fill="x")
@@ -26,7 +29,7 @@ class HomeFrame(ctk.CTkFrame):
         self.searchbar = SearchBar(self.main_frame)
         self.searchbar.pack(side="top", fill="x", pady=1)
 
-    
+
         self.frame_top = ctk.CTkFrame(self.main_frame, fg_color = second_main_bg_color)
         self.frame_top.pack(side="top", fill="both", expand=True)
 

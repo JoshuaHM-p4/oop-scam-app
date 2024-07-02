@@ -46,8 +46,6 @@ class AppFrame(ctk.CTkFrame):
 
             print(f"{frame_name} loaded successfully!")
 
-        self.main_screen_frames["SettingsFrame"] = SettingsFrame(self, self.master)
-
     def pack(self, *args, **kwargs):
         super().pack(*args, **kwargs)
         self.grid_rowconfigure(0, weight=1)
