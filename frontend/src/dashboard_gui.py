@@ -51,7 +51,7 @@ class ButtonsFrame(ctk.CTkFrame):
             if name in frame_name[:8] != 'Settings':
                 name = button.pack(side='top', pady=3, fill='x', expand=True)
             else:
-                name = button.pack(side='top', pady=[150, 5], fill='x', expand=True)
+                name = button.pack(side='top', pady=(150, 5), fill='x', expand=True)
             button.bind("<Button-1>", self.create_click_handler(button))
             self.features.append(button)
 
@@ -72,7 +72,7 @@ class ButtonsFrame(ctk.CTkFrame):
 #         settings_button_image = ctk.CTkImage(Image.open("assets/images/settings_logo.png"), size=(15, 15))
 #         self.settings_button = ctk.CTkButton(
 #             self,
-#             image=settings_button_image,    
+#             image=settings_button_image,
 #             text="Settings",
 #             width=200,
 #             height=40,
@@ -83,8 +83,6 @@ class ButtonsFrame(ctk.CTkFrame):
 #         )
 #         self.settings_button.pack(side='bottom', pady=3, fill='x', expand=True)
 #         self.settings_button.bind("<Button-1>", self.create_click_handler(self.settings_button))
-=======
-
 #     def create_click_handler(self, button):
 #         self.buttons_container.clear_active_button()
 #         def select(event=None):
@@ -94,7 +92,7 @@ class ButtonsFrame(ctk.CTkFrame):
 class DashboardFrame(ctk.CTkFrame):
     def __init__(self, master, command, frames: list[ctk.CTkFrame],  *args, **kwargs):
         super().__init__(master, *args, **kwargs) # self: Parent Dashboard Frame
-        self.configure(fg_color=BACKGROUND_COLOR, corner_radius=1)
+        self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.pack_configure(padx=15, pady=15)
         self.profile_frame = ProfileFrame(self) # profile_frame: Profile Frame
         dashboard_image = ctk.CTkImage(Image.open("assets/images/dashboard_logo.png"), size=(250, 50))

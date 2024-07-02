@@ -19,7 +19,7 @@ from .notes_page_view import PageViewer
 class NotebookFrame(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        self.controller = controller 
+        self.controller = controller
 
         self.notebooks: list[NotebookModel] = []
 
@@ -27,11 +27,11 @@ class NotebookFrame(ctk.CTkFrame):
         self.container = Container(self)
         self.configure(fg_color=BACKGROUND_COLOR,
                        corner_radius=10)
-        self.grid_configure(padx=10, pady=10)  
+        self.grid_configure(padx=10, pady=10)
 
 class Container(ctk.CTkScrollableFrame):
     def __init__(self, master, *args, **kwargs):
-        super().__init__(master,*args,**kwargs) 
+        super().__init__(master,*args,**kwargs)
         self.master = master
         self.current_note_index = 0
         self.setup_ui()
@@ -44,24 +44,24 @@ class Container(ctk.CTkScrollableFrame):
     # def setup_ui(self):
     #     self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
     #     self.pack(fill="both", expand=True, padx=2, pady=(0,3))
-        
+
     #     # Create canvas and scrollbar
     #     self.canvas = tk.Canvas(self, highlightthickness=0, bg=BACKGROUND_COLOR)
     #     self.scrollbar = ctk.CTkScrollbar(self, command=self.canvas.yview)
     #     self.canvas.configure(yscrollcommand=self.scrollbar.set)
-        
+
     #     self.scrollbar.pack(side="right", fill="y")
     #     self.canvas.pack(side="left", fill="both", expand=True)
-        
+
     #     self.scrollable_frame = ctk.CTkFrame(self.canvas, fg_color="#141A1F")
-        
+
     #     self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-        
+
     #     self.scrollable_frame.bind(
     #         "<Configure>",
     #         lambda: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
     #     )
-        
+
     #     self.display_notebooks()
 
     def display_notebooks(self):
@@ -71,7 +71,7 @@ class Container(ctk.CTkScrollableFrame):
         for i, notebook in enumerate(self.master.notebooks):
 
             # notebook.title: str
-            # notebook.notes: list  
+            # notebook.notes: list
 
             row, col = divmod(i, 2)
 
@@ -83,7 +83,7 @@ class Container(ctk.CTkScrollableFrame):
             # Configure the grid to center the content
             self.rowconfigure(row, weight=1)
             self.columnconfigure(col, weight=1)
-            
+
             # Center the image
             notebook_button.grid_columnconfigure(col, weight=1)
             notebook_button.grid_rowconfigure(row, weight=1)
@@ -94,7 +94,7 @@ class Container(ctk.CTkScrollableFrame):
         self.master.notebooks.append(test_notebook)
         self.display_notebooks()
         self.save_notebooks()
- 
+
     def view_notebook(self, index):
         self.current_note_index = index
         notebook = self.master.notebooks[self.current_note_index]
@@ -123,7 +123,6 @@ class Container(ctk.CTkScrollableFrame):
         # < Backend GET Request Implementaiton here >
         pass
 
-
 class TopMenu(ctk.CTkFrame):
     def __init__(self, master, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
@@ -133,7 +132,7 @@ class TopMenu(ctk.CTkFrame):
     def setup_ui(self):
         self.configure(fg_color=BACKGROUND_COLOR)
         self.pack(fill="x", padx=2, pady=(9,0))
-        
+
         # Add the SearchBar to the TopMenu
         self.search_bar = SearchBar(self, search_handler=self.search_notebooks)
         self.search_bar.pack(side="left", fill="x", expand=True, padx=(11,0), pady=5)
@@ -179,7 +178,7 @@ class TopMenu(ctk.CTkFrame):
 
         title_label = ctk.CTkLabel(edit_window, text="New Title:", text_color="white")
         title_label.pack(pady=10)
-        
+
         title_entry = ctk.CTkEntry(edit_window)
         title_entry.pack(pady=5)
 
@@ -217,7 +216,7 @@ class NotebookModel:
         self.notes = notes
 
 
-    
+
 if __name__ == "__main__":
     app = _TestingApp()
     app.mainloop()
