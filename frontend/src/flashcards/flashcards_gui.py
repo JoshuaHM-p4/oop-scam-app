@@ -92,6 +92,7 @@ class TopMenu(ctk.CTkFrame):
         self.hamburger_is_open : bool= False
         self.hamburger_option_is_active : bool= False
         self.top_menu_star_button_state = False
+        self.hamburger_menu_active = "normal"
         self.setup_ui()
     
     # Method to set up UI elements of the top menu
@@ -159,7 +160,7 @@ class TopMenu(ctk.CTkFrame):
                                                                  values=["Add Set", "Edit Set","Share Set"], 
                                                                  command=self.hamburger_menu_options_click,
                                                                  variable=self.hamburger_menu_var)
-
+            self.hamburger_menu_options.configure(state=self.hamburger_menu_active)
             self.hamburger_menu_options.pack(side="left", padx=(0, 13))
             self.hamburger_is_open = True
         else:
@@ -240,7 +241,16 @@ class Container(ctk.CTkScrollableFrame):
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.pack(fill="both", expand=True, padx=2, pady=(0,3))
         self.load_flashcard_sets()
+
+    def fetch_flashcard_sets(self):
+        token = self.master.controller.access_token
+        header = {"Authorization": f"Bearer {token}"}
         
+        response = requests.get(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", headers=header)
+
+        response_data = response.json()
+        self.master.flashcard_sets = response_data["data"]
+
     # Method to load flashcard sets from the database
     def load_flashcard_sets(self):
         colors = ["red", "green", "blue", "gray14", "purple", "orange", "pink", "light blue", "grey"]
@@ -509,11 +519,11 @@ class AddSetFrame(ctk.CTkFrame):
         }
 
         if word and definition:
-            if data not in self.master.flashcard_sets:
+            if set_name not in self.master.flashcard_sets:
                 response = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", json=data, headers=header)
                 flashcard_set = FlashcardSetModel.from_json(response.json()["data"])
 
-                self.master.flashcard_sets.append(data)
+                self.master.flashcard_sets.append(set_name)
             
             adding = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{flashcard_set.id}/flashcards", json=flashcard_data, headers=header)
 
@@ -524,11 +534,40 @@ class AddSetFrame(ctk.CTkFrame):
             else:
                 # <handle dito yung bad request>
                 pass
-
-        
+        self.word_var.set("")
+        self.definition_var.set("")
 
     def save_set(self):
         tk.messagebox.showinfo("Save Set Button Response", "Save Set button was clicked")
+        token = self.master.controller.access_token
+        set_name = self.set_name_var.get()
+
+        if set_name:
+            data = {
+                "name": set_name,
+            }
+        else:
+            return None
+        
+        header = {
+            "Authorization": f"Bearer {token}",
+        }
+
+        if set_name not in self.master.flashcard_sets:
+            response = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", json=data, headers=header)
+            self.master.flashcard_sets.append(set_name)
+
+            if response.status_code == 200:
+                # <handle dito ng succesful request>
+                data = response.json()
+                print(data['msg'])
+            else:
+                # <handle dito yung bad request>
+                pass
+
+            self.set_name_var.set("")
+            self.word_var.set("")
+            self.definition_var.set("")
 
     # Destroys the active frame and layouts the main frame of flashcards
     def back_command(self):
@@ -592,6 +631,11 @@ class EditSetFrame(ctk.CTkFrame):
 
     def edit_set(self):
         tk.messagebox.showinfo("Edit Set Button Response", "Edit Set button was clicked")
+        self.master.top_menu.hamburger_menu_options.configure(state='disabled')
+        self.master.top_menu.hamburger_menu_active = 'disabled'
+        self.pack_forget()
+        DeleteFlashcardFrame(self.master)
+
 
     def delete_set(self):
         tk.messagebox.showinfo("Delete Set Button Response", "Delete Set button was clicked")
@@ -661,3 +705,64 @@ class ShareSetFrame(ctk.CTkFrame):
         self.master.container.pack(fill="both", expand=True, padx=2, pady=(0, 3))
         # To set the value of hamburger_option_is_active to false, accessing through the parent frame
         self.master.top_menu.hamburger_option_is_active = False
+
+class DeleteFlashcardFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master)
+        self.setup_ui()
+        self.create_widgets()
+        self.layout_widgets()
+
+    def setup_ui(self):
+        self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.pack(fill="both", expand=True, padx=2, pady=(0,3))
+
+    def create_widgets(self):
+        self.left_frame = ctk.CTkFrame(self)
+        self.middle_frame = ctk.CTkFrame(self)
+        self.right_frame = ctk.CTkFrame(self)
+
+        self.upper_frame = ctk.CTkFrame(self.middle_frame)
+
+        self.set_selection = ctk.CTkComboBox(self.upper_frame, values=["set 1", "set 2", "set 3"])
+        self.flashcard_selection = ctk.CTkComboBox(self.upper_frame, values=["flashcard 1", "flashcard 2", "flashcard 3"])
+
+        self.lower_frame = ctk.CTkFrame(self.middle_frame)
+
+        self.share_set_button = ctk.CTkButton(self.lower_frame, text="Delete Flashcard", command=self.delete_flashcard)
+        self.back_button = ctk.CTkButton(self.lower_frame, text="Back", command=self.back_command)
+
+    # Making widgets visible
+    def layout_widgets(self):
+        self.left_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.left_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+        self.middle_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.middle_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+        self.right_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.right_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+
+        self.upper_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.upper_frame.pack(side='top', fill="x", padx=2, pady=(125,50))
+
+        self.set_selection.configure(width=400, height=31)
+        self.set_selection.pack()
+        self.flashcard_selection.configure(width=400, height=31)
+        self.flashcard_selection.pack(pady=(15,0))
+
+        self.lower_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.lower_frame.pack(side='top', fill="x", padx=2, pady=(200,3))
+
+        self.share_set_button.configure(height=35)
+        self.share_set_button.pack(side='left')
+        self.back_button.configure(height=35)
+        self.back_button.pack(side='right')
+
+    def delete_flashcard(self):
+        tk.messagebox.showinfo("Delete Flashcard Button Response", "Delete Flashcard button was clicked")
+    
+    # Destroys the active frame and edit set flashcards frame
+    def back_command(self):
+        self.pack_forget()
+        self.master.top_menu.active_set = EditSetFrame(self.master)
+        self.master.top_menu.hamburger_menu_options.configure(state='normal')
+        self.master.top_menu.hamburger_menu_active = 'normal'
