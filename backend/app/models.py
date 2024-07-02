@@ -148,7 +148,37 @@ class UserQuickNotes(db.Model):
             "user_id": self.user_id,
             "quick_note_id": self.quick_note_id
         }
+    
 
+###################################### Task ######################################
+
+class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    name = db.Column(db.String(64), index=True, nullable=False)
+    date = db.Column(db.String(64), nullable=False)
+    type = db.Column(db.String(64), nullable=False)
+    status = db.Column(db.String(64), nullable=False) # Not-Started, In-Progress, Completed
+    priority = db.Column(db.Integer, nullable=False) # High - 1, Medium - 2, Low - 3
+    # added schema
+    is_finished_at = db.Column(db.String(64), default=None)
+    is_finished_by = db.Column(db.Integer, db.ForeignKey(User.id), default=None)
+
+    def __repr__(self):
+        return f'<Task {self.title}>'
+    
+    def to_json(self) -> dict:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "name": self.name,
+            "date": self.date,
+            "type": self.type,
+            "status": self.status,
+            "priority": self.priority,
+            "is_finished_by": self.is_finished_by,
+            "is_finished_at": self.is_finished_at
+        }
 
 def create_admin():
     # Check if the admin user already exists to avoid duplicates
