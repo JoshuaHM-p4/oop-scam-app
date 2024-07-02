@@ -1,11 +1,15 @@
 import customtkinter as ctk
+import requests, threading
+from tkinter import messagebox # remove this once complete front-end is implemented
 from PIL import Image
 
+SIGNUP_ENDPOINT = "http://localhost:5000/auth/register"
 class SignupFrame(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.configure(fg_color='#141A1F')
         self.controller = controller
+        self.request_lock = threading.Lock()
 
         self.setup_ui()
 
@@ -55,15 +59,41 @@ class SignupFrame(ctk.CTkFrame):
         self.password_entry.pack(anchor='w', pady=(0, 5))
 
         # Signup Button
-        self.signup_button = ctk.CTkButton(self.container_frame, text="Signup", command=self.signup, hover_color='navy blue',
+        self.signup_button = ctk.CTkButton(self.container_frame, text="Signup", command=self.signup_button_click, hover_color='navy blue',
                                            width=120, height=40, corner_radius=10)
         self.signup_button.pack(pady=15)
 
     def return_login(self):
         print('Return to login page')
 
-    def signup(self):
-        # Implement signup logic here
-        print("Signing up...")
-        # Example: validate credentials and switch frame
-        self.controller.show_frame("NotesFrame")
+    def signup_button_click(self, event=None):
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        email = self.email_entry.get()
+
+        # <Validation Here>
+
+        print(F'SIGNUP GUI: Registering {username} - {email}...')
+
+        signup_thread = threading.Thread(target=self.signup, args=(username, password, email))
+        signup_thread.start()
+
+
+    def signup(self, username, password, email):
+        signup_data = {
+            'username': username,
+            'password': password,
+            'email': email
+        }
+
+        response = requests.post(SIGNUP_ENDPOINT, json=signup_data, timeout=10)
+
+        if response.status_code == 201:
+            messagebox.showinfo("Signup Successful", response.json()['message'])
+            # <Signup Successful Here>
+            # <Back to Login Screen>
+        else:
+            print("Signup Error:", response.json()['message'])
+            # <Signup >
+
+

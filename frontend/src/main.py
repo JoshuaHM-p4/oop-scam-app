@@ -7,7 +7,7 @@ from dashboard_gui import DashboardFrame
 from user_model import UserModel
 
 # Module Frames for SCAM App Features
-from auth import LoginFrame
+from auth import LoginFrame, SignupFrame
 from notes import NotesFrame
 from home import HomeFrame
 from templates import TemplatesFrame
@@ -27,7 +27,7 @@ class MainApp(ctk.CTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.title(APP_NAME)
-        
+
         width = self.winfo_screenwidth() * 100
         height = self.winfo_screenheight() * 100
         self.geometry(f"{width}x{height}")
@@ -37,6 +37,7 @@ class MainApp(ctk.CTk):
 
         # Session Attributes
         self.user = UserModel()
+        self.access_token = ''
 
         ### Frames ###
         # Login
@@ -56,7 +57,7 @@ class MainApp(ctk.CTk):
 
     def pack_mainscreen(self):
         # Dashboard Frame
-        self.dashboard_frame.pack(side='left', fill='y')
+        self.dashboard_frame.pack(side='left', fill='y', padx=15, pady=15)
 
         # Main App Frame for SCAM App Features
         self.app_frame.pack(side='left', expand=True, fill='both')
@@ -67,7 +68,6 @@ class MainApp(ctk.CTk):
         # Add the Login Frame
         self.login_frame.pack(expand=True)
         self.dashboard_frame.pack_forget()
-        
 
     def on_login_success(self) -> None:
         print(f'Login Successful!, Welcome {self.user.username}')
@@ -75,11 +75,8 @@ class MainApp(ctk.CTk):
         self.pack_mainscreen()
 
     def set_session_data(self, data) -> None:
-        try:
-            self.user = UserModel.from_json(data)
-        except Exception as e: # Catch all exceptions, for now, will add when user fails login
-            print(e)
-            return
+        self.user = UserModel.from_json(data['user'])
+        self.access_token = data['access_token']
         self.on_login_success()
 
 if __name__ == "__main__":

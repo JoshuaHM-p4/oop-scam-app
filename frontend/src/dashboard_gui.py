@@ -1,6 +1,9 @@
 import customtkinter as ctk
 from config import BACKGROUND_COLOR
 from PIL import Image
+import sys,os
+
+
 
 class ProfileFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -80,6 +83,7 @@ class ButtonsFrame(ctk.CTkFrame):
 #         )
 #         self.settings_button.pack(side='bottom', pady=3, fill='x', expand=True)
 #         self.settings_button.bind("<Button-1>", self.create_click_handler(self.settings_button))
+=======
 
 #     def create_click_handler(self, button):
 #         self.buttons_container.clear_active_button()
@@ -94,6 +98,7 @@ class DashboardFrame(ctk.CTkFrame):
         self.pack_configure(padx=15, pady=15)
         self.profile_frame = ProfileFrame(self) # profile_frame: Profile Frame
         dashboard_image = ctk.CTkImage(Image.open("assets/images/dashboard_logo.png"), size=(250, 50))
+
         self.label = ctk.CTkLabel(self, image=dashboard_image, text=" ")
         self.button_container = ButtonsFrame(self, command=command, frames=frames) # button_Continer: Container for Dashboard Buttons
         # self.settings_button = SettingsButton(self, command=command, buttons_container=self.button_container)

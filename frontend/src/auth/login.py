@@ -1,20 +1,28 @@
+from tkinter import messagebox # remove this once complete front-end is implemented
 import customtkinter as ctk
 from PIL import Image
 import tkinter as tk
 import os
 import sys
+import threading
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_dir)
 
 from signup import SignupFrame
 
+from typing import Tuple
+import requests
+
+LOGIN_ENDPOINT = "http://localhost:5000/auth/login"
 
 class LoginFrame(ctk.CTkFrame):
     def __init__(self, master, callback):
         super().__init__(master)
+        self.master = master
         self.configure(fg_color='#222B36', bg_color='#222B36')
         self.callback = callback
+        self.request_lock = threading.Lock()  # Initialize the lock
 
         # Container
         self.container_frame = ctk.CTkFrame(self, fg_color='#141A1F', corner_radius=22)
@@ -48,10 +56,10 @@ class LoginFrame(ctk.CTkFrame):
         self.welcome_label.pack(padx=10, pady=5)
 
         # Entries
-        self.username_entry = ctk.CTkEntry(self.login_frame, placeholder_text='E-mail',
-                                           placeholder_text_color='#141A1F', corner_radius=22, border_color='white',
+        self.email_entry = ctk.CTkEntry(self.login_frame, placeholder_text='E-mail',
+                                             placeholder_text_color='#141A1F', corner_radius=22, border_color='white',
                                            fg_color='white', width=300, height=35, text_color='#141A1F')
-        self.username_entry.pack(padx=20, pady=10)
+        self.email_entry.pack(padx=20, pady=10)
 
         self.password_entry = ctk.CTkEntry(self.login_frame, show="*", placeholder_text='Password',
                                            placeholder_text_color='#141A1F', corner_radius=22, border_color='white',
@@ -73,11 +81,11 @@ class LoginFrame(ctk.CTkFrame):
         self.signup_button.pack(side='right', padx=5)
 
         # Login Button
-        self.login_button = ctk.CTkButton(self.login_frame, text="Login", command=self.login, corner_radius=24,
+        self.login_button = ctk.CTkButton(self.login_frame, text="Login", command=self.login_button_click, corner_radius=24,
                                           width=120, height=45, fg_color='white', text_color='#141A1F')
         self.login_button.pack(padx=10, pady=20)
 
-        self.login_button.bind("<Return>", self.login)
+        self.login_button.bind("<Return>", self.login_button_click)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -131,20 +139,41 @@ class LoginFrame(ctk.CTkFrame):
 
         self.signup_frame.back_button.configure(command=self.return_to_login)
 
-
     def return_to_login(self):
         self.signup_frame.pack_forget()
         self.login_frame.pack(side='left', fill='both', padx=40, pady=20)
         self.google_signup_frame.pack(side='right', fill='both', padx=(0, 40), pady=20, expand=True)
 
-
     def google_signup(self):
         print('Google sign up button clicked!')
 
+    def login_button_click(self, event=None):
+        email = self.email_entry.get()
+        password = self.password_entry.get()
 
-    def login(self, event=None):
-        print(f"Logging in {self.username_entry.get()}...")
+        # <Validation Here>
 
-        test_data = {"user_id": "1", "username": "JoshuaHM", "access_token": "123456789",
-                     "email": "joshuahm.2004@gmail.com"}
-        self.callback(test_data)
+        print(f"LOGIN GUI: Logging in {email}...")
+
+        # Start a new thread to make the request
+        login_thread = threading.Thread(target=self.login, args=(email, password))
+        login_thread.start()
+
+    def login(self, email: str, password: str):
+        if not self.request_lock.acquire(blocking=False):
+            print("LOGIN GUI: Login Request Prevented. A login request is already being processed.")
+
+        try:
+            login_data = {'email': email, 'password': password}
+            response = requests.post(LOGIN_ENDPOINT, json=login_data, timeout=10)
+
+            if response.status_code == 200:
+                self.master.after(0, self.callback, response.json())
+            else:
+                # <Login Error Here>
+                messagebox.showerror("Login Error", response.json()['message'])
+        except ConnectionError:
+            # <Connection Error Here>
+            messagebox.showerror("Connection Error", "Could not connect to server")
+        finally:
+            self.request_lock.release()  # Release the lock
