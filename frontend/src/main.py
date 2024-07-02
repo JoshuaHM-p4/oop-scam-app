@@ -7,6 +7,7 @@ from dashboard_gui import DashboardFrame
 from user_model import UserModel
 
 # Module Frames for SCAM App Features
+
 from auth import LoginFrame, SignupFrame
 from notes import NotesFrame
 from home import HomeFrame
@@ -27,7 +28,6 @@ class MainApp(ctk.CTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.title(APP_NAME)
-
         width = self.winfo_screenwidth() * 100
         height = self.winfo_screenheight() * 100
         self.geometry(f"{width}x{height}")
