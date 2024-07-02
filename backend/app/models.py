@@ -179,6 +179,71 @@ class Task(db.Model):
             "is_finished_by": self.is_finished_by,
             "is_finished_at": self.is_finished_at
         }
+    
+class UserTask(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<UserTask {self.user_id} - {self.task_id}>'
+    
+    def to_json(self) -> dict:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "task_id": self.task_id
+        }
+
+
+###################################### Team ######################################
+class Team(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    team_name = db.Column(db.String(64), index=True, nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+
+    def __repr__(self):
+        return f'<Team {self.name}>'
+    
+    def to_json(self) -> dict:
+        return {
+            "id": self.id,
+            "name": self.team_name,
+            "description": self.description,
+            "owner_id": self.owner_id
+        }
+    
+class TeamMember(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    team_id = db.Column(db.Integer, db.ForeignKey(Team.id), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+
+    def __repr__(self):
+        return f'<TeamMember {self.team_id} - {self.user_id}>'
+    
+    def to_json(self) -> dict:
+        return {
+            "id": self.id,
+            "team_id": self.team_id,
+            "user_id": self.user_id
+        }
+    
+class TeamTask(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    team_id = db.Column(db.Integer, db.ForeignKey(Team.id), nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey(Task.id), nullable=False)
+
+    def __repr__(self):
+        return f'<TeamTask {self.team_id} - {self.task_id}>'
+    
+    def to_json(self) -> dict:
+        return {
+            "id": self.id,
+            "team_id": self.team_id,
+            "task_id": self.task_id
+        }
 
 def create_admin():
     # Check if the admin user already exists to avoid duplicates
