@@ -29,7 +29,8 @@ class AppFrame(ctk.CTkFrame):
             TasksFrame,
             FlashcardsFrame,
             ProgressFrame,
-            CollaborationFrame
+            CollaborationFrame,
+            SettingsFrame
         )
         self.main_screen_frames = {}
         self.container = self.dashboard_frame = None
