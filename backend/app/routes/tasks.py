@@ -5,7 +5,7 @@ from sqlalchemy import desc
 from datetime import datetime
 tasks_bp = Blueprint('tasks', __name__, url_prefix='/task')
 
-from app.models import Task
+from app.models import Task, UserTask
 
 # get all tasks
 '''
@@ -33,24 +33,46 @@ def get_user_task():
             return jsonify({'message': 'User not found'}), 404
         task_sort = request.args.get('sort')
         task_status = request.args.get('status') # Not-Started, In-Progress, Completed
+        user_tasks = UserTask.query.filter_by(user_id=user_id).all()
+        tasks = []
+        for user_task in user_tasks:
+            task = Task.query.filter_by(id=user_task.task_id).first()
+            if task_status:
+                if task.status == task_status:
+                    tasks.append(task)
+            else:
+                tasks.append(task)
         if task_sort == 'priority':
-            if task_status:
-                tasks = Task.query.filter_by(user_id=user_id, status=task_status).order_by(Task.priority).all()
-            else:
-                tasks = Task.query.filter_by(user_id=user_id).order_by(desc(Task.priority)).all()
+            tasks = sorted(tasks, key=lambda x: x.priority)
         elif task_sort == 'date':
-            if task_status:
-                tasks = Task.query.filter_by(user_id=user_id, status=task_status).order_by(Task.date).all()
-            else:
-                tasks = Task.query.filter_by(user_id=user_id).order_by(Task.date).all()
-        else:
-            if task_status:
-                tasks = Task.query.filter_by(user_id=user_id, status=task_status).all()
-            else:
-                tasks = Task.query.filter_by(user_id=user_id).all()
+            tasks = sorted(tasks, key=lambda x: x.date)
         return jsonify([task.to_json() for task in tasks]), 200
     except Exception as e:
-        return jsonify({'message': str(e)}), 400
+        return jsonify({'message': str(e)}), 400    
+    # try:
+    #     user_id = get_jwt_identity()
+    #     if not user_id:
+    #         return jsonify({'message': 'User not found'}), 404
+    #     task_sort = request.args.get('sort')
+    #     task_status = request.args.get('status') # Not-Started, In-Progress, Completed
+    #     if task_sort == 'priority':
+    #         if task_status:
+    #             tasks = Task.query.filter_by(user_id=user_id, status=task_status).order_by(Task.priority).all()
+    #         else:
+    #             tasks = Task.query.filter_by(user_id=user_id).order_by(desc(Task.priority)).all()
+    #     elif task_sort == 'date':
+    #         if task_status:
+    #             tasks = Task.query.filter_by(user_id=user_id, status=task_status).order_by(Task.date).all()
+    #         else:
+    #             tasks = Task.query.filter_by(user_id=user_id).order_by(Task.date).all()
+    #     else:
+    #         if task_status:
+    #             tasks = Task.query.filter_by(user_id=user_id, status=task_status).all()
+    #         else:
+    #             tasks = Task.query.filter_by(user_id=user_id).all()
+    #     return jsonify([task.to_json() for task in tasks]), 200
+    # except Exception as e:
+    #     return jsonify({'message': str(e)}), 400
     
 # create task
 '''
@@ -93,6 +115,9 @@ def create_task():
             return jsonify({'message': 'Priority should be High, Medium, or Low'}), 400
         task = Task(user_id=user_id, name=name, date=date, type=type, status=status, priority=priority)
         db.session.add(task)
+        db.session.commit()
+        user_task = UserTask(user_id=user_id, task_id=task.id)
+        db.session.add(user_task)
         db.session.commit()
         return jsonify({'message': 'Task created successfully'}), 201
     except Exception as e:
@@ -158,9 +183,10 @@ def finish_task(task_id):
         user_id = get_jwt_identity()
         if not user_id:
             return jsonify({'message': 'User not found'}), 404
-        task = Task.query.filter_by(id=task_id, user_id=user_id).first()
-        if not task:
+        user_task = UserTask.query.filter_by(user_id=user_id, task_id=task_id).first()
+        if not user_task:
             return jsonify({'message': 'Task not found'}), 404
+        task = Task.query.filter_by(id=task_id).first()
         task.status = 'Completed'
         task.is_finished_by = user_id
         print(str(datetime.now()).split(' ')[0])
@@ -206,7 +232,10 @@ def unfinish_task(task_id):
         user_id = get_jwt_identity()
         if not user_id:
             return jsonify({'message': 'User not found'}), 404
-        task = Task.query.filter_by(id=task_id, user_id=user_id).first()
+        user_task = UserTask.query.filter_by(user_id=user_id, task_id=task_id).first()
+        if not user_task:
+            return jsonify({'message': 'Task not found'}), 404
+        task = Task.query.filter_by(id=task_id).first()
         if not task:
             return jsonify({'message': 'Task not found'}), 404
         task.status = 'Not-Started'
@@ -254,7 +283,10 @@ def update_task(task_id):
         user_id = get_jwt_identity()
         if not user_id:
             return jsonify({'message': 'User not found'}), 404
-        task = Task.query.filter_by(id=task_id, user_id=user_id).first()
+        user_task = UserTask.query.filter_by(user_id=user_id, task_id=task_id).first()
+        if not user_task:
+            return jsonify({'message': 'Task not found'}), 404
+        task = Task.query.filter_by(id=task_id).first()
         if not task:
             return jsonify({'message': 'Task not found'}), 404
         data = request.get_json()
@@ -299,7 +331,10 @@ def get_task_by_id(task_id):
         user_id = get_jwt_identity()
         if not user_id:
             return jsonify({'message': 'User not found'}), 404
-        task = Task.query.filter_by(id=task_id, user_id=user_id).first()
+        user_task = UserTask.query.filter_by(user_id=user_id, task_id=task_id).first()
+        if not user_task:
+            return jsonify({'message': 'Task not found'}), 404
+        task = Task.query.filter_by(id=task_id).first()
         if not task:
             return jsonify({'message': 'Task not found'}), 404
         return jsonify(task.to_json()), 200
