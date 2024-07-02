@@ -5,7 +5,7 @@ APP_WIDTH = 800 # Windowed mode
 APP_HEIGHT = 600
 
 # Colors
-PRIMARY_COLOR = "#3498db"
+PRIMARY_COLOR = "#222B36"
 SECONDARY_COLOR = "#2ecc71"
 BACKGROUND_COLOR = "#141A1F"
 TEXT_COLOR = "#2c3e50"
@@ -22,7 +22,7 @@ LOGO_PATH = "assets/images/logo.png"
 STYLESHEET_PATH = "assets/styles/stylesheet.css"
 
 # API Endpoints
-API_BASE_URL = "http://localhost:5000/api"
+API_BASE_URL = "http://localhost:5000/"
 LOGIN_ENDPOINT = f"{API_BASE_URL}/auth/login"
 SIGNUP_ENDPOINT = f"{API_BASE_URL}/auth/signup"
 NOTES_ENDPOINT = f"{API_BASE_URL}/notes"

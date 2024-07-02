@@ -10,6 +10,7 @@ from tasks import TasksFrame
 from flashcards import FlashcardsFrame
 from progress import ProgressFrame
 from collaboration import CollaborationFrame
+from settings import SettingsFrame
 
 from config import APP_NAME, BACKGROUND_COLOR
 
@@ -28,7 +29,8 @@ class AppFrame(ctk.CTkFrame):
             TasksFrame,
             FlashcardsFrame,
             ProgressFrame,
-            CollaborationFrame
+            CollaborationFrame,
+            SettingsFrame
         )
         self.main_screen_frames = {}
         self.container = self.dashboard_frame = None
@@ -38,11 +40,13 @@ class AppFrame(ctk.CTkFrame):
             frame_object = frame(self, self.master)
             self.main_screen_frames[frame_name] = frame_object
             frame_object.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
-            
+
             # Set the background color for each frame
             frame_object.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
-            
+
             print(f"{frame_name} loaded successfully!")
+
+        self.main_screen_frames["SettingsFrame"] = SettingsFrame(self, self.master)
 
     def pack(self, *args, **kwargs):
         super().pack(*args, **kwargs)
@@ -53,3 +57,4 @@ class AppFrame(ctk.CTkFrame):
         """Show a frame for the given module class to the container."""
         frame = self.main_screen_frames[frame_name]
         frame.tkraise()
+        print(f"APP GUI: Showing {frame_name} Frame")
