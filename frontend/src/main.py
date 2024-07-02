@@ -8,7 +8,7 @@ from user_model import UserModel
 
 # Module Frames for SCAM App Features
 from auth import LoginFrame
-from notes import NotesFrame
+from notes import NotebookFrame
 from home import HomeFrame
 from templates import TemplatesFrame
 from event_calendar import CalendarFrame
@@ -26,7 +26,7 @@ class MainApp(ctk.CTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.title(APP_NAME)
-        
+            
         width = self.winfo_screenwidth() * 100
         height = self.winfo_screenheight() * 100
         self.geometry(f"{width}x{height}")

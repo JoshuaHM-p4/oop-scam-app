@@ -2,7 +2,7 @@ import customtkinter as ctk
 
 # Module Frames for SCAM App Features
 from auth import LoginFrame
-from notes import NotesFrame
+from notes import NotebookFrame
 from home import HomeFrame
 from templates import TemplatesFrame
 from event_calendar import CalendarFrame
@@ -22,7 +22,7 @@ class AppFrame(ctk.CTkFrame):
         # Main Screen Widgets
         self.module_frames = (
             HomeFrame,
-            NotesFrame,
+            NotebookFrame,
             TemplatesFrame,
             CalendarFrame,
             TasksFrame,
