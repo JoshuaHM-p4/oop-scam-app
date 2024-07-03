@@ -28,7 +28,7 @@ class SearchBar(ctk.CTkFrame):
                                          height=30,
                                          fg_color="#222B36"
                                          )
-        self.search_entry.pack(side="left", fill="x", expand=True,padx=2, pady=2)
+        self.search_entry.pack(fill="x", expand=True,padx=2, pady=2)
 
         # Create a label for the search icon inside the frame
         self.search_icon_label = ctk.CTkLabel(self, text="🔍",
@@ -36,8 +36,6 @@ class SearchBar(ctk.CTkFrame):
                                               width=20, height=30,
                                               fg_color="#222B36"
                                               )
-        # Initially, the icon is not displayed
-        self.search_icon_label.pack_forget()
 
         # Bind focus in and focus out events to show/hide the search icon
         self.search_entry.bind("<FocusIn>", self.on_entry_click)
@@ -60,4 +58,4 @@ class SearchBar(ctk.CTkFrame):
     def on_entry_focusout(self, event):
         # Hide the search icon label using pack_forget
         self.search_icon_label.pack_forget()
-        self.search_entry.pack_configure(padx=0)
+        self.search_entry.pack(fill="x", expand=True,padx=2, pady=2)
