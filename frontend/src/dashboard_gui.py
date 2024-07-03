@@ -83,6 +83,7 @@ class ButtonsFrame(ctk.CTkFrame):
 #         )
 #         self.settings_button.pack(side='bottom', pady=3, fill='x', expand=True)
 #         self.settings_button.bind("<Button-1>", self.create_click_handler(self.settings_button))
+
 #     def create_click_handler(self, button):
 #         self.buttons_container.clear_active_button()
 #         def select(event=None):

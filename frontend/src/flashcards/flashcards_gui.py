@@ -66,10 +66,10 @@ class FlashcardsFrame(ctk.CTkFrame):
         # Show the top menu and container
         self.top_menu.pack(fill="x", padx=2, pady=(9, 0))
         if self.changes_in_starred:
-            self.container.pack_forget()
-            self.container = Container(self, flashcard_sets=self.container.flashcard_sets)
-            self.container.pack(fill="both", expand=True, padx=2, pady=(0, 3))
+            self.container.load_flashcard_sets()
             self.changes_in_starred = False
+        if self.top_menu.top_menu_star_button_state:
+            self.starred_frame.pack(fill="both", expand=True, padx=2, pady=2)
         else:
             self.container.pack(fill="both", expand=True, padx=2, pady=(0, 3))
 
@@ -280,7 +280,8 @@ class Container(ctk.CTkScrollableFrame):
 
     def load_flashcard_sets(self):
         colors = ["red", "green", "blue", "gray14", "purple", "orange", "pink", "light blue", "grey"]
-
+        for widget in self.winfo_children():
+            widget.destroy()
         # Load star images
         star_image = ctk.CTkImage(Image.open("assets/images/star_white.png"), size=(23, 23))
         star_image_active = ctk.CTkImage(Image.open("assets/images/star_after.png"), size=(23, 23))

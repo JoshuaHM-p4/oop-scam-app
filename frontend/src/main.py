@@ -34,7 +34,13 @@ class MainApp(ctk.CTk):
         self.attributes('-fullscreen', True)
         self.configure(fg_color='#222B36')
         ctk.set_appearance_mode("dark")
-
+        
+        # Bindings to make the search bar focus out when clicked outside
+        self.bind_all("<Button-1>", lambda event: event.widget.focus_set())
+        
+        # Binding to quit the app when the escape key is pressed
+        self.bind("<Escape>", lambda event: self.quit())
+        
         # Session Attributes
         self.user = UserModel()
         self.access_token = ''
@@ -54,6 +60,9 @@ class MainApp(ctk.CTk):
         )
 
         self.pack_login()
+        
+        # Binding to make the enter key press the login button
+        self.bind("<Return>", lambda event: self.login_frame.login_button_click())
 
     def pack_mainscreen(self):
         # Dashboard Frame
@@ -73,6 +82,7 @@ class MainApp(ctk.CTk):
     def on_login_success(self) -> None:
         print(f'Login Successful!, Welcome {self.user.username}')
         self.login_frame.destroy()
+        self.unbind("<Return>")
         self.pack_mainscreen()
 
     def set_session_data(self, data) -> None:
