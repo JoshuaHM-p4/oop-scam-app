@@ -35,23 +35,42 @@ class ButtonsFrame(ctk.CTkFrame):
         self.features = []  # Initialize features list here
         show_frame = command
 
+        self.buttons_container = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR)  # Frame for the other buttons
+        self.buttons_container.pack(side='top', fill='both')
+
+        self.settings_container = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR)  # Frame for the settings button
+        self.settings_container.pack(side='top', fill='both', expand=True)
+
         for i, feature in enumerate(self.module_frames):
             frame_name = feature.__name__
-            button = ctk.CTkButton(
-                self,
-                text=frame_name[:-5],
-                width=200,
-                height=40,
-                corner_radius=25,
-                fg_color='transparent',
-                hover_color='#222B36',
-                command=lambda frame_name=frame_name: show_frame(frame_name)
+            
+            if frame_name[:-5] != 'Settings':
+                button = ctk.CTkButton(
+                    self.buttons_container,
+                    text=frame_name[:-5],
+                    width=200,
+                    height=40,
+                    corner_radius=25,
+                    fg_color='transparent',
+                    hover_color='#222B36',
+                    command=lambda frame_name=frame_name: show_frame(frame_name)
             )
-            name = ''
-            if name in frame_name[:8] != 'Settings':
-                name = button.pack(side='top', pady=3, fill='x', expand=True)
+            
             else:
-                name = button.pack(side='top', pady=(150, 5), fill='x', expand=True)
+                button = ctk.CTkButton(
+                    self.settings_container,
+                    text='⚙  ' + frame_name[:-5],
+                    width=200,
+                    height=40,
+                    corner_radius=25,
+                    fg_color='transparent',
+                    hover_color='#222B36',
+                    command=lambda frame_name=frame_name: show_frame(frame_name)
+                )
+            if frame_name[:8] != 'Settings':
+                button.pack(pady=3, fill='x', expand=True)
+            else:
+                button.pack(side='bottom')
             button.bind("<Button-1>", self.create_click_handler(button))
             self.features.append(button)
 
@@ -93,7 +112,7 @@ class DashboardFrame(ctk.CTkFrame):
     def __init__(self, master, command, frames: list[ctk.CTkFrame],  *args, **kwargs):
         super().__init__(master, *args, **kwargs) # self: Parent Dashboard Frame
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
-        self.pack_configure(padx=15, pady=15)
+        
         self.profile_frame = ProfileFrame(self) # profile_frame: Profile Frame
         dashboard_image = ctk.CTkImage(Image.open("assets/images/dashboard_logo.png"), size=(250, 50))
 
@@ -105,7 +124,7 @@ class DashboardFrame(ctk.CTkFrame):
         self.profile_frame.pack()
         self.profile_frame.configure(width=200, height=80, fg_color=BACKGROUND_COLOR)
         self.label.pack()
-        self.button_container.pack(padx=8, pady=8)
+        self.button_container.pack(padx=8, pady=8, fill='both', expand=True)
         self.button_container.configure(fg_color=BACKGROUND_COLOR)
         # self.settings_button.pack(side='bottom', padx=8, pady=8)
         # self.settings_button.configure(fg_color=BACKGROUND_COLOR)
