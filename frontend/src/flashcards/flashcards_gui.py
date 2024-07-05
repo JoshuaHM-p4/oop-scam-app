@@ -348,7 +348,7 @@ class Container(ctk.CTkScrollableFrame):
             self.flashcard_sets[name] = 1
             print(self.flashcard_sets)
 
-class StarredFlashcardsFrame(ctk.CTkScrollableFrame):
+class StarredFlashcardsFrame(ctk.CTkFrame):
     def __init__(self, master, flashcard_sets={}):
         super().__init__(master)
         self.master = master
@@ -357,51 +357,58 @@ class StarredFlashcardsFrame(ctk.CTkScrollableFrame):
         self.load_starred_flashcards()
 
     def load_starred_flashcards(self):
+        if any(i == 1 for i in self.flashcard_sets.values()):
+            # Destroy existing widgets before creating new ones
+            for widget in self.winfo_children():
+                widget.destroy()
 
-        for widget in self.winfo_children():
-            widget.destroy()
+            self.scrollable_frame = ctk.CTkScrollableFrame(self, fg_color=BACKGROUND_COLOR, corner_radius=10)
+            self.scrollable_frame.pack(fill="both", expand=True)
 
-        star_image = ctk.CTkImage(Image.open("assets/images/star_white.png"), size=(23, 23))
-        star_image_active = ctk.CTkImage(Image.open("assets/images/star_after.png"), size=(23, 23))
+            # Load images once, outside the loop
+            star_image = ctk.CTkImage(Image.open("assets/images/star_white.png"), size=(23, 23))
+            star_image_active = ctk.CTkImage(Image.open("assets/images/star_after.png"), size=(23, 23))
 
-        colors = ["red", "green", "blue", "gray14", "purple", "orange", "pink", "light blue", "grey"]
-        if self.flashcard_sets:
-            for index, name in enumerate(self.flashcard_sets, start=1):
-                if self.flashcard_sets[name] == 1:
-                    frame_color = colors[index % len(colors)]
-                    frame = ctk.CTkFrame(self, fg_color=frame_color, height=300, corner_radius=10, border_color=frame_color, border_width=20)
-                    frame.pack(padx=(0, 5), pady=5, fill="both")
+            colors = ["red", "green", "blue", "gray14", "purple", "orange", "pink", "light blue", "grey"]
+            if self.flashcard_sets:
+                for index, name in enumerate(self.flashcard_sets, start=1):
+                    if self.flashcard_sets[name] == 1:
+                        frame_color = colors[index % len(colors)]
+                        frame = ctk.CTkFrame(self.scrollable_frame, fg_color=frame_color, height=300, corner_radius=10, border_color=frame_color, border_width=20)
+                        frame.pack(padx=(0, 5), pady=5, fill="both")
 
+                        star_image_btn = ctk.CTkButton(frame, text="",
+                                                       image=star_image_active,
+                                                       corner_radius=10,
+                                                       fg_color=frame_color,
+                                                       width=40, height=40)
+                        star_image_btn.is_active = True
 
-                    star_image_btn = ctk.CTkButton(frame, text="",
-                                            image=star_image_active,
-                                           corner_radius=10,
-                                           fg_color=frame_color,
-                                           width=40, height=40)
-                    star_image_btn.is_active = True
+                        # Use default arguments in lambda to capture current loop variables
+                        star_image_btn.configure(command=lambda btn=star_image_btn, star_active=star_image_active, star_inactive=star_image, i=index, name=name: self.toggle_star_image(btn, star_active, star_inactive, i, name))
 
-                    star_image_btn.configure(command=lambda
-                                            btn=star_image_btn,
-                                            star_active=star_image_active,
-                                            star_inactive=star_image, i=index,
-                                            name = name:
-                                            self.toggle_star_image(btn, star_active, star_inactive, i, name))
+                        star_image_btn.pack(side='top', padx=2, pady=3, ipadx=0, ipady=0, anchor='ne')
 
-                    star_image_btn.pack(side='top', padx=2, pady=3, ipadx=0, ipady=0, anchor='ne')
+                        label = ctk.CTkLabel(frame, text=name, text_color="black", font=("Arial", 20))
+                        label.pack(fill='both', expand=True, padx=5, pady=5)
 
-                    label = ctk.CTkLabel(frame, text=name, text_color="black", font=("Arial", 20))
-                    label.pack(fill='both', expand=True, padx=5, pady=5)
+                        frame.pack_propagate(False)
 
-                    frame.pack_propagate(False)
+                        label.bind("<Button-1>", lambda event, i=index, name=name: self.master.container.on_flashcard_set_click(i, name))
+        else:
+            # Ensure previous widgets are cleared before displaying the message
+            for widget in self.winfo_children():
+                widget.destroy()
 
-                    label.bind("<Button-1>", lambda event, i=index, name=name: self.master.container.on_flashcard_set_click(i, name))
+            label = ctk.CTkLabel(self, text="No Starred Flashcards", font=("Arial", 24))
+            label.pack(fill="both", expand=True, padx=5, pady=5)
 
     def toggle_star_image(self, btn, star_active, star_inactive, i, name):
         if btn.is_active:
             btn.configure(image=star_inactive)
             btn.is_active = False
             self.master.flashcard_sets[name] = 0
-            print(f"Removed Set {i}:{name} from starred sets")
+            tk.messagebox.showinfo("Starred Flashcards", f"Removed Set {i}:{name} from starred sets")
             self.master.changes_in_starred = True
 
         # Reload the starred flashcards to update the display
