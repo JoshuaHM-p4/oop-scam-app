@@ -4,7 +4,7 @@ import customtkinter as ctk
 from auth import LoginFrame
 from notes import NotebookFrame
 from home import HomeFrame
-from templates import TemplatesFrame
+from template import TemplatesFrame
 from event_calendar import CalendarFrame
 from tasks import TasksFrame
 from flashcards import FlashcardsFrame
