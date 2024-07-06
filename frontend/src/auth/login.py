@@ -21,14 +21,16 @@ class LoginFrame(ctk.CTkFrame):
         super().__init__(master)
         self.master = master
         self.configure(fg_color='#222B36', bg_color='#222B36')
+
         self.callback = callback
         self.request_lock = threading.Lock()  # Initialize the lock
 
         # Container
-        self.container_frame = ctk.CTkFrame(self, fg_color='#141A1F', corner_radius=22)
+        self.container_frame = ctk.CTkFrame(self, fg_color='#141A1F', corner_radius=10)
         self.container_frame.pack(fill='both', side='left', expand=True, padx=20, pady=20)
 
         # Login Frame
+
         self.login_frame = ctk.CTkFrame(self.container_frame, fg_color='#222B36', corner_radius=22)
         self.login_frame.pack(side='left', fill='both', padx=40, pady=20, expand=True)
 

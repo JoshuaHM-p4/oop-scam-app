@@ -7,10 +7,11 @@ from dashboard_gui import DashboardFrame
 from user_model import UserModel
 
 # Module Frames for SCAM App Features
+
 from auth import LoginFrame, SignupFrame
-from notes import NotesFrame
+from notes import NotebookFrame
 from home import HomeFrame
-from templates import TemplatesFrame
+from template import TemplatesFrame
 from event_calendar import CalendarFrame
 from tasks import TasksFrame
 from flashcards import FlashcardsFrame
@@ -27,14 +28,19 @@ class MainApp(ctk.CTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.title(APP_NAME)
-
         width = self.winfo_screenwidth() * 100
         height = self.winfo_screenheight() * 100
         self.geometry(f"{width}x{height}")
         self.attributes('-fullscreen', True)
         self.configure(fg_color='#222B36')
         ctk.set_appearance_mode("dark")
-
+        
+        # Bindings to make the search bar focus out when clicked outside
+        self.bind_all("<Button-1>", lambda event: event.widget.focus_set())
+        
+        # Binding to quit the app when the escape key is pressed
+        self.bind("<Escape>", lambda event: self.quit())
+        
         # Session Attributes
         self.user = UserModel()
         self.access_token = ''
@@ -54,15 +60,19 @@ class MainApp(ctk.CTk):
         )
 
         self.pack_login()
+        
+        # Binding to make the enter key press the login button
+        self.bind("<Return>", lambda event: self.login_frame.login_button_click())
 
     def pack_mainscreen(self):
         # Dashboard Frame
-        self.dashboard_frame.pack(side='left', fill='y', padx=15, pady=15)
+        self.dashboard_frame.pack(side='left', padx=15, pady=15, fill='y')
 
         # Main App Frame for SCAM App Features
-        self.app_frame.pack(side='left', expand=True, fill='both')
-        self.app_frame.pack_configure(padx=1, pady=1)
+        self.app_frame.pack(side='left', fill='both', pady=5, expand=True, padx=(0,2))
+        # self.app_frame.pack_configure(padx=1, pady=1)
         self.app_frame.configure(fg_color='#222B36')
+        self.app_frame.show_frame("HomeFrame")
 
     def pack_login(self) -> None:
         # Add the Login Frame
@@ -72,6 +82,7 @@ class MainApp(ctk.CTk):
     def on_login_success(self) -> None:
         print(f'Login Successful!, Welcome {self.user.username}')
         self.login_frame.destroy()
+        self.unbind("<Return>")
         self.pack_mainscreen()
 
     def set_session_data(self, data) -> None:
