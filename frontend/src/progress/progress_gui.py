@@ -64,7 +64,7 @@ class ProgressFrame(ctk.CTkFrame):
         first_step = self.first_step.get_input()
         self.second_frame_step = ctk.CTkFrame(self.second_frame, fg_color = second_color, corner_radius = 40)
         self.second_frame_step.pack(side="top", fill="x", expand=True, pady = 20, padx = 20)
-        
+
         self.check_var_step_one = ctk.IntVar(value=1)
         self.check_button_step = ctk.CTkCheckBox(self.second_frame_step, text=f"Step 1: {first_step}", font=("Arial", 20), onvalue = 1, offvalue = 0, command=self.check_box_event, variable = self.check_var_step_one, fg_color = "red", bg_color=back_ground_color)
         self.check_button_step.pack(side="top", fill="x", pady = 10, padx = 20)
