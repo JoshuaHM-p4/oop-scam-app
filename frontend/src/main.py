@@ -11,7 +11,7 @@ from user_model import UserModel
 from auth import LoginFrame, SignupFrame
 from notes import NotebookFrame
 from home import HomeFrame
-from templates import TemplatesFrame
+from template import TemplatesFrame
 from event_calendar import CalendarFrame
 from tasks import TasksFrame
 from flashcards import FlashcardsFrame
