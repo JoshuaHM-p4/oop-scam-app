@@ -2,6 +2,8 @@ import customtkinter as ctk
 from .templates_model import TemplateModel, HomeworkModel, MathModel, LetterModel, EssayModel
 import sys, os
 from PIL import Image
+from CTkListbox import *
+# import tkinter as tk
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))  # frontend/
 from config import APP_NAME, BACKGROUND_COLOR
@@ -91,29 +93,51 @@ class HomeworkFrame(ctk.CTkFrame):
         super().__init__(master, *args, **kwargs)
         self.master = master
         self.questions = []  # List to store questions
+        self.counter = 0
         self.setup_ui()
     
     def setup_ui(self):
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         
-    #     # Entry for question input
-    #     self.question_entry = ctk.CTkEntry(self, placeholder_text="Type your question here")
-    #     self.question_entry.pack(pady=10)
+        # Entry for question input
+        self.question_entry = ctk.CTkEntry(self, placeholder_text="Type your question here")
+        self.question_entry.pack(pady=10)
         
-    #     # Button to add question
-    #     self.add_question_btn = ctk.CTkButton(self, text="Add Question", command=self.add_question)
-    #     self.add_question_btn.pack(pady=10)
+        # Button to add question
+        self.add_question_btn = ctk.CTkButton(self, text="Add Question", command=self.add_question)
+        self.add_question_btn.pack(pady=10)
         
-    #     # Listbox to display questions
-    #     self.questions_textbox = ctk.CTkTextbox(self)
-    #     self.questions_textbox.pack(fill="both", expand=True, pady=10)
+        # Listbox to display questions
+        self.questions_textbox = CTkListbox(self)
+        self.questions_textbox.pack(fill="both", expand=True, pady=10, padx=10)
+        
+          # <Button-2> or <Button-3> might be right-click depending on the platform
+        
+        # # Create a popup menu
+        # self.popup_menu = tk.Menu(self, tearoff=0)
+        # self.popup_menu.add_command(label="Remove")
+        # self.popup_menu.add_command(label="Edit")
     
-    # def add_question(self):
-    #     question = self.question_entry.get()
-    #     if question:  # Check if the question is not empty
-    #         self.questions.append(question)  # Add question to the list
-    #         self.questions_textbox.insert(ctk.END, question)  # Display question in the listbox
-    #         self.question_entry.delete(0, ctk.END)  # Clear the entry widget
+    def add_question(self):
+        question = self.question_entry.get()
+        if question:  # Check if the question is not empty
+            self.questions.append(question)  # Add question to the list
+            self.questions_textbox.insert("END", question)  # Display question in the listbox
+            self.question_entry.delete(0, "END")  # Clear the entry widget
+            
+    # def show_dropdown(self, event):
+    #     """Show dropdown menu on right-click."""
+    #     try:
+    #         # Select the item under cursor
+    #         self.questions_textbox.selection_clear(0, tk.END)
+    #         self.questions_textbox.selection_set(self.questions_textbox.nearest(event.y))
+    #         self.questions_textbox.activate(self.questions_textbox.nearest(event.y))
+            
+    #         # Show the popup menu
+    #         self.popup_menu.tk_popup(event.x_root, event.y_root)
+    #     finally:
+    #         # Make sure to release the grab (menu)
+    #         self.popup_menu.grab_release()
 
         
 class LetterFrame(ctk.CTkFrame):
@@ -124,16 +148,16 @@ class LetterFrame(ctk.CTkFrame):
     
     def setup_ui(self):
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
-        # self.letter = LetterModel()
+        self.letter = LetterModel()
         
-        # self.letter_title = ctk.CTkLabel(self, text="Letter", fg_color="black", font=("Arial", 20, "bold"))
-        # self.letter_title.pack(side="top", fill="x", padx=2, pady=2)
+        self.letter_title = ctk.CTkLabel(self, text="Letter", fg_color="black", font=("Arial", 20, "bold"))
+        self.letter_title.pack(side="top", fill="x", padx=2, pady=2)
         
-        # self.letter_entry = ctk.CTkEntry(self, placeholder_text="Enter Letter", fg_color="black")
-        # self.letter_entry.pack(side="top", fill="x", padx=2, pady=2)
+        self.letter_entry = ctk.CTkEntry(self, placeholder_text="Enter Letter", fg_color="black")
+        self.letter_entry.pack(side="top", fill="x", padx=2, pady=2)
         
-        # self.letter_button = ctk.CTkButton(self, text="Save Letter", fg_color="black", corner_radius=20)
-        # self.letter_button.pack(side="top", fill="x", padx=2, pady=2)
+        self.letter_button = ctk.CTkButton(self, text="Save Letter", fg_color="black", corner_radius=20)
+        self.letter_button.pack(side="top", fill="x", padx=2, pady=2)
         
 class EssayFrame(ctk.CTkFrame):
     def __init__(self, master, *args, **kwargs):
@@ -143,16 +167,16 @@ class EssayFrame(ctk.CTkFrame):
     
     def setup_ui(self):
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
-        # self.essay = EssayModel()
+        self.essay = EssayModel()
         
-        # self.essay_title = ctk.CTkLabel(self, text="Essay", fg_color="black", font=("Arial", 20, "bold"))
-        # self.essay_title.pack(side="top", fill="x", expand=True, padx=2, pady=2)
+        self.essay_title = ctk.CTkLabel(self, text="Essay", fg_color="black", font=("Arial", 20, "bold"))
+        self.essay_title.pack(side="top", fill="x", expand=True, padx=2, pady=2)
         
-        # self.essay_entry = ctk.CTkEntry(self, placeholder_text="Enter Essay", fg_color="black")
-        # self.essay_entry.pack(side="top", fill="x", expand=True, padx=2, pady=2)
+        self.essay_entry = ctk.CTkEntry(self, placeholder_text="Enter Essay", fg_color="black")
+        self.essay_entry.pack(side="top", fill="x", expand=True, padx=2, pady=2)
         
-        # self.essay_button = ctk.CTkButton(self, text="Save Essay", fg_color="black", corner_radius=20)
-        # self.essay_button.pack(side="top", fill="x", expand=True, padx=2, pady=2)
+        self.essay_button = ctk.CTkButton(self, text="Save Essay", fg_color="black", corner_radius=20)
+        self.essay_button.pack(side="top", fill="x", expand=True, padx=2, pady=2)
         
 class MathFrame(ctk.CTkFrame):
     def __init__(self, master, *args, **kwargs):
@@ -162,16 +186,16 @@ class MathFrame(ctk.CTkFrame):
     
     def setup_ui(self):
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
-        # # self.math = MathModel()
+        # self.math = MathModel()
         
-        # self.math_title = ctk.CTkLabel(self, text="Math", fg_color="black", font=("Arial", 20, "bold"))
-        # self.math_title.pack(side="top", fill="x", expand=True, padx=2, pady=2)
+        self.math_title = ctk.CTkLabel(self, text="Math", fg_color="black", font=("Arial", 20, "bold"))
+        self.math_title.pack(side="top", fill="x", expand=True, padx=2, pady=2)
         
-        # self.math_entry = ctk.CTkEntry(self, placeholder_text="Enter Math", fg_color="black")
-        # self.math_entry.pack(side="top", fill="x", expand=True, padx=2, pady=2)
+        self.math_entry = ctk.CTkEntry(self, placeholder_text="Enter Math", fg_color="black")
+        self.math_entry.pack(side="top", fill="x", expand=True, padx=2, pady=2)
         
-        # self.math_button = ctk.CTkButton(self, text="Save Math", fg_color="black", corner_radius=20)
-        # self.math_button.pack(side="top", fill="x", expand=True, padx=2, pady=2)
+        self.math_button = ctk.CTkButton(self, text="Save Math", fg_color="black", corner_radius=20)
+        self.math_button.pack(side="top", fill="x", expand=True, padx=2, pady=2)
         
 
 
