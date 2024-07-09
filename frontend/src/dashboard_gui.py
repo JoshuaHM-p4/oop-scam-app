@@ -3,23 +3,25 @@ from config import BACKGROUND_COLOR
 from PIL import Image
 import sys,os
 
-
-
 class ProfileFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
+        self.main_app = master.main_app
+        self.user = self.main_app.user
+        # self.id = self.user.__id
+        self.username = self.user.username
+        self.email = self.user.email
 
-        self.username_var = ctk.StringVar(value="Joshua")
-        self.email_var = ctk.StringVar(value="joshuahm.2004@gmail.com")
-        self.__user_id = 0
+        self.username_var = ctk.StringVar(value=self.username)
+        self.email_var = ctk.StringVar(value=self.email)
 
         self.username_label = ctk.CTkLabel(self, textvariable=self.username_var)
         self.email_label = ctk.CTkLabel(self, textvariable=self.email_var)
 
     def pack(self, *args, **kwargs):
         # Profile Image
-        # Profile Username
-        # Profile Email
+        self.username_label.pack(side='left', padx=5)
+        self.email_label.pack(side='left', padx=5)
 
         super().pack(*args, **kwargs)
 
@@ -84,41 +86,17 @@ class ButtonsFrame(ctk.CTkFrame):
         for feature_btn in self.features:
             feature_btn.configure(fg_color='transparent')
 
-# class SettingsButton(ctk.CTkFrame):
-#     def __init__(self, master, command, buttons_container):
-#         super().__init__(master)
-#         self.buttons_container = buttons_container
-#         settings_button_image = ctk.CTkImage(Image.open("assets/images/settings_logo.png"), size=(15, 15))
-#         self.settings_button = ctk.CTkButton(
-#             self,
-#             image=settings_button_image,
-#             text="Settings",
-#             width=200,
-#             height=40,
-#             corner_radius=25,
-#             fg_color='transparent',
-#             hover_color='#222B36',
-#             command=command
-#         )
-#         self.settings_button.pack(side='bottom', pady=3, fill='x', expand=True)
-#         self.settings_button.bind("<Button-1>", self.create_click_handler(self.settings_button))
-#     def create_click_handler(self, button):
-#         self.buttons_container.clear_active_button()
-#         def select(event=None):
-#             button.configure(fg_color='#222B36')
-#         return select
-
 class DashboardFrame(ctk.CTkFrame):
     def __init__(self, master, command, frames: list[ctk.CTkFrame],  *args, **kwargs):
         super().__init__(master, *args, **kwargs) # self: Parent Dashboard Frame
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.main_app = master
         
         self.profile_frame = ProfileFrame(self) # profile_frame: Profile Frame
         dashboard_image = ctk.CTkImage(Image.open("./assets/images/dashboard_logo.png"), size=(250, 50))
 
         self.label = ctk.CTkLabel(self, image=dashboard_image, text=" ")
         self.button_container = ButtonsFrame(self, command=command, frames=frames) # button_Continer: Container for Dashboard Buttons
-        # self.settings_button = SettingsButton(self, command=command, buttons_container=self.button_container)
 
     def pack(self, *args, **kwargs):
         self.profile_frame.pack()
@@ -126,6 +104,4 @@ class DashboardFrame(ctk.CTkFrame):
         self.label.pack()
         self.button_container.pack(padx=8, pady=8, fill='both', expand=True)
         self.button_container.configure(fg_color=BACKGROUND_COLOR)
-        # self.settings_button.pack(side='bottom', padx=8, pady=8)
-        # self.settings_button.configure(fg_color=BACKGROUND_COLOR)
         super().pack(*args, **kwargs)
