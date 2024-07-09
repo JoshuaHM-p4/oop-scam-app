@@ -9,20 +9,28 @@ class ProfileFrame(ctk.CTkFrame):
         self.main_app = master.main_app
         self.user = self.main_app.user
         # self.id = self.user.__id
-        self.username = self.user.username
-        self.email = self.user.email
+        # self.username = self.user.username
+        # self.email = self.user.email
 
-        self.username_var = ctk.StringVar(value=self.username)
-        self.email_var = ctk.StringVar(value=self.email)
+        # Initialize the username variable | self.username 
+        self.username_var = ctk.StringVar(value="Joshua") # dummy username
 
-        self.username_label = ctk.CTkLabel(self, textvariable=self.username_var)
-        self.email_label = ctk.CTkLabel(self, textvariable=self.email_var)
+        # Initialize the email variable | self.email
+        self.email_var = ctk.StringVar(value="pogiako123@gmail.com") # dummy email
+ 
+        self.default_profile = ctk.CTkImage(Image.open("assets/images/default_profile_picture.png"), size=(40, 40))  
+        self.dp_label = ctk.CTkLabel(self, image=self.default_profile, text=" ")
+
+        self.user_email_frame = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR)
+        self.username_label = ctk.CTkLabel(self.user_email_frame, textvariable=self.username_var, height=2, font=("Arial", 18, 'bold'))
+        self.email_label = ctk.CTkLabel(self.user_email_frame, textvariable=self.email_var, height=2, font=("Arial", 11))
 
     def pack(self, *args, **kwargs):
-        # Profile Image
-        self.username_label.pack(side='left', padx=5)
-        self.email_label.pack(side='left', padx=5)
-
+        self.dp_label.pack(side='left', padx=5, pady=[20, 15])
+        self.user_email_frame.pack(side='left', padx=[8, 0], pady=[20, 15], anchor=ctk.W)
+        self.username_label.pack(anchor=ctk.W)
+        self.email_label.pack(anchor=ctk.W)
+        
         super().pack(*args, **kwargs)
 
     def set_user(self, username, email, user_id):
@@ -99,8 +107,8 @@ class DashboardFrame(ctk.CTkFrame):
         self.button_container = ButtonsFrame(self, command=command, frames=frames) # button_Continer: Container for Dashboard Buttons
 
     def pack(self, *args, **kwargs):
-        self.profile_frame.pack()
-        self.profile_frame.configure(width=200, height=80, fg_color=BACKGROUND_COLOR)
+        self.profile_frame.pack(padx=15, fill='x')
+        self.profile_frame.configure(fg_color=BACKGROUND_COLOR)
         self.label.pack()
         self.button_container.pack(padx=8, pady=8, fill='both', expand=True)
         self.button_container.configure(fg_color=BACKGROUND_COLOR)
