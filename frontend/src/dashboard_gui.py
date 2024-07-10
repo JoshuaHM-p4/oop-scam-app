@@ -6,26 +6,26 @@ import sys,os
 class ProfileFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
-        self.main_app = master.main_app
-        self.user = self.main_app.user
-        # self.id = self.user.__id
-        # self.username = self.user.username
-        # self.email = self.user.email
+        self.main_app: ctk.CTk = master.main_app
+        self.user: str = ""
+        self.__user_id: int = 0
+        self.username: str = ""
+        self.email: str = ""
 
-        # Initialize the username variable | self.username 
-        self.username_var = ctk.StringVar(value="Joshua") # dummy username
+        # Initialize the username variable | self.username
+        self.username_var = ctk.StringVar(value=self.username) # dummy username
 
         # Initialize the email variable | self.email
-        self.email_var = ctk.StringVar(value="pogiako133@gmail.com") # dummy email
- 
-        self.default_profile = ctk.CTkImage(Image.open("assets/images/default_profile_picture.png"), size=(40, 40))  
+        self.email_var = ctk.StringVar(value=self.email) # dummy email
+
+        self.default_profile = ctk.CTkImage(Image.open("assets/images/default_profile_picture.png"), size=(40, 40))
         self.dp_label = ctk.CTkLabel(self, image=self.default_profile, text=" ")
 
         self.user_email_frame = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR)
         self.username_label = ctk.CTkLabel(self.user_email_frame, textvariable=self.username_var, 
-                                           height=2, font=("MOntserrat", 18, 'bold'))
+                                           height=2, font=("Montserrat", 18, 'bold'))
         self.email_label = ctk.CTkLabel(self.user_email_frame, textvariable=self.email_var, 
-                                           height=2, font=("MOntserrat", 11))
+                                           height=2, font=("Montserrat", 11))
 
     def pack(self, *args, **kwargs):
         self.dp_label.pack(side='left', padx=5, pady=[20, 15])
@@ -55,7 +55,7 @@ class ButtonsFrame(ctk.CTkFrame):
 
         for i, feature in enumerate(self.module_frames):
             frame_name = feature.__name__
-            
+
             if frame_name[:-5] != 'Settings':
                 button = ctk.CTkButton(
                     self.buttons_container,
@@ -69,7 +69,7 @@ class ButtonsFrame(ctk.CTkFrame):
                     hover_color='#222B36',
                     command=lambda frame_name=frame_name: show_frame(frame_name)
             )
-            
+
             else:
                 button = ctk.CTkButton(
                     self.settings_container,
@@ -105,7 +105,7 @@ class DashboardFrame(ctk.CTkFrame):
         super().__init__(master, *args, **kwargs) # self: Parent Dashboard Frame
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.main_app = master
-        
+
         self.profile_frame = ProfileFrame(self) # profile_frame: Profile Frame
         dashboard_image = ctk.CTkImage(Image.open("./assets/images/dashboard_logo.png"), size=(250, 50))
         self.label = ctk.CTkLabel(self, image=dashboard_image, text=" ")
@@ -118,3 +118,6 @@ class DashboardFrame(ctk.CTkFrame):
         self.button_container.pack(padx=8, pady=8, fill='both', expand=True)
         self.button_container.configure(fg_color=BACKGROUND_COLOR)
         super().pack(*args, **kwargs)
+
+    def set_user(self, username, email, user_id):
+        self.profile_frame.set_user(username, email, user_id)
