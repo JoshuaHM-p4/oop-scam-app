@@ -80,7 +80,7 @@ class Notebook(db.Model):
     def to_json(self) -> dict:
         return {
             "id": self.id,
-            "user_id": self.user_id,
+            "user_id": self.owner_id,
             "title": self.title
         }
 
