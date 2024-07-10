@@ -9,14 +9,15 @@ class SignupFrame(ctk.CTkFrame):
         super().__init__(parent)
         self.configure(fg_color='#141A1F')
         self.controller = controller
+        self.request_lock = threading.Lock()
 
         self.setup_ui()
 
 
     def setup_ui(self):
         # Back button
-        self.back_button_logo = ctk.CTkImage(Image.open("assets/images/back_button.png"), size=(25, 25))
-        self.back_button = ctk.CTkButton(self, text='Login page', text_color='#141A1F', fg_color='#141A1F', hover_color='gray',
+        self.back_button_logo = ctk.CTkImage(Image.open("assets/images/left_arrow.png"), size=(25, 25))
+        self.back_button = ctk.CTkButton(self, text='Login page', text_color='white', fg_color='#141A1F', hover_color='gray',
                                          command=self.return_login, corner_radius=10, image=self.back_button_logo,
                                          width=50, height=25)
         self.back_button.pack(side='top', anchor='nw', padx=15, pady=(15, 0))

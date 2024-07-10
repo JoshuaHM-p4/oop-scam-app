@@ -2,9 +2,9 @@ import customtkinter as ctk
 
 # Module Frames for SCAM App Features
 from auth import LoginFrame
-from notes import NotesFrame
+from notes import NotebookFrame
 from home import HomeFrame
-from templates import TemplatesFrame
+from template import TemplatesFrame
 from event_calendar import CalendarFrame
 from tasks import TasksFrame
 from flashcards import FlashcardsFrame
@@ -23,13 +23,14 @@ class AppFrame(ctk.CTkFrame):
         # Main Screen Widgets
         self.module_frames = (
             HomeFrame,
-            NotesFrame,
+            NotebookFrame,
             TemplatesFrame,
             CalendarFrame,
             TasksFrame,
             FlashcardsFrame,
             ProgressFrame,
-            CollaborationFrame
+            CollaborationFrame,
+            SettingsFrame
         )
         self.main_screen_frames = {}
         self.container = self.dashboard_frame = None
@@ -44,8 +45,6 @@ class AppFrame(ctk.CTkFrame):
             frame_object.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
 
             print(f"{frame_name} loaded successfully!")
-
-        self.main_screen_frames["SettingsFrame"] = SettingsFrame(self, self.master)
 
     def pack(self, *args, **kwargs):
         super().pack(*args, **kwargs)

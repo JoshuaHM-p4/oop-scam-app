@@ -37,16 +37,16 @@ def create_app():
     # from .routes.templates import templates_bp
     # from .routes.calendar import calendar_bp
     # from .routes.progress import progress_bp
-    # from .routes.tasks import tasks_bp
+    from .routes.tasks import tasks_bp
     from .routes.flashcards import flashcards_bp
-    # from .routes.collaboration import collaboration_bp
+    from .routes.collaboration import collaboration_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(notes_bp)
     # app.register_blueprint(templates_bp)
     # app.register_blueprint(calendar_bp)
-    # app.register_blueprint(tasks_bp)
+    app.register_blueprint(tasks_bp)
     app.register_blueprint(flashcards_bp)
-    # app.register_blueprint(collaboration_bp)
+    app.register_blueprint(collaboration_bp)
 
     return app
