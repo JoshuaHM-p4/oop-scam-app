@@ -93,3 +93,6 @@ class ProgressFrame(ctk.CTkFrame):
             messagebox.showinfo("Check Box Event", "Check Box Event")
         else:
             pass
+
+
+# bat ayaw gumana
