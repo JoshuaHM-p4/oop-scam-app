@@ -21,22 +21,27 @@ class FlashcardsFrame(ctk.CTkFrame):
         self.controller = controller
         self.top_menu = TopMenu(self)
 
+        # Main Flashcards List Session
+        self.flashcard_sets: list[FlashcardSetModel] = []
         self.flashcard_set_frame = None
+
+        # Main Flashcard Session
+        self.current_flashcard_set: FlashcardSetModel = None
+        self.flashcards: list[FlashcardModel] = []
 
         self.starred_flashcard_sets = []
         self.reference = {}
         self.starred_frame = None
-        self.flashcard_sets = []
         self.top_menu.active_set = None
 
         self.changes_in_starred = False
 
-        self.flashcard_sets = {
-            "Calculus 2": 0, "Physics 1": 0, "Biology 1": 0, "Chemistry 1": 0,
-            "History 1": 0, "Geography 1": 0, "English 1": 0, "Spanish 1": 0, "French 1": 0
-        }
+        # self.flashcard_sets = {
+        #     "Calculus 2": 0, "Physics 1": 0, "Biology 1": 0, "Chemistry 1": 0,
+        #     "History 1": 0, "Geography 1": 0, "English 1": 0, "Spanish 1": 0, "French 1": 0
+        # }
 
-        self.container = Container(self, self.flashcard_sets)
+        self.container = Container(self)
         self.container.pack(fill="both", expand=True, padx=2, pady=(0, 3))
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.grid_configure(padx=10, pady=10)
@@ -53,6 +58,40 @@ class FlashcardsFrame(ctk.CTkFrame):
                                          width=30)
         self.progressbar = ctk.CTkProgressBar(self, orientation="horizontal", mode="determinate")
 
+    def update_flashcard_sets(self):
+        self.container.display_flashcard_sets(self.flashcard_sets)
+
+    def fetch_flashcard_sets(self):
+        token = self.controller.access_token
+        header = {"Authorization": f"Bearer {token}"}
+
+        response = requests.get(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", headers=header)
+
+        response_data = response.json()
+        print(response_data)
+
+        for data in response_data:
+            flashcard = FlashcardSetModel(id = data["id"], name = data["name"])
+            self.flashcard_sets.append(flashcard)
+
+    def fetch_flashcards(self, set_id):
+        self.flashcards = []
+        token = self.controller.access_token
+        header = {"Authorization": f"Bearer {token}"}
+
+        response = requests.get(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{set_id}/flashcards", headers=header)
+
+        response_data = response.json()
+
+        for data in response_data["data"]:
+            flashcard = FlashcardModel(id = data["id"], set_id = set_id, word = data["word"], definition = data["definition"])
+            self.flashcards.append(flashcard)
+
+    def tkraise(self, aboveThis=None):
+        self.fetch_flashcard_sets()
+        self.update_flashcard_sets()
+        super().tkraise(aboveThis)
+
     # Method to show the first page with the top menu and container
     def show_first_page(self):
         if self.flashcard_set_frame:
@@ -68,7 +107,7 @@ class FlashcardsFrame(ctk.CTkFrame):
         # Show the top menu and container
         self.top_menu.pack(fill="x", padx=2, pady=(9, 0))
         if self.changes_in_starred:
-            self.container.load_flashcard_sets()
+            self.container.display_flashcard_sets(self.flashcard_sets)
             self.changes_in_starred = False
         if self.top_menu.top_menu_star_button_state:
             self.starred_frame.pack(fill="both", expand=True, padx=2, pady=2)
@@ -80,7 +119,7 @@ class FlashcardsFrame(ctk.CTkFrame):
         self.progressbar.pack_forget()
 
     # Method to display a specific flashcard set
-    def show_flashcard_set(self):
+    def show_flashcard_set(self, set_id):
         if self.flashcard_set_frame:
             self.flashcard_set_frame.pack_forget()
         if self.starred_frame:
@@ -104,7 +143,7 @@ class FlashcardsFrame(ctk.CTkFrame):
         self.container.pack_forget()
 
 
-        self.starred_frame = StarredFlashcardsFrame(self, flashcard_sets=self.flashcard_sets)
+        self.starred_frame = StarredFlashcardsFrame(self)
 
         self.starred_frame.pack(fill="both", expand=True, padx=2, pady=2)
 
@@ -250,7 +289,7 @@ class TopMenu(ctk.CTkFrame):
         if self.hamburger_option_is_active == False:
             activate_frame()
             self.hamburger_option_is_active = True
-        
+
         # If there is no active frames
         elif self.hamburger_option_is_active == True:
             self.active_set.pack_forget()
@@ -270,47 +309,33 @@ class TopMenu(ctk.CTkFrame):
 
 # Container: Scrollable frame to load and display flashcard sets
 class Container(ctk.CTkScrollableFrame):
-    def __init__(self, master, flashcard_sets={}, **kwargs):
+    def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-
-        self.flashcard_sets = flashcard_sets
         self.master = master
-        self.setup_ui()
-
-    def setup_ui(self):
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.pack(fill="both", expand=True, padx=2, pady=(0,3))
-        self.load_flashcard_sets()
-
-
-    def fetch_flashcard_sets(self):
-        token = self.master.controller.access_token
-        header = {"Authorization": f"Bearer {token}"}
-        
-        response = requests.get(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", headers=header)
-
-        response_data = response.json()
-        self.master.flashcard_sets = response_data["data"]
 
     # Method to load flashcard sets from the database
-
-    def load_flashcard_sets(self):
+    def display_flashcard_sets(self, flashcard_sets):
         colors = ["red", "green", "blue", "gray14", "purple", "orange", "pink", "light blue", "grey"]
         for widget in self.winfo_children():
             widget.destroy()
+
         # Load star images
         star_image = ctk.CTkImage(Image.open("assets/images/star_white.png"), size=(23, 23))
         star_image_active = ctk.CTkImage(Image.open("assets/images/star_after.png"), size=(23, 23))
 
         # Database connection to fetch flashcard sets
         # Dummy flashcard sets REPLACE THE CODE WITH DATABASE QUERY
-        for index, name in enumerate(self.flashcard_sets, start=1):
-            print(f"Loading Flashcard Set {index}: {name}")
-            frame_color = colors[index % len(colors)]
+        for flashcard_set in flashcard_sets:
+
+            print(f"Loading Flashcard Set {flashcard_set.id}: {flashcard_set.name}")
+            frame_color = colors[flashcard_set.id % len(colors)]
             frame = ctk.CTkFrame(self, fg_color=frame_color, height=300, corner_radius=10, border_color=frame_color, border_width=20)
             frame.pack(padx=(0, 5), pady=5, fill="both")
 
-            if self.flashcard_sets[name] == 1:
+            # Check if the flashcard set is starred
+            if flashcard_set.starred:
                 star_image_btn = ctk.CTkButton(frame, text="",
                                             image=star_image_active,
                                            corner_radius=10,
@@ -325,14 +350,14 @@ class Container(ctk.CTkScrollableFrame):
                                            width=40, height=40)
                 star_image_btn.is_active = False
 
-            label = ctk.CTkLabel(frame, text=name, text_color="black", font=("Arial", 20))
+            label = ctk.CTkLabel(frame, text=flashcard_set.name, text_color="black", font=("Arial", 20))
 
             star_image_btn.configure(command=lambda
                                      btn=star_image_btn,
                                      star_active=star_image_active,
                                      star_inactive=star_image,
-                                     i=index,
-                                     name = name:
+                                     i=flashcard_set.id,
+                                     name = flashcard_set.name:
                                      self.toggle_star_image(btn, star_active, star_inactive, i, name))
 
             star_image_btn.pack(side='top', padx=2, pady=3, ipadx=0, ipady=0, anchor='ne')
@@ -341,12 +366,12 @@ class Container(ctk.CTkScrollableFrame):
 
             frame.pack_propagate(False)
 
-            label.bind("<Button-1>", lambda event, i=index, name=name: self.on_flashcard_set_click(i, name))
+            label.bind("<Button-1>", lambda event, i=flashcard_set.id, name=flashcard_set.name: self.on_flashcard_set_click(i, name))
 
     # Method to handle flashcard set click
     def on_flashcard_set_click(self, set_id, name):
         print(f"Flashcard Set {set_id}: {name} clicked!")
-        self.master.show_flashcard_set()
+        self.master.show_flashcard_set(set_id)
 
     # Method to toggle the star image on flashcard sets
     def toggle_star_image(self, btn, star_active, star_inactive, i, name):
@@ -355,25 +380,28 @@ class Container(ctk.CTkScrollableFrame):
             btn.is_active = False
 
             print(f"Removed Set {i}:{name} from starred sets")
-            self.flashcard_sets[name] = 0
+            # self.flashcard_sets[name] = 0
+            # < starred backend >
             print(self.flashcard_sets)
         else:
             btn.configure(image=star_active)
             btn.is_active = True
 
             print(f"Added Set {i}:{name} to starred sets")
-            self.flashcard_sets[name] = 1
+            # self.flashcard_sets[name] = 1
+            # < starred backend >
+
             print(self.flashcard_sets)
 
 class StarredFlashcardsFrame(ctk.CTkFrame):
-    def __init__(self, master, flashcard_sets={}):
+    def __init__(self, master):
         super().__init__(master)
         self.master = master
-        self.flashcard_sets = flashcard_sets
+
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.load_starred_flashcards()
 
-    def load_starred_flashcards(self):
+    def display_starred_flashcards(self):
         if any(i == 1 for i in self.flashcard_sets.values()):
             # Destroy existing widgets before creating new ones
             for widget in self.winfo_children():
@@ -402,7 +430,7 @@ class StarredFlashcardsFrame(ctk.CTkFrame):
                         star_image_btn.is_active = True
 
                         # Use default arguments in lambda to capture current loop variables
-                        star_image_btn.configure(command=lambda btn=star_image_btn, star_active=star_image_active, star_inactive=star_image, i=index, name=name: self.toggle_star_image(btn, star_active, star_inactive, i, name))
+                        star_image_btn.configure(command=lambda btn=star_image_btn, star_active=star_image_active, star_inactive=star_image, i=index, name=name: self.toggle_star_image(flashcards, btn, star_active, star_inactive, i, name))
 
                         star_image_btn.pack(side='top', padx=2, pady=3, ipadx=0, ipady=0, anchor='ne')
 
@@ -420,7 +448,7 @@ class StarredFlashcardsFrame(ctk.CTkFrame):
             label = ctk.CTkLabel(self, text="No Starred Flashcards", font=("Arial", 24))
             label.pack(fill="both", expand=True, padx=5, pady=5)
 
-    def toggle_star_image(self, btn, star_active, star_inactive, i, name):
+    def toggle_star_image(self, flashcards, btn, star_active, star_inactive, i, name):
         if btn.is_active:
             btn.configure(image=star_inactive)
             btn.is_active = False
@@ -429,7 +457,7 @@ class StarredFlashcardsFrame(ctk.CTkFrame):
             self.master.changes_in_starred = True
 
         # Reload the starred flashcards to update the display
-        self.load_starred_flashcards()
+        self.display_starred_flashcards()
 
 
 
@@ -626,7 +654,7 @@ class AddSetFrame(ctk.CTkFrame):
             }
         else:
             return None
-        
+
         flashcard_data = {
                 "word": word,
                 "definition": definition
@@ -642,7 +670,7 @@ class AddSetFrame(ctk.CTkFrame):
                 flashcard_set = FlashcardSetModel.from_json(response.json()["data"])
 
                 self.master.flashcard_sets.append(set_name)
-            
+
             adding = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{flashcard_set.id}/flashcards", json=flashcard_data, headers=header)
 
             if response.status_code == 200:
@@ -666,7 +694,7 @@ class AddSetFrame(ctk.CTkFrame):
             }
         else:
             return None
-        
+
         header = {
             "Authorization": f"Bearer {token}",
         }
@@ -883,12 +911,12 @@ class DeleteFlashcardFrame(ctk.CTkFrame):
 
     def delete_flashcard(self):
         tk.messagebox.showinfo("Delete Flashcard Button Response", "Delete Flashcard button was clicked")
-    
+
     # Destroys the active frame and edit set flashcards frame
     def back_command(self):
         self.pack_forget()
         self.master.top_menu.active_set = EditSetFrame(self.master)
         self.master.top_menu.hamburger_menu_options.configure(state='normal')
         self.master.top_menu.hamburger_menu_active = 'normal'
-        
+
 
