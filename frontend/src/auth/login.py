@@ -1,4 +1,4 @@
-from tkinter import messagebox # remove this once complete front-end is implemented
+from tkinter import messagebox  # remove this once complete front-end is implemented
 import customtkinter as ctk
 from PIL import Image
 import tkinter as tk
@@ -30,12 +30,13 @@ class LoginFrame(ctk.CTkFrame):
         self.container_frame.pack(fill='both', side='left', expand=True, padx=20, pady=20)
 
         # Login Frame
-        self.login_frame = ctk.CTkFrame(self.container_frame, fg_color='#222B36', corner_radius=5)
-        self.login_frame.pack(side='left', fill='both', padx=40, pady=20)
+
+        self.login_frame = ctk.CTkFrame(self.container_frame, fg_color='#222B36', corner_radius=22)
+        self.login_frame.pack(side='left', fill='both', padx=40, pady=20, expand=True)
 
         # Google signup frame
-        self.google_signup_frame = ctk.CTkFrame(self.container_frame, fg_color='#222B36', corner_radius=5)
-        self.google_signup_frame.pack(side='right', fill='both', padx=(0,40), pady=20, expand=True)
+        self.google_signup_frame = ctk.CTkFrame(self.container_frame, fg_color='#222B36', corner_radius=22)
+        self.google_signup_frame.pack(side='right', fill='both', padx=(0, 40), pady=20, expand=True)
 
         # Signup frame
         self.signup_frame = SignupFrame(self.container_frame, controller=self)
@@ -51,21 +52,27 @@ class LoginFrame(ctk.CTkFrame):
 
         self.profile_button = ctk.CTkButton(self.login_frame, width=80, height=80, image=self.default_profile, text='',
                                             fg_color='#222B36', hover_color='#D9D9D9', command=self.change_profile)
-        self.profile_button.pack(padx=10, pady=20)
+        self.profile_button.pack(padx=10, pady=(110, 20))
 
         self.welcome_label = ctk.CTkLabel(self.login_frame, text='Welcome Back!', font=("Arial", 25))
         self.welcome_label.pack(padx=10, pady=5)
 
         # Entries
         self.email_entry = ctk.CTkEntry(self.login_frame, placeholder_text='E-mail',
-                                             placeholder_text_color='#141A1F', corner_radius=22, border_color='white',
-                                           fg_color='white', width=300, height=35, text_color='#141A1F')
+                                        placeholder_text_color='#141A1F', corner_radius=22, border_color='white',
+                                        fg_color='white', width=300, height=35, text_color='#141A1F')
         self.email_entry.pack(padx=20, pady=10)
 
-        self.password_entry = ctk.CTkEntry(self.login_frame, show="*", placeholder_text='Password',
+        self.password_frame = ctk.CTkFrame(self.login_frame, fg_color='#222B36')
+        self.password_frame.pack(padx=20, pady=10)
+
+        self.password_entry = ctk.CTkEntry(self.password_frame, show="*", placeholder_text='Password',
                                            placeholder_text_color='#141A1F', corner_radius=22, border_color='white',
-                                           fg_color='white', width=300, height=35, text_color='#141A1F')
-        self.password_entry.pack(padx=20, pady=10)
+                                           fg_color='white', width=260, height=35, text_color='#141A1F')
+        self.password_entry.pack(side="left", fill="y")
+
+        self.show_password_button = ctk.CTkButton(self.password_frame, text="Show", width=40, command=self.toggle_password_visibility)
+        self.show_password_button.pack(side="right", fill="y")
 
         # Forgot password and sign up container
         self.button_container_frame = ctk.CTkFrame(self.login_frame, fg_color='#222B36')
@@ -82,8 +89,8 @@ class LoginFrame(ctk.CTkFrame):
         self.signup_button.pack(side='right', padx=5)
 
         # Login Button
-        self.login_button = ctk.CTkButton(self.login_frame, text="Login", command=self.login_button_click, corner_radius=24,
-                                          width=120, height=45, fg_color='white', text_color='#141A1F')
+        self.login_button = ctk.CTkButton(self.login_frame, text="Login", command=self.login_button_click,
+                                          corner_radius=24, width=120, height=45, fg_color='white', text_color='#141A1F')
         self.login_button.pack(padx=10, pady=20)
 
         self.login_button.bind("<Return>", self.login_button_click)
@@ -92,8 +99,9 @@ class LoginFrame(ctk.CTkFrame):
         self.grid_columnconfigure(1, weight=1)
 
         # Create a canvas to draw the lines and "or" text
-        self.upper_line_canvas = tk.Canvas(self.google_signup_frame, width=400, height=40, bg='#222B36', highlightthickness=0)
-        self.upper_line_canvas.pack(pady=70)
+        self.upper_line_canvas = tk.Canvas(self.google_signup_frame, width=400, height=40, bg='#222B36',
+                                           highlightthickness=0)
+        self.upper_line_canvas.pack(pady=(150, 70))
 
         # Draw the left line
         self.upper_line_canvas.create_line(0, 20, 170, 20, fill='white', width=2)
@@ -107,27 +115,33 @@ class LoginFrame(ctk.CTkFrame):
         # Signup Widgets
         self.google_logo = ctk.CTkImage(Image.open("assets/images/google_logo.png"), size=(130, 130))
 
-        self.google_signup_button = ctk.CTkButton(self.google_signup_frame, image=self.google_logo, text='', corner_radius=100,
-                                           fg_color='#222B36', command=self.google_signup)
+        self.google_signup_button = ctk.CTkButton(self.google_signup_frame, image=self.google_logo, text='',
+                                                  corner_radius=100, fg_color='#222B36', command=self.google_signup)
         self.google_signup_button.pack(anchor='center')
 
         self.signup_label = ctk.CTkLabel(self.google_signup_frame, text='No account? Sign-Up', text_color='white')
         self.signup_label.pack()
 
         # Create a canvas to draw the lower line
-        self.lower_line_canvas = tk.Canvas(self.google_signup_frame, width=400, height=40, bg='#222B36', highlightthickness=0)
+        self.lower_line_canvas = tk.Canvas(self.google_signup_frame, width=400, height=40, bg='#222B36',
+                                           highlightthickness=0)
         self.lower_line_canvas.pack(pady=70)
 
         self.lower_line_canvas.create_line(0, 20, 400, 20, fill='white', width=2)
 
+    def toggle_password_visibility(self):
+        if self.password_entry.cget('show') == '*':
+            self.password_entry.configure(show='')
+            self.show_password_button.configure(text="Hide")
+        else:
+            self.password_entry.configure(show='*')
+            self.show_password_button.configure(text="Show")
 
     def change_profile(self):
         print('change profile clicked!')
 
-
     def forgot_password(self):
         print('Forgot password clicked!')
-
 
     def signup(self):
         print('Sign up button clicked')
@@ -142,7 +156,7 @@ class LoginFrame(ctk.CTkFrame):
 
     def return_to_login(self):
         self.signup_frame.pack_forget()
-        self.login_frame.pack(side='left', fill='both', padx=40, pady=20)
+        self.login_frame.pack(side='left', fill='both', padx=40, pady=20, expand=True)
         self.google_signup_frame.pack(side='right', fill='both', padx=(0, 40), pady=20, expand=True)
 
     def google_signup(self):
@@ -152,9 +166,18 @@ class LoginFrame(ctk.CTkFrame):
         email = self.email_entry.get()
         password = self.password_entry.get()
 
-        # <Validation Here>
+        # Validation
+        if not email or not password:
+            messagebox.showerror("Input Error", "Please enter both email and password.")
+            return
 
-        print(f"LOGIN GUI: Logging in {email}...")
+        # Email domain validation
+        valid_domains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com"]
+        if email != "admin":
+            domain = email.split('@')[-1]
+            if domain not in valid_domains:
+                messagebox.showerror("Input Error", "Please enter a valid email domain (gmail, yahoo, hotmail, outlook).")
+                return
 
         # Start a new thread to make the request
         login_thread = threading.Thread(target=self.login, args=(email, password))
