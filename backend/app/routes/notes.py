@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import logging
 from app import db
 
 from app.models import User, Note, Notebook, UserNotebook, QuickNote, UserQuickNotes
@@ -275,15 +276,17 @@ def create_notebook():
         if not title:
             return jsonify({'message': 'Title is required'}), 400
         # create a new notebook
-        new_notebook = Notebook(title=title, owner_id=user.id)
+        new_notebook = Notebook(title=title, owner_id=user_id)
         db.session.add(new_notebook)
         db.session.commit()
         # create a new user notebook
-        new_user_notebook = UserNotebook(user_id=user.id, notebook_id=new_notebook.id)
+        new_user_notebook = UserNotebook(user_id=user_id, notebook_id=new_notebook.id)
         db.session.add(new_user_notebook)
         db.session.commit()
         # return a 201 response
-        return jsonify({'message': 'Notebook created successfully'}), 201
+        # return jsonify({'message': 'Notebook created successfully'}), 201
+        # return notebook details:
+        return jsonify({'message': "Notebook created successfully", 'notebook': new_notebook.to_json()}), 201
     except Exception as e:
         return jsonify({'message': str(e)}), 400
     
@@ -295,31 +298,43 @@ def get_notebooks():
     try:
         # get the user id from the jwt token
         user_id = get_jwt_identity()
+        
+        # log the user_id for debugging
+        logging.debug(f"User ID from JWT: {user_id}")
+        
         # get the user object
         user = User.query.get(user_id)
+        
         # if the user does not exist, return a 404
         if not user:
             return jsonify({'message': 'User not found'}), 404
+        
         # list to store the notebooks that will be returned
         notebooks = []
+        
         # get all the user notebooks
         user_notebooks = UserNotebook.query.filter_by(user_id=user.id).all()
+        
         # loop through the user notebooks and get the notebook data
         for user_notebook in user_notebooks:
             notebook = Notebook.query.get(user_notebook.notebook_id)
-            notebook_data = {
-                'notebook_id': notebook.id,
-                'title': notebook.title,
-                'owner_id': notebook.owner_id,
-                'is_owner': False
-            }
-            # if the owner_id of the notebook is the same as the user id, set is_owner to True
-            if notebook.owner_id == user.id:
-                notebook_data['is_owner'] = True
-            notebooks.append(notebook_data)
+            if notebook:  # Ensure the notebook exists
+                notebook_data = {
+                    'notebook_id': notebook.id,
+                    'title': notebook.title,
+                    'owner_id': notebook.owner_id,
+                    'is_owner': False
+                }
+                # if the owner_id of the notebook is the same as the user id, set is_owner to True
+                if notebook.owner_id == user.id:
+                    notebook_data['is_owner'] = True
+                notebooks.append(notebook_data)
+        
         return jsonify(notebooks), 200
+    
     except Exception as e:
-        return jsonify({'message': str(e)}), 400
+        logging.error(f"An error occurred: {e}")
+        return jsonify({'message': 'An internal error occurred'}), 500
     
 
 # for creating note in a notebook

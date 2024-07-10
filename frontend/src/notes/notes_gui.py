@@ -5,13 +5,14 @@ from PIL import Image
 import sys
 import os
 import json
+import requests
 
 # Append paths to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'searchbar')))  # src/common/searchbar
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))  # frontend/
 
 # Import necessary modules
-from config import APP_NAME, BACKGROUND_COLOR
+from config import APP_NAME, BACKGROUND_COLOR, NOTES_ENDPOINT
 from searchbar import SearchBar  # Import SearchBar class
 from .notes_model import NoteModel, NotebookModel
 from .notes_page_view import PageViewer
@@ -20,14 +21,21 @@ class NotebookFrame(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        self.user = self.controller.user
 
         self.notebooks: list[NotebookModel] = []
+        self.current_notebook_id = None
 
         self.top_menu = TopMenu(self)
         self.container = Container(self)
         self.configure(fg_color=BACKGROUND_COLOR,
                        corner_radius=10)
         self.grid_configure(padx=10, pady=10)
+    
+    def tkraise(self):
+        self.container.fetch_notebooks()
+        self.container.display_notebooks()
+        super().tkraise()
 
 class Container(ctk.CTkScrollableFrame):
     def __init__(self, master, *args, **kwargs):
@@ -35,10 +43,12 @@ class Container(ctk.CTkScrollableFrame):
         self.master = master
         self.current_note_index = 0
         self.setup_ui()
+        self.user = self.master.user
 
     def setup_ui(self):
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.pack(fill="both", expand=True, padx=2, pady=(0,3))
+        # self.fetch_notebooks()
         self.display_notebooks()
 
     # def setup_ui(self):
@@ -63,6 +73,26 @@ class Container(ctk.CTkScrollableFrame):
     #     )
 
     #     self.display_notebooks()
+
+    def fetch_notebooks(self): 
+        response = requests.get(
+            url=NOTES_ENDPOINT + "/notebooks",
+            headers={"Authorization": f"Bearer {self.master.controller.access_token}"}
+        )
+
+        self.master.notebooks = []
+
+        if response.status_code == 200: 
+            notebooks = response.json()
+            print(notebooks)
+            for notebook in notebooks:
+                self.master.notebooks.append(NotebookModel(
+                id=notebook['notebook_id'], 
+                owner_id=notebook['owner_id'], 
+                title=notebook['title']
+        ))
+        else:
+            messagebox.showerror("Error", "Failed to fetch notebooks.")
 
     def display_notebooks(self):
         for widget in self.winfo_children():
@@ -89,8 +119,18 @@ class Container(ctk.CTkScrollableFrame):
             notebook_button.grid_rowconfigure(row, weight=1)
 
     def add_notebook(self, title="New Notebook"):
-        test_notes = [NoteModel(i, 1, f"TITLE_NOTE_{i}", 'Lorem Ipsum') for i in range(6)] # Example Notes
-        test_notebook = NotebookModel(id=1, owner_id=1, title=title, notes=test_notes) # Example notes
+        data = {"title": title}
+        response = requests.post(
+            url=NOTES_ENDPOINT + "/notebook",
+            headers={"Authorization": f"Bearer {self.master.controller.access_token}"},
+            json=data
+        )
+        if response.status_code != 201:
+            messagebox.showerror("Error", "Failed to create notebook.")
+            return
+        notebook = response.json()['notebook']
+        print(self.user.user_id)
+        test_notebook = NotebookModel(id=notebook.id, owner_id=notebook.owner_id, title=title) # Example notes
         self.master.notebooks.append(test_notebook)
         self.display_notebooks()
         self.save_notebooks()
@@ -108,20 +148,10 @@ class Container(ctk.CTkScrollableFrame):
             return
         self.master.notebooks[index].title = new_title
         self.display_notebooks()
-        self.save_notebooks()
 
     def delete_notebook(self, index):
         del self.master.notebooks[index]
         self.display_notebooks()
-        self.save_notebooks()
-
-    def save_notebooks(self):
-        # < Backend POST Request Implementation Here >
-        pass
-
-    def load_notebooks(self):
-        # < Backend GET Request Implementaiton here >
-        pass
 
 class TopMenu(ctk.CTkFrame):
     def __init__(self, master, *args, **kwargs):
@@ -208,12 +238,12 @@ class _TestingApp(ctk.CTk):
         notebook_frame = NotebookFrame(self, self)
         notebook_frame.pack(fill="both", expand=True)
 
-class NotebookModel:
-    def __init__(self, id, owner_id, title, notes):
-        self.id = id
-        self.owner_id = owner_id
-        self.title = title
-        self.notes = notes
+# class NotebookModel:
+#     def __init__(self, id, owner_id, title, notes):
+#         self.id = id
+#         self.owner_id = owner_id
+#         self.title = title
+#         self.notes = notes
 
 
 
