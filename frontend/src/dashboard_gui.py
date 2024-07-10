@@ -16,21 +16,23 @@ class ProfileFrame(ctk.CTkFrame):
         self.username_var = ctk.StringVar(value="Joshua") # dummy username
 
         # Initialize the email variable | self.email
-        self.email_var = ctk.StringVar(value="pogiako123@gmail.com") # dummy email
+        self.email_var = ctk.StringVar(value="pogiako133@gmail.com") # dummy email
  
         self.default_profile = ctk.CTkImage(Image.open("assets/images/default_profile_picture.png"), size=(40, 40))  
         self.dp_label = ctk.CTkLabel(self, image=self.default_profile, text=" ")
 
         self.user_email_frame = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR)
-        self.username_label = ctk.CTkLabel(self.user_email_frame, textvariable=self.username_var, height=2, font=("Arial", 18, 'bold'))
-        self.email_label = ctk.CTkLabel(self.user_email_frame, textvariable=self.email_var, height=2, font=("Arial", 11))
+        self.username_label = ctk.CTkLabel(self.user_email_frame, textvariable=self.username_var, 
+                                           height=2, font=("MOntserrat", 18, 'bold'))
+        self.email_label = ctk.CTkLabel(self.user_email_frame, textvariable=self.email_var, 
+                                           height=2, font=("MOntserrat", 11))
 
     def pack(self, *args, **kwargs):
         self.dp_label.pack(side='left', padx=5, pady=[20, 15])
-        self.user_email_frame.pack(side='left', padx=[8, 0], pady=[20, 15], anchor=ctk.W)
+        self.user_email_frame.pack(side='top', padx=[8, 0], pady=20, anchor=ctk.W)
         self.username_label.pack(anchor=ctk.W)
         self.email_label.pack(anchor=ctk.W)
-        
+
         super().pack(*args, **kwargs)
 
     def set_user(self, username, email, user_id):
@@ -57,10 +59,12 @@ class ButtonsFrame(ctk.CTkFrame):
             if frame_name[:-5] != 'Settings':
                 button = ctk.CTkButton(
                     self.buttons_container,
-                    text=frame_name[:-5],
+                    text=frame_name[:-5].upper(),
                     width=200,
                     height=40,
                     corner_radius=25,
+                    anchor='w',
+                    font=("Montserrat", 13),
                     fg_color='transparent',
                     hover_color='#222B36',
                     command=lambda frame_name=frame_name: show_frame(frame_name)
@@ -69,18 +73,20 @@ class ButtonsFrame(ctk.CTkFrame):
             else:
                 button = ctk.CTkButton(
                     self.settings_container,
-                    text='⚙  ' + frame_name[:-5],
+                    text='⚙  ' + frame_name[:-5].upper(),
                     width=200,
                     height=40,
                     corner_radius=25,
+                    anchor='w',
+                    font=("MOntserrat", 13),
                     fg_color='transparent',
                     hover_color='#222B36',
                     command=lambda frame_name=frame_name: show_frame(frame_name)
                 )
             if frame_name[:8] != 'Settings':
-                button.pack(pady=3, fill='x', expand=True)
+                button.pack(fill='x', expand=True)
             else:
-                button.pack(side='bottom')
+                button.pack(pady=[0, 5], fill='x', side='bottom')
             button.bind("<Button-1>", self.create_click_handler(button))
             self.features.append(button)
 
@@ -102,14 +108,13 @@ class DashboardFrame(ctk.CTkFrame):
         
         self.profile_frame = ProfileFrame(self) # profile_frame: Profile Frame
         dashboard_image = ctk.CTkImage(Image.open("./assets/images/dashboard_logo.png"), size=(250, 50))
-
         self.label = ctk.CTkLabel(self, image=dashboard_image, text=" ")
         self.button_container = ButtonsFrame(self, command=command, frames=frames) # button_Continer: Container for Dashboard Buttons
 
     def pack(self, *args, **kwargs):
-        self.profile_frame.pack(padx=15, fill='x')
+        self.profile_frame.pack(padx=25, fill='x')
         self.profile_frame.configure(fg_color=BACKGROUND_COLOR)
-        self.label.pack()
+        self.label.pack(pady=5)
         self.button_container.pack(padx=8, pady=8, fill='both', expand=True)
         self.button_container.configure(fg_color=BACKGROUND_COLOR)
         super().pack(*args, **kwargs)
