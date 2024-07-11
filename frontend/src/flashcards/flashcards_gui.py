@@ -663,9 +663,10 @@ class AddSetFrame(ctk.CTkFrame):
                 "name": set_name,
             }
             response = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", json=set_data, headers=header)
-            data = response.json()
+            data = response.json()['data']
             flashcard_set = FlashcardSetModel(id=data["id"], name=data["name"])
             self.master.flashcard_sets.append(flashcard_set)
+            self.master.container.display_flashcard_sets(self.master.flashcard_sets)
 
         assert (type(flashcard_set) == FlashcardSetModel), "flashcard_set is not an instance of FlashcardSetModel"
 
@@ -720,7 +721,6 @@ class AddSetFrame(ctk.CTkFrame):
         else:
             # <handle dito yung bad request>
             pass
-
         self.set_name_var.set("")
         self.word_var.set("")
         self.definition_var.set("")
@@ -791,11 +791,11 @@ class EditSetFrame(ctk.CTkFrame):
         self.delete_set_button.pack()
 
     def edit_set(self):
-        tk.messagebox.showinfo("Edit Set Button Response", "Edit Set button was clicked")
+        tk.messagebox.showinfo("Edit Set Details Button Response", "Edit Set Details button was clicked")
         self.master.top_menu.hamburger_menu_options.configure(state='disabled')
         self.master.top_menu.hamburger_menu_active = 'disabled'
         self.pack_forget()
-        EditFlashcardFrame(self.master)
+        EditSetDetailsFrame(self.master)
 
     def delete_set(self):
         tk.messagebox.showinfo("Delete Set Button Response", "Delete Set button was clicked")
@@ -817,7 +817,6 @@ class EditSetFrame(ctk.CTkFrame):
 
         response = requests.delete(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{flashcard_set.id}", headers=header)
         data = response.json()
-        flashcard_set = FlashcardSetModel(id = data["id"], name = data["name"])
 
         # Delete Flashcard Set from
         flashcard_sets = [set for set in self.master.flashcard_sets if set.name != set_name]
@@ -912,10 +911,18 @@ class ShareSetFrame(ctk.CTkFrame):
         self.master.top_menu.hamburger_option_is_active = False
         self.master.top_menu.active_set = None
 
-class EditFlashcardFrame(ctk.CTkFrame):
+class EditSetDetailsFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         self.master = master
+
+        self.edited_set_name_var = ctk.StringVar()
+        self.edited_word_var = ctk.StringVar()
+        self.edited_definition_var = ctk.StringVar()
+
+        self.current_flashcard_set: FlashcardSetModel = None
+        self.current_flashcard: FlashcardModel = None
+
         self.setup_ui()
         self.create_widgets()
         self.layout_widgets()
@@ -931,19 +938,66 @@ class EditFlashcardFrame(ctk.CTkFrame):
 
         self.upper_frame = ctk.CTkFrame(self.middle_frame)
 
-        sets = [flashcard.name for flashcard in self.master.flashcard_sets]
+        # Get Sets for Set Selection Combobox
+        sets = [flashcard_set.name for flashcard_set in self.master.flashcard_sets]
         self.set_selection = ctk.CTkComboBox(self.upper_frame, values=sets, command=self.on_set_selection_change)
-        self.flashcard_selection = ctk.CTkComboBox(self.upper_frame, values=self.master.flashcard_sets[0].flashcards)
+
+        self.get_current_set()
+
+        # Get Flashcards for Word Selection Combobox
+        flashcard_words = [flashcard.word for flashcard in self.current_flashcard_set.flashcards]
+        self.word_selection = ctk.CTkComboBox(self.upper_frame, values=flashcard_words, command=self.on_word_selection_change)
+
+        self.get_current_flashcard()
+        self.show_unedited_set_details()
+
+        # Edited Set Details
+        self.set_name_label = ctk.CTkLabel(self.upper_frame, text="Set Name:")
+        self.set_name_entry = ctk.CTkEntry(self.upper_frame, placeholder_text="Edit Set Name", textvariable=self.edited_set_name_var)
+        self.word_label = ctk.CTkLabel(self.upper_frame, text="Word:")
+        self.word_entry = ctk.CTkEntry(self.upper_frame, placeholder_text="Edit Word", textvariable=self.edited_word_var)
+        self.definition_label = ctk.CTkLabel(self.upper_frame, text="Definition:")
+        self.definition_entry = ctk.CTkEntry(self.upper_frame, placeholder_text="Edit the definition of the word (Backside)",textvariable=self.edited_definition_var)
 
         self.lower_frame = ctk.CTkFrame(self.middle_frame)
 
-        self.edit_flashcard_button = ctk.CTkButton(self.lower_frame, text="Edit Flashcard", command=self.edit_flashcard)
+        self.edit_flashcard_button = ctk.CTkButton(self.lower_frame, text="Apply Edits", command=self.edit_flashcard)
         self.back_button = ctk.CTkButton(self.lower_frame, text="Back", command=self.back_command)
 
+    def get_current_set(self):
+        # Get Selected Combobox Flashcard Set
+        self.current_flashcard_set = next((set for set in self.master.flashcard_sets if set.name == self.set_selection.get()), None)
+        return self.current_flashcard_set
+
+    def get_current_flashcard(self):
+        self.current_flashcard = next((flashcard for flashcard in self.current_flashcard_set.flashcards if flashcard.word == self.word_selection.get()), None)
+        return self.current_flashcard
+
+    def show_unedited_set_details(self): # Original Set Details before editing
+        self.edited_set_name_var.set(self.current_flashcard_set.name)
+        self.edited_word_var.set(self.current_flashcard.word)
+        self.edited_definition_var.set(self.current_flashcard.definition)
+
+    def get_edited_set_details(self):
+        set, word, definition = self.edited_set_name_var.get(), self.edited_word_var.get(), self.edited_definition_var.get()
+        return set, word, definition
+
     def on_set_selection_change(self, event):
-        selected_set = self.set_selection.get()
-        flashcards = next((set.flashcards for set in self.master.flashcard_sets if set.name == selected_set), None)
-        self.flashcard_selection.configure(values=flashcards)
+        # Get Flashcards for Word Selection Combobox
+        self.get_current_set()
+
+        # Update Word Selection Combobox
+        flashcard_words = [flashcard.word for flashcard in self.current_flashcard_set.flashcards]
+        self.word_selection.configure(values=flashcard_words)
+        self.word_selection.set(flashcard_words[0]) # Set the first word as default for update
+
+        # Get Current Flashcard by Word and Show Unedited Set Details into Entry Fields
+        self.get_current_flashcard()
+        self.show_unedited_set_details()
+
+    def on_word_selection_change(self, event):
+        self.get_current_flashcard()
+        self.show_unedited_set_details()
 
     # Making widgets visible
     def layout_widgets(self):
@@ -959,53 +1013,84 @@ class EditFlashcardFrame(ctk.CTkFrame):
 
         self.set_selection.configure(width=400, height=31)
         self.set_selection.pack()
-        self.flashcard_selection.configure(width=400, height=31)
-        self.flashcard_selection.pack(pady=(15,0))
+        self.word_selection.configure(width=400, height=31)
+        self.word_selection.pack(pady=(15,0))
+
+        self.set_name_label.pack()
+        self.set_name_entry.configure(width=200, height=35)
+        self.set_name_entry.pack()
+        self.word_label.pack()
+        self.word_entry.configure(width=200, height=35)
+        self.word_entry.pack()
+        self.definition_label.pack()
+        self.definition_entry.configure(width=400, height=40)
+        self.definition_entry.pack()
 
         self.lower_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.lower_frame.pack(side='top', fill="x", padx=2, pady=(200,3))
 
-        self.share_set_button.configure(height=35)
-        self.share_set_button.pack(side='left')
+        self.edit_flashcard_button.configure(height=35)
+        self.edit_flashcard_button.pack(side='left')
         self.back_button.configure(height=35)
         self.back_button.pack(side='right')
 
     def edit_flashcard(self):
         tk.messagebox.showinfo("Edit Flashcard Button Response", "Edit Flashcard button was clicked")
 
-        # token = self.master.controller.access_token
-        # set_name = self.set_selection.get()
+        self.get_current_set()
+        self.get_current_flashcard()
+        edited_set_name, edited_word, edited_definition = self.get_edited_set_details()
 
-        # if not set_name:
-        #     return None
+        print(f"Current: {self.current_flashcard_set.name} - Edited: {edited_set_name}")
+        print(f"Current: {self.current_flashcard.word} - Edited: {edited_word}")
+        print(f"Current: {self.current_flashcard.definition} - Edited: {edited_definition}")
 
-        # flashcard_set = next((set for set in self.master.flashcard_sets if set.name == set_name), None)
+        token = self.master.controller.access_token
+        header = {
+            "Authorization": f"Bearer {token}",
+        }
 
-        # if not flashcard_set:
-        #     return None
+        # UPDATE FLASHCARD SET
+        if edited_set_name != self.current_flashcard_set.name:
+            edited_data = {
+                "name": edited_set_name,
+            }
+            response = requests.patch(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{self.current_flashcard_set.id}", json=edited_data, headers=header)
+            data = response.json()["data"]
+            message = response.json()["msg"]
 
-        # header = {
-        #     "Authorization": f"Bearer {token}",
-        # }
+            for flashcard_set in self.master.flashcard_sets:
+                if flashcard_set.name == self.current_flashcard_set.name:
+                    flashcard_set.name = edited_set_name
 
-        # response = requests.patch(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{flashcard_set.id}", headers=header)
-        # data = response.json()
-        # flashcard_set = FlashcardSetModel(id = data["id"], name = data["name"])
+            sets = [flashcard_set.name for flashcard_set in self.master.flashcard_sets]
+            self.set_selection.configure(values=sets)
+            self.set_selection.set(edited_set_name)
+            self.get_current_set() # self.current_flashcard_set = edited FlashcardSetModel
+            self.master.update_flashcard_sets()
 
-        # # Delete Flashcard Set from
-        # flashcard_sets = [set for set in self.master.flashcard_sets if set.name != set_name]
-        # self.master.flashcard_sets = flashcard_sets
-        # self.set_selection.set("")
-        # self.set_selection.configure(values=[flashcard.name for flashcard in self.master.flashcard_sets])
+        # UPDATE WORD OR DEFINITION
+        if edited_word != self.current_flashcard.word or edited_definition != self.current_flashcard.definition:
+            edited_data = {}
+            if edited_word != self.current_flashcard.word:
+                edited_data["word"] = edited_word
+            if edited_definition != self.current_flashcard.definition:
+                edited_data["definition"] = edited_definition
 
-        # if response.status_code == 200:
-        #     data = response.json()
-        #     print(data)
-        # else:
-        #     # <handle dito yung bad request>
-        #     pass
+            response = requests.patch(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{self.current_flashcard_set.id}/flashcards/{self.current_flashcard.id}", json=edited_data, headers=header)
+            data = response.json()["data"]
+            message = response.json()["msg"]
 
-        # self.set_selection.set("")
+            for flashcard in self.current_flashcard_set.flashcards:
+                if flashcard.word == self.current_flashcard.word:
+                    flashcard.word = edited_word
+                    flashcard.definition = edited_definition
+
+            flashcard_words = [flashcard.word for flashcard in self.current_flashcard_set.flashcards]
+            self.word_selection.configure(values=flashcard_words)
+            self.word_selection.set(edited_word)
+            self.get_current_flashcard()
+            self.show_unedited_set_details()
 
         return None
 

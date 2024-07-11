@@ -282,9 +282,9 @@ def update_flashcard(flashcard_set_id, flashcard_id):
             return jsonify({'error': 'You do not have permission to create a flashcard from this set.'}), 403
 
         # Check if the Flashcard is under the Flashcard Set
-        flashcard = Flashcard.query.filter_by(id=id, flashcard_set_id=flashcard_set_id).first()
+        flashcard = Flashcard.query.filter_by(id=flashcard_id, flashcard_set_id=flashcard_set_id).first()
         if flashcard is None:
-            return jsonify({'error': f'Flashcard ID {id} not found in Set {flashcard_set_id}.'}), 404
+            return jsonify({'error': f'Flashcard ID {flashcard_id} not found in Set {flashcard_set_id}.'}), 404
 
         # Retrieve Request and Update
         data = request.get_json()
