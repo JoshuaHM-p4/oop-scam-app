@@ -90,38 +90,48 @@ class Container(ctk.CTkFrame):
         for widget in self.winfo_children():
             widget.destroy()
             
-        self.frame_scroll_container = ctk.CTkScrollableFrame(self, fg_color=BACKGROUND_COLOR)
-        self.frame_scroll_container.pack(fill="both", expand=True, pady=(0,20))
+        if self.master.notebooks:
+            self.frame_scroll_container = ctk.CTkScrollableFrame(self, fg_color=BACKGROUND_COLOR)
+            self.frame_scroll_container.pack(fill="both", expand=True, pady=(0,20))
 
-        
-        num_columns = 2  # Number of columns to display notebooks in
-
-        for i, notebook in enumerate(self.master.notebooks):
-            row, col = divmod(i, num_columns)
-
-            # Assuming ctk and Image are properly imported and BACKGROUND_COLOR is defined
-            ribbon_image = ctk.CTkImage(Image.open("assets/images/note_placeholder.png"), size=(200, 300))
             
-            notebook_button = ctk.CTkButton(self.frame_scroll_container, 
-                                            image=ribbon_image, 
-                                            text=notebook.title,
-                                            corner_radius=20,
-                                            fg_color=BACKGROUND_COLOR, 
-                                            hover_color="#222B36", 
-                                            command=lambda i=i: self.view_notebook(i),
-                                            compound="top")
-            if self.master.delete_mode:
-                notebook_button.configure(hover_color="red", command=lambda i=i: self.delete_notebook(i))
-            
-            notebook_button.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
+            num_columns = 2  # Number of columns to display notebooks in
 
-        # Configure the grid to have equal weight for all columns
-        for col in range(num_columns):
-            self.frame_scroll_container.columnconfigure(col, weight=1)
-        
-        # Ensure all rows have equal weight
-        for row in range((len(self.master.notebooks) + num_columns - 1) // num_columns):
-            self.frame_scroll_container.rowconfigure(row, weight=1)
+            for i, notebook in enumerate(self.master.notebooks):
+                row, col = divmod(i, num_columns)
+
+                # Assuming ctk and Image are properly imported and BACKGROUND_COLOR is defined
+                ribbon_image = ctk.CTkImage(Image.open("assets/images/notebook.png"), size=(300, 300))
+                
+                notebook_button = ctk.CTkButton(self.frame_scroll_container, 
+                                                image=ribbon_image, 
+                                                width=300,
+                                                height=300,
+                                                text="",
+                                                corner_radius=20,
+                                                fg_color=BACKGROUND_COLOR, 
+                                                hover_color="#222B36", 
+                                                command=lambda i=i: self.view_notebook(i),
+                                                compound="top")
+                
+                text_title = ctk.CTkLabel(notebook_button, text=notebook.title, font=("Arial", 20), fg_color="#E9E8F9", bg_color="#E9E8F9",
+                                          text_color="black")
+                text_title.place(relx=0.5, rely=0.5, anchor="center")
+                if self.master.delete_mode:
+                    notebook_button.configure(hover_color="red", command=lambda i=i: self.delete_notebook(i))
+                
+                notebook_button.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
+
+            # Configure the grid to have equal weight for all columns
+            for col in range(num_columns):
+                self.frame_scroll_container.columnconfigure(col, weight=1)
+            
+            # Ensure all rows have equal weight
+            for row in range((len(self.master.notebooks) + num_columns - 1) // num_columns):
+                self.frame_scroll_container.rowconfigure(row, weight=1)
+        else:
+            no_notebooks_label = ctk.CTkLabel(self, text="No notebooks found.", font=("Arial", 20), fg_color=BACKGROUND_COLOR)
+            no_notebooks_label.pack(fill="both", expand=True)
 
     def add_notebook(self, title):
         data = {"title": title}
@@ -156,8 +166,12 @@ class Container(ctk.CTkFrame):
         self.display_notebooks()
 
     def delete_notebook(self, index):
-        del self.master.notebooks[index]
-        self.display_notebooks()
+        notebook_title = self.master.notebooks[index].title  # Assuming each notebook has a 'title' attribute
+        # Confirmation dialog
+        response = messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete the '{notebook_title}' notebook?")
+        if response:  # If user clicks 'Yes'
+            del self.master.notebooks[index]
+            self.display_notebooks()
 
 class TopMenu(ctk.CTkFrame):
     def __init__(self, master, *args, **kwargs):
@@ -229,23 +243,60 @@ class NotebookPage(ctk.CTkFrame):
         self.index = index
         self.notebook = notebook
         
+        # Database fetch for number of notes, total pages, content, etc.
+        # #### DAVID #########
+        
+        # Dummy content dictionary
+        self.content_dict = {
+            1: "Content for Page 1\n" * 10,
+            2: "Content for Page 2\n" * 10,
+            3: "Content for Page 3\n" * 10,
+            4: "Content for Page 4\n" * 10,
+            5: "Content for Page 5\n" * 10,
+            6: "Content for Page 6\n" * 10,
+            7: "Content for Page 7\n" * 10,
+            8: "Content for Page 8\n" * 10,
+            9: "Content for Page 9\n" * 10,
+            10: "Content for Page 10\n" * 10,
+        }
+        self.current_page = 1  # Start with page 1
+        self.total_pages = len(self.content_dict) 
+        
         self.setup_ui()
+        self.update_content()
+        self.update_button_states()
         
     def setup_ui(self):
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.pack(fill="both", expand=True, padx=2, pady=2)
         
+        self.return_img = ctk.CTkImage(Image.open("assets/images/back_arrow.png"), size=(25, 25))
+        self.add_img = ctk.CTkImage(Image.open("assets/images/plus.png"), size=(25, 25))
+        self.save_img = ctk.CTkImage(Image.open("assets/images/save.png"), size=(25, 25))
+        
         self.top_frame = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR)
-        self.top_frame.pack(fill="x")
+        self.top_frame.pack(fill="x", pady=(10,0))
         
-        self.back_button = ctk.CTkButton(self.top_frame, text="Back", command= self.master.back_to_notebooks)
-        self.back_button.pack(side="left", padx=10, pady=10, expand=True, anchor="w")
+        self.back_button = ctk.CTkButton(self.top_frame, text="", command= self.master.back_to_notebooks,
+                                         image=self.return_img, width=25, height=25, corner_radius=20, 
+                                         fg_color=BACKGROUND_COLOR, hover_color="#222B36", border_width=0)
+        self.back_button.pack(side="left", padx=10, expand=True, anchor="w")
         
-        self.label_notebook_title = ctk.CTkLabel(self.top_frame, text="Notebook Page", font=("Arial", 20))
-        self.label_notebook_title.pack(side="left", padx=10, pady=10, expand=True)
+        # self.label_notebook_title = ctk.CTkLabel(self.top_frame, text="Notebook Page", font=("Arial", 20), fg_color="red")
+        # self.label_notebook_title.pack(side="left", padx=10, pady=10, expand=True, anchor="center")
         
-        self.save_button = ctk.CTkButton(self.top_frame, text="Save", command= self.save_page)
-        self.save_button.pack(side="left", padx=10, pady=10, expand=True, anchor="e")
+        self.right_frame = ctk.CTkFrame(self.top_frame, fg_color=BACKGROUND_COLOR)
+        self.right_frame.pack(side="left", padx=10,  expand=True, anchor="e")
+        
+        self.add_page_button = ctk.CTkButton(self.right_frame, text="", command= self.add_page,
+                                             image=self.add_img, width=25, height=25, corner_radius=20,
+                                             fg_color=BACKGROUND_COLOR, hover_color="#222B36", border_width=0)
+        self.add_page_button.pack(side="left", anchor="e")
+        
+        self.save_button = ctk.CTkButton(self.right_frame, text="", command= self.save_page,
+                                         image=self.save_img, width=25, height=25, corner_radius=20,
+                                         fg_color=BACKGROUND_COLOR, hover_color="#222B36", border_width=0)
+        self.save_button.pack(side="left",  anchor="e")
         
         # Title textbox
         self.title_textbox = ctk.CTkEntry(self, fg_color=BACKGROUND_COLOR, height=1, font=("Arial", 20), placeholder_text="Title:",
@@ -259,11 +310,105 @@ class NotebookPage(ctk.CTkFrame):
         self.content_textbox.pack(fill="both", expand=True, padx=10)
         self.content_textbox.insert("0.0", "Some example text!\n" * 50)
         
-        self.lower_frame = ctk.CTkFrame(self, fg_color="blue", height=20)
-        self.lower_frame.pack(fill="x")
+        self.lower_frame = ctk.CTkFrame(self, height=20, fg_color=BACKGROUND_COLOR)
+        self.lower_frame.pack(fill="x", padx=10, pady=10)
+        
+        self.previous_img_active = ctk.CTkImage(Image.open("assets/images/left_arrow.png"), size=(25, 25))
+        self.next_img_active = ctk.CTkImage(Image.open("assets/images/right_arrow.png"), size=(25, 25))
+        
+        self.previous_img_disabled = ctk.CTkImage(Image.open("assets/images/left_arrow_disabled.png"), size=(25, 25))
+        self.next_img_disabled = ctk.CTkImage(Image.open("assets/images/right_arrow_disabled.png"), size=(25, 25))
+        
+        
+        self.left_button = ctk.CTkButton(self.lower_frame, text="", 
+                                         fg_color=BACKGROUND_COLOR,
+                                         image=self.previous_img_disabled,
+                                         width=25,
+                                         height=25,
+                                         command = self.previous_page,
+                                        )
+        self.left_button.pack(side="left", padx=10, expand=True)
+        
+        self.page_container = ctk.CTkFrame(self.lower_frame, fg_color=BACKGROUND_COLOR, corner_radius=20, border_width=1)
+        self.page_container.pack(side="left", padx=10, expand=True)   
+        
+        self.page_number = ctk.CTkLabel(self.page_container, text=f"Page {self.current_page} of {self.total_pages}", font=("Arial", 18), fg_color=BACKGROUND_COLOR)
+        self.page_number.pack(fill="both", expand=True, padx=10, pady=5)   
+        
+        self.page_number.bind("<Button-1>", lambda event: self.create_jump_to_page_popup())
+        
+        self.right_button = ctk.CTkButton(self.lower_frame, text="", 
+                                          fg_color=BACKGROUND_COLOR,
+                                          image=self.next_img_active,
+                                          width=25,
+                                          height=25,
+                                          command=self.next_page)
+        self.right_button.pack(side="left", padx=10, expand=True)
+        
+        
+    
+    def next_page(self):
+        if self.current_page < self.total_pages:
+            self.current_page += 1
+            self.update_content()
+            self.update_button_states()
+
+    def previous_page(self):
+        if self.current_page > 1:
+            self.current_page -= 1
+            self.update_content()
+            self.update_button_states()
+
+    def update_button_states(self):
+    # Enable or disable buttons based on the current page
+        if self.current_page > 1:
+            self.left_button.configure(state="normal", image=self.previous_img_active)
+        else:
+            self.left_button.configure(state="disabled", image=self.previous_img_disabled)
+
+        if self.current_page < self.total_pages:
+            self.right_button.configure(state="normal", image=self.next_img_active)
+        else:
+            self.right_button.configure(state="disabled", image=self.next_img_disabled)
+
+            # Update the page number label
+            self.page_number.configure(text=f"Page {self.current_page}")
+    
+    def update_content(self):
+        # Fetch and display content for the current page
+        content = self.content_dict.get(self.current_page, "No content available.")
+        self.content_textbox.delete("1.0", "end")  # Clear existing content
+        self.content_textbox.insert("1.0", content)
+        # Update the page number label
+        self.page_number.configure(text=f"Page {self.current_page} of {self.total_pages}")
+        
+    def add_page(self):
+        self.total_pages += 1
+        self.content_dict[self.total_pages] = "New Page Content\n" * 10
+        self.current_page = self.total_pages
+        self.update_content()
+        self.update_button_states()
+        
+    def create_jump_to_page_popup(self):
+        dialog = ctk.CTkInputDialog(title="Jump to:", text="Enter the page number:")
+        title = dialog.get_input()
+        if title:
+            self.jump_to_page(title)
+        
+    def jump_to_page(self, page_number_str):
+        try:
+            page_number = int(page_number_str)
+            if 1 <= page_number <= self.total_pages:
+                self.current_page = page_number
+                self.update_content()  # Assuming this method updates the content for the current page
+                self.update_button_states()  # Update the state of navigation buttons
+            else:
+                messagebox.showerror("Error", "Page number out of range.")
+        except ValueError:
+            messagebox.showerror("Error", "Invalid page number.")
         
     def save_page(self):
-        pass
+        messagebox.showinfo("Save", "Walang funnctionality")
         
         
 
