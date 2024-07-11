@@ -59,11 +59,14 @@ DELETE /flashcards/flashcard_sets/<id>
 def get_flashcard_set():
     flashcard_sets = FlashcardSet.query.all()
 
+    name_query = request.args.get('name', '')
+
     current_user_id = get_jwt_identity()
 
     # Get the flashcard Sets owned by the User
     flashcard_sets = FlashcardSet.query.join(UserFlashcardSet).filter((FlashcardSet.user_id == current_user_id) | (UserFlashcardSet.user_id == current_user_id)).all()
     result = [flashcard_set.to_json() for flashcard_set in flashcard_sets]
+    result = [flashcard_set for flashcard_set in result if name_query.lower() in flashcard_set['name'].lower()] # Filter by name
 
     return jsonify(result), 200
 

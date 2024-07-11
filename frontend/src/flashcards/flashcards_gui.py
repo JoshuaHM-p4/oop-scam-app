@@ -59,8 +59,13 @@ class FlashcardsFrame(ctk.CTkFrame):
     def update_flashcard_sets(self):
         self.container.display_flashcard_sets(self.flashcard_sets)
 
-    def fetch_flashcard_sets(self):
+    def filter_flashcard_sets(self, query: str):
+        filtered_set = [flashcard_set for flashcard_set in self.flashcard_sets if query.lower() in flashcard_set.name.lower()]
+        self.container.display_flashcard_sets(filtered_set)
+
+    def fetch_flashcard_sets(self, query: str = None):
         self.flashcard_sets = []
+        query = query
 
         def get_request():
             if not self.request_lock.acquire(blocking=False):
@@ -71,7 +76,8 @@ class FlashcardsFrame(ctk.CTkFrame):
                 token = self.controller.access_token
                 header = {"Authorization": f"Bearer {token}"}
 
-                response = requests.get(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", headers=header)
+                endpoint = f"{FLASHCARDS_ENDPOINT}/flashcard_sets" + (f"?query={query}" if query else "")
+                response = requests.get(endpoint, headers=header)
 
                 response_data = response.json()
 
@@ -322,7 +328,10 @@ class TopMenu(ctk.CTkFrame):
     # Method to handle search bar queries
     def search_flashcards(self, query):
         print(f"Searching for: {query}")
-        # self.master.controller.search_flashcards(query)
+        if query.strip() != '':
+            self.master.filter_flashcard_sets(query.strip())
+        else:
+            self.master.update_flashcard_sets()
 
 # Container: Scrollable frame to load and display flashcard sets
 class Container(ctk.CTkScrollableFrame):
@@ -1112,7 +1121,7 @@ class EditSetDetailsFrame(ctk.CTkFrame):
         self.back_button.pack(side='right')
 
     def edit_flashcard(self):
-        tk.messagebox.showinfo("Edit Flashcard Button Response", "Edit Flashcard button was clicked")
+        # tk.messagebox.showinfo("Edit Flashcard Button Response", "Edit Flashcard button was clicked")
 
         self.get_current_set()
         self.get_current_flashcard()
