@@ -797,6 +797,9 @@ class EditSetFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         self.master = master
+
+        self.delete_lock = threading.Lock()
+
         self.setup_ui()
         self.create_widgets()
         self.layout_widgets()
@@ -869,26 +872,40 @@ class EditSetFrame(ctk.CTkFrame):
         if not flashcard_set:
             return None
 
-        header = {
-            "Authorization": f"Bearer {token}",
-        }
+        def delete_request():
+            if not self.delete_lock.acquire(blocking=False):
+                print("Request for Deleting Set Already in Progress. Skipping this request.")
+                return
 
-        response = requests.delete(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{flashcard_set.id}", headers=header)
-        data = response.json()
+            lock_acquired = True
+            try:
+                header = {
+                    "Authorization": f"Bearer {token}",
+                }
 
-        # Delete Flashcard Set from
-        flashcard_sets = [set for set in self.master.flashcard_sets if set.name != set_name]
-        self.master.flashcard_sets = flashcard_sets
-        self.set_selection.set("")
-        self.set_selection.configure(values=[flashcard.name for flashcard in self.master.flashcard_sets])
+                response = requests.delete(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{flashcard_set.id}", headers=header)
+                data = response.json()
 
-        if response.status_code == 200:
-            # <handle dito ng succesful request>
-            data = response.json()
-            print(data['msg'])
-        else:
-            # <handle dito yung bad request>
-            pass
+                # Delete Flashcard Set from
+                flashcard_sets = [set for set in self.master.flashcard_sets if set.name != set_name]
+                self.master.flashcard_sets = flashcard_sets
+                self.set_selection.set("")
+                self.set_selection.configure(values=[flashcard.name for flashcard in self.master.flashcard_sets])
+
+                if response.status_code == 200:
+                    # <handle dito ng succesful request>
+                    data = response.json()
+                    print(data['msg'])
+                else:
+                    # <handle dito yung bad request>
+                    pass
+            except ConnectionError:
+                tk.messagebox.showerror("Connection Error", "Could not connect to server")
+            finally:
+                if lock_acquired:
+                    self.delete_lock.release()
+
+        threading.Thread(target=delete_request).start()
 
         self.set_selection.set("")
 
@@ -959,8 +976,6 @@ class ShareSetFrame(ctk.CTkFrame):
         token = self.master.controller.access_token
         set_name = self.set_selection.get()
 
-
-
     # Destroys the active frame and layouts the main frame of flashcards
     def back_command(self):
         self.pack_forget()
@@ -980,6 +995,10 @@ class EditSetDetailsFrame(ctk.CTkFrame):
 
         self.current_flashcard_set: FlashcardSetModel = None
         self.current_flashcard: FlashcardModel = None
+
+        self.flashcard_set_lock = threading.Lock()
+        self.flashcard_lock = threading.Lock()
+        self.condition = threading.Condition()
 
         self.setup_ui()
         self.create_widgets()
@@ -1099,9 +1118,9 @@ class EditSetDetailsFrame(ctk.CTkFrame):
         self.get_current_flashcard()
         edited_set_name, edited_word, edited_definition = self.get_edited_set_details()
 
-        print(f"Current: {self.current_flashcard_set.name} - Edited: {edited_set_name}")
-        print(f"Current: {self.current_flashcard.word} - Edited: {edited_word}")
-        print(f"Current: {self.current_flashcard.definition} - Edited: {edited_definition}")
+        # print(f"Current: {self.current_flashcard_set.name} - Edited: {edited_set_name}")
+        # print(f"Current: {self.current_flashcard.word} - Edited: {edited_word}")
+        # print(f"Current: {self.current_flashcard.definition} - Edited: {edited_definition}")
 
         token = self.master.controller.access_token
         header = {
@@ -1110,45 +1129,81 @@ class EditSetDetailsFrame(ctk.CTkFrame):
 
         # UPDATE FLASHCARD SET
         if edited_set_name != self.current_flashcard_set.name:
-            edited_data = {
-                "name": edited_set_name,
-            }
-            response = requests.patch(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{self.current_flashcard_set.id}", json=edited_data, headers=header)
-            data = response.json()["data"]
-            message = response.json()["msg"]
+            def patch_flashcard_set():
+                if not self.flashcard_set_lock.acquire(blocking=False):
+                    print("Request for Flashcard Set Already in Progress. Skipping this request.")
+                    return
 
-            for flashcard_set in self.master.flashcard_sets:
-                if flashcard_set.name == self.current_flashcard_set.name:
-                    flashcard_set.name = edited_set_name
+                lock_acquired = True
 
-            sets = [flashcard_set.name for flashcard_set in self.master.flashcard_sets]
-            self.set_selection.configure(values=sets)
-            self.set_selection.set(edited_set_name)
-            self.get_current_set() # self.current_flashcard_set = edited FlashcardSetModel
-            self.master.update_flashcard_sets()
+                try:
+
+                    edited_data = {
+                        "name": edited_set_name,
+                    }
+                    response = requests.patch(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{self.current_flashcard_set.id}", json=edited_data, headers=header)
+                    data = response.json()["data"]
+                    message = response.json()["msg"]
+
+                    for flashcard_set in self.master.flashcard_sets:
+                        if flashcard_set.name == self.current_flashcard_set.name:
+                            flashcard_set.name = edited_set_name
+
+                    sets = [flashcard_set.name for flashcard_set in self.master.flashcard_sets]
+                    self.set_selection.configure(values=sets)
+                    self.set_selection.set(edited_set_name)
+                    self.get_current_set() # self.current_flashcard_set = edited FlashcardSetModel
+                    self.master.update_flashcard_sets()
+
+                    with self.condition:
+                        self.condition.notify_all()  # Notify that the set has been created
+
+                except ConnectionError:
+                    tk.messagebox.showerror("Connection Error", "Could not connect to server")
+                finally:
+                    if lock_acquired:
+                        self.flashcard_set_lock.release()
+
+            threading.Thread(target=patch_flashcard_set).start()
 
         # UPDATE WORD OR DEFINITION
         if edited_word != self.current_flashcard.word or edited_definition != self.current_flashcard.definition:
-            edited_data = {}
-            if edited_word != self.current_flashcard.word:
-                edited_data["word"] = edited_word
-            if edited_definition != self.current_flashcard.definition:
-                edited_data["definition"] = edited_definition
+            def patch_flashcard():
+                if not self.flashcard_lock.acquire(blocking=False):
+                    print("Request for Flashcard Already in Progress. Skipping this request.")
+                    return
 
-            response = requests.patch(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{self.current_flashcard_set.id}/flashcards/{self.current_flashcard.id}", json=edited_data, headers=header)
-            data = response.json()["data"]
-            message = response.json()["msg"]
+                lock_acquired = True
 
-            for flashcard in self.current_flashcard_set.flashcards:
-                if flashcard.word == self.current_flashcard.word:
-                    flashcard.word = edited_word
-                    flashcard.definition = edited_definition
+                try:
+                    edited_data = {}
 
-            flashcard_words = [flashcard.word for flashcard in self.current_flashcard_set.flashcards]
-            self.word_selection.configure(values=flashcard_words)
-            self.word_selection.set(edited_word)
-            self.get_current_flashcard()
-            self.show_unedited_set_details()
+                    if edited_word != self.current_flashcard.word:
+                        edited_data["word"] = edited_word
+                    if edited_definition != self.current_flashcard.definition:
+                        edited_data["definition"] = edited_definition
+
+                    response = requests.patch(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{self.current_flashcard_set.id}/flashcards/{self.current_flashcard.id}", json=edited_data, headers=header)
+                    data = response.json()["data"]
+                    message = response.json()["msg"]
+
+                    for flashcard in self.current_flashcard_set.flashcards:
+                        if flashcard.word == self.current_flashcard.word:
+                            flashcard.word = edited_word
+                            flashcard.definition = edited_definition
+
+                    flashcard_words = [flashcard.word for flashcard in self.current_flashcard_set.flashcards]
+                    self.word_selection.configure(values=flashcard_words)
+                    self.word_selection.set(edited_word)
+                    self.get_current_flashcard()
+                    self.show_unedited_set_details()
+                except ConnectionError:
+                    tk.messagebox.showerror("Connection Error", "Could not connect to server")
+                finally:
+                    if lock_acquired:
+                        self.flashcard_lock.release()
+
+            threading.Thread(target=patch_flashcard).start()
 
         return None
 

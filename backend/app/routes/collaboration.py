@@ -21,7 +21,7 @@ def get_user_teams():
         return jsonify(teams)
     except Exception as e:
         return jsonify({"message": str(e)}), 400
-    
+
 # Create a new team
 @collaboration_bp.route('/create-team', methods=['POST'])
 @jwt_required()
@@ -64,7 +64,7 @@ def add_member():
         return jsonify({"message": "User added to team successfully"}), 201
     except Exception as e:
         return jsonify({"message": str(e)}), 400
-    
+
 # Remove a member from a team
 @collaboration_bp.route('/remove-member', methods=['DELETE'])
 @jwt_required()
@@ -84,7 +84,7 @@ def remove_member():
         return jsonify({"message": "User removed from team successfully"}), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 400
-    
+
 # make a member an admin
 @collaboration_bp.route('/make-admin', methods=['POST'])
 @jwt_required()
@@ -104,7 +104,7 @@ def make_admin():
         return jsonify({"message": "User is now an admin"}), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 400
-    
+
 
 # remove admin status from a member
 @collaboration_bp.route('/remove-admin', methods=['POST'])
@@ -125,7 +125,7 @@ def remove_admin():
         return jsonify({"message": "User is no longer an admin"}), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 400
-    
+
 
 # delete a team
 @collaboration_bp.route('/delete-team', methods=['DELETE'])
@@ -151,7 +151,7 @@ def delete_team():
         return jsonify({"message": "Team deleted successfully"}), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 400
-    
+
 
 # leave a team
 @collaboration_bp.route('/leave-team', methods=['DELETE'])
@@ -169,7 +169,7 @@ def leave_team():
         return jsonify({"message": "User left the team successfully"}), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 400
-    
+
 ################################################ Team Tasks ################################################
 
 # create a task in a team
@@ -196,7 +196,7 @@ def create_team_task():
         return jsonify({"message": "Task created successfully"}), 201
     except Exception as e:
         return jsonify({"message": str(e)}), 400
-    
+
 # fetch all tasks in a team
 @collaboration_bp.route('/team/get-tasks', methods=['GET'])
 @jwt_required()
@@ -214,7 +214,7 @@ def get_team_tasks():
         return jsonify(tasks)
     except Exception as e:
         return jsonify({"message": str(e)}), 400
-    
+
 # delete a task in a team
 @collaboration_bp.route('/team/delete-task', methods=['DELETE'])
 @jwt_required()
@@ -237,7 +237,7 @@ def delete_team_task():
         return jsonify({"message": "Task deleted successfully"}), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 400
-    
+
 # update a task in a team
 @collaboration_bp.route('/team/update-task', methods=['PUT'])
 @jwt_required()
@@ -261,4 +261,3 @@ def update_team_task():
         return jsonify({"message": "Task updated successfully"}), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 400
-    
