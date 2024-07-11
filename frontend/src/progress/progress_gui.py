@@ -2,94 +2,119 @@ import customtkinter as ctk
 from tkinter import messagebox, simpledialog
 from .progress_model import ProgressModel
 
-
 back_ground_color = "#222B36"
-first_color = "#333333"
-second_color = "#141a1f"
+first_color = "#141a1f"
+font_color_1 = "#515f73"
 
 class ProgressFrame(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        self.controller = controller
-        self.due_date = "06/19/25"
-
-        self.main_frame = ctk.CTkFrame(self, fg_color = second_color)
-        self.main_frame.pack(side="top", fill="both", expand=True)
-
-        self.first_frame = ctk.CTkFrame(self.main_frame, fg_color = second_color, corner_radius = 100)
-        self.first_frame.pack(side="top", fill="x", expand=False)
-
-        self.first_frame_left = ctk.CTkFrame(self.first_frame, fg_color = second_color)
-        self.first_frame_left.pack(side="left", fill="x", expand=True)
-
-        self.label_display_username = ctk.CTkLabel(self.first_frame_left, text="Hi Username! Let's continue your", font=("Times New Roman", 15), anchor = "sw")
-        self.label_display_username.pack(side="top", fill="x", pady=(10,0), padx=20)
-
-        self.label_main = ctk.CTkLabel(self.first_frame_left, text="Get To Know Myself", font=("Times New Roman", 30), anchor = "nw")
-        self.label_main.pack(side="top", fill="x", pady=(0,10), padx=20)
-
-        self.first_frame_right = ctk.CTkFrame(self.first_frame, fg_color = second_color)
-        self.first_frame_right.pack(side="right", fill="x", expand=True)
-
-        self.first_frame_right_leftside = ctk.CTkFrame(self.first_frame_right, fg_color = back_ground_color, corner_radius=100)
-        self.first_frame_right_leftside.pack(side="left", fill="x", expand=True, padx = (10))
-
-        self.set_new_goal_button = ctk.CTkButton(self.first_frame_right_leftside, text="Set New Goal", font=("Arial", 20), command=self.set_new_goal, fg_color = back_ground_color)
-        self.set_new_goal_button.pack(side="top", fill="x", pady=10, padx=20)
-
-        self.first_frame_right_middle = ctk.CTkFrame(self.first_frame_right, fg_color = back_ground_color, corner_radius=100)
-        self.first_frame_right_middle.pack(side="left", fill="x", expand=True, padx = (10))
-
-        self.steps_completed_label = ctk.CTkLabel(self.first_frame_right_middle, text="Steps Completed:", font=("Arial", 20), anchor = "w")
-        self.steps_completed_label.pack(side="left", fill="x", pady=10, padx=(20,0))
-        self.steps_completed_steps_label = ctk.CTkLabel(self.first_frame_right_middle, text="3", font=("Arial", 20), anchor = "w")
-        self.steps_completed_steps_label.pack(side="left", fill="x", pady=10, padx = (0, 20))
-
-        self.first_frame_right_rightside = ctk.CTkFrame(self.first_frame_right, fg_color = back_ground_color, corner_radius=100)
-        self.first_frame_right_rightside.pack(side="left", fill="x", expand=True, padx = (10, 20))
-
-        self.goal_due_label = ctk.CTkLabel(self.first_frame_right_rightside, text="Goal Due:", font=("Arial", 20), anchor = "w")
-        self.goal_due_label.pack(side="left", fill="none", pady=10, padx=(20,0))
-        self.goal_due_date_label = ctk.CTkLabel(self.first_frame_right_rightside, text=self.due_date, font=("Arial", 20), anchor = "w")
-        self.goal_due_date_label.pack(side="left", fill="none", pady=10, padx = (0, 20))
-
-        self.second_frame = ctk.CTkFrame(self.main_frame, fg_color = back_ground_color, corner_radius = 40)
-        self.second_frame.pack(side="top", fill="both", expand=True, pady = 20, padx = 20)
-
-    def set_new_goal(self):
-        self.count = 1
-        self.check_var = 1
-        messagebox.showinfo("Set New Goal", "Set New Goal Button Clicked")
-        self.first_step = ctk.CTkInputDialog(title = "First Step", text = "Enter the First Step:")
-        first_step = self.first_step.get_input()
-        self.second_frame_step = ctk.CTkFrame(self.second_frame, fg_color = second_color, corner_radius = 40)
-        self.second_frame_step.pack(side="top", fill="x", expand=True, pady = 20, padx = 20)
         
-        self.check_var_step_one = ctk.IntVar(value=1)
-        self.check_button_step = ctk.CTkCheckBox(self.second_frame_step, text=f"Step 1: {first_step}", font=("Arial", 20), onvalue = 1, offvalue = 0, command=self.check_box_event, variable = self.check_var_step_one, fg_color = "red", bg_color=back_ground_color)
-        self.check_button_step.pack(side="top", fill="x", pady = 10, padx = 20)
-        self.check_button_step.deselect()
+        self.username = "username" # ito yung nakalagay sa Hi username
+        self.goal_name = "How Long Can My Goal Be?" # ito yung ididisplay for the goal
+        self.due_date = "01/01/0001" # due date na nakadisplay
+        self.steps_completed = 0 # steps completed na display
+        self.goal_description = "The Quick Brown Fox Jumps Over The Lazy Dog \nThe Quick Brown Fox Jumps Over The Lazy Dog \nThe Quick Brown Fox Jumps Over The Lazy Dog"
+        self.purpose_text = "The Quick Brown Fox Jumps Over The Lazy Dog \nThe Quick Brown Fox Jumps Over The Lazy Dog \nThe Quick Brown Fox Jumps Over The Lazy Dog"
+        
+        self.controller = controller
+        
+        self.main_frame = ctk.CTkFrame(self, fg_color=first_color)
+        self.main_frame.pack(side="top", fill="both", expand=True, padx=10, pady=10)
 
-        self.add_step_button = ctk.CTkButton(self.second_frame_step, text="Add Step", font=("Arial", 20), command=self.add_step, fg_color = back_ground_color)
-        self.add_step_button.pack(side="top", fill="x", pady=10, padx=20)
+        self.top_frame = ctk.CTkFrame(self.main_frame, fg_color=first_color)
+        self.top_frame.pack(side="top", fill="x")   
 
+        # username label and goal label
+        self.top_left_frame = ctk.CTkFrame(self.top_frame, fg_color=first_color)
+        self.top_left_frame.pack(side="left", padx=(10,0), pady=10)
+        self.top_left_frame.configure(width=700, height=120)
+        
+        self.username_label = ctk.CTkLabel(self.top_left_frame, text=f"Hi {self.username}! Let's continue your", text_color=font_color_1, font=('arial', 20))
+        self.username_label.pack(anchor="w")
+        
+        # note: gawa ng pang limit sa goal name length
+        self.goalname_label = ctk.CTkLabel(self.top_left_frame, text=self.goal_name, text_color="white", font=('arial',35))
+        self.goalname_label.pack(anchor="w")
+        
+        # set goal button, completed steps label, and due date label
+        self.top_right_frame = ctk.CTkFrame(self.top_frame, fg_color=first_color)
+        self.top_right_frame.pack(side="right", fill="x", padx=10, pady=10)
+        self.top_right_frame.configure(height=120)
+
+        self.top_right_goal_due_display = ctk.CTkLabel(self.top_right_frame, text=f"Due Date: {self.due_date}", fg_color=back_ground_color, corner_radius=100)
+        self.top_right_goal_due_display.pack(side="right", padx=(10,0))
+        self.top_right_goal_due_display.configure(height=30)
+        
+        self.top_right_completed_steps_display = ctk.CTkLabel(self.top_right_frame, text=f"Steps Completed: {self.steps_completed}", fg_color=back_ground_color, corner_radius=100)
+        self.top_right_completed_steps_display.pack(side="right", padx=(10,0))
+        self.top_right_completed_steps_display.configure(height=30)
+        
+        # set new goal button
+        self.top_right_new_goal_button = ctk.CTkButton(self.top_right_frame, text="New Goal", fg_color=back_ground_color, corner_radius=100)
+        self.top_right_new_goal_button.pack(side="right", pady=10)
+        self.top_right_new_goal_button.configure(width=100, height=30)
+        
+        self.middle_frame = ctk.CTkFrame(self.main_frame, fg_color=back_ground_color)
+        self.middle_frame.pack(side="top", fill="x", padx=10, pady=10)
+        
+        # goal description label
+        self.middle_left_frame = ctk.CTkFrame(self.middle_frame, fg_color=back_ground_color)
+        self.middle_left_frame.pack(side="left", fill="x", expand=True, padx=(5,10))
+        
+        goal_description_label = ctk.CTkLabel(self.middle_left_frame, fg_color=back_ground_color, text="Goal Description", text_color="white", font=('arial',25))
+        goal_description_label.pack(anchor="w", pady=(15,10), padx=(10,0))
+        
+        # description text
+        self.description_textbox = ctk.CTkTextbox(self.middle_left_frame, height=65, fg_color=back_ground_color, activate_scrollbars=False)
+        self.description_textbox.pack(side="left", anchor="w", pady=(0,10), padx=(5,0), fill="x", expand=True)
+        self.description_textbox.insert("end", self.goal_description)
+        self.description_textbox.configure(state="disabled")
+        
+        # purpose label
+        self.middle_right_frame = ctk.CTkFrame(self.middle_frame, fg_color=back_ground_color)
+        self.middle_right_frame.pack(side="left", fill="x",expand=True, padx=(10,5))
+        self.middle_right_frame.configure(height=100)      
+        
+        purpose_label = ctk.CTkLabel(self.middle_right_frame, fg_color=back_ground_color, text="Why I Started", text_color="white", font=('arial',25))
+        purpose_label.pack(anchor="w", pady=(15,10), padx=(10,0))
+        
+        # purpose text
+        self.purpose_textbox = ctk.CTkTextbox(self.middle_right_frame, height=65, fg_color=back_ground_color, activate_scrollbars=False)
+        self.purpose_textbox.pack(side="left", anchor="w", pady=(0,10), padx=(5,0), fill="x", expand=True)
+        self.purpose_textbox.insert("end", self.purpose_text)
+        self.purpose_textbox.configure(state="disabled")
+        
+        self.bottom_frame = ctk.CTkFrame(self.main_frame, fg_color=first_color)
+        self.bottom_frame.pack(side="top", fill="both", expand=True)
+        
+        # steps progress bar
+        self.bottom_inner_frame = ctk.CTkFrame(self.bottom_frame, fg_color=back_ground_color)
+        self.bottom_inner_frame.pack(fill="both", expand=True, padx=10, pady=(10,10))
+        
+        self.progressbar_frame = ctk.CTkFrame(self.bottom_inner_frame, fg_color=back_ground_color)
+        self.progressbar_frame.pack(fill="x", side="top", padx=15, pady=(10,10))
+        
+        self.left_progressbar_frame = ctk.CTkFrame(self.progressbar_frame, fg_color=back_ground_color)
+        self.left_progressbar_frame.pack(fill="x", side="left")
+        
+        self.steps_label = ctk.CTkLabel(self.left_progressbar_frame, text="Steps", text_color="white", font=('arial',25))
+        self.steps_label.pack(anchor="w")
+        
+        self.progressbar = ctk.CTkProgressBar(self.progressbar_frame, orientation="horizontal", mode="determinate", height=25, width=810)
+        self.progressbar.pack(side="right")
+        
+        # steps checklist
+        self.checklist_frame = ctk.CTkFrame(self.bottom_inner_frame, fg_color="yellow")
+        self.checklist_frame.pack(fill="both", padx=(15), pady=(0,10), expand=True)
+        
+        # add step button
+        self.add_step_button = ctk.CTkButton(self.bottom_frame, fg_color=back_ground_color, text="+ Add Step", command=self.add_step)
+        self.add_step_button.pack(side="left", padx=10, pady=(10,10))
+        self.add_step_button.configure(height=30, width=100)
+        
+    def set_new_goal(self):
+        pass
+    
     def add_step(self):
-        messagebox.showinfo("Add Step", "Add Step Button Clicked")
-        self.add_step_button.destroy()
-        self.check_var += 1
-        self.check_var_each = ctk.IntVar(value = self.check_var)
-        self.steps = ctk.CTkInputDialog(title = f"Step {self.count + 1}", text = f"Enter Step {self.count + 1}:")
-        steps = self.steps.get_input()
-        self.check_button_step = ctk.CTkCheckBox(self.second_frame_step, text=f"Step {self.count + 1}: {steps}", font=("Arial", 20), onvalue = self.check_var + 1, offvalue = self.check_var + 0, command=self.check_box_event, variable=self.check_var_each, fg_color = "red", bg_color=back_ground_color)
-        self.check_button_step.pack(side="top", fill="x", pady = 10, padx = 20)
-
-        self.add_step_button = ctk.CTkButton(self.second_frame_step, text="Add Step", font=("Arial", 20), command=self.add_step, fg_color = back_ground_color)
-        self.add_step_button.pack(side="top", fill="x", pady = 10, padx = 20)
-
-        self.count += 1
-
-    def check_box_event(self):
-        if self.check_var_step_one.get() == 1:
-            messagebox.showinfo("Check Box Event", "Check Box Event")
-        else:
-            pass
+        pass
