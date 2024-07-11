@@ -16,19 +16,19 @@ class SearchBar(ctk.CTkFrame):
 
     def setup_ui(self):
         # Frame for the search box to add padding and style
-        self.configure(corner_radius=10, border_width=0, fg_color="#222B36")
+        self.configure(corner_radius=20, border_width=0, fg_color="#222B36")
         self.pack(pady=15, padx=15, fill="x")
 
         # Create an entry widget for search input
         self.search_entry = ctk.CTkEntry(self,
                                          width=300,
-                                         corner_radius=10,
+                                         corner_radius=20,
                                          border_width=0,
                                          placeholder_text="Search",
                                          height=30,
                                          fg_color="#222B36"
                                          )
-        self.search_entry.pack(fill="x", expand=True,padx=2, pady=2)
+        self.search_entry.pack(fill="x", expand=True,padx=10, pady=2)
 
         # Create a label for the search icon inside the frame
         self.search_icon_label = ctk.CTkLabel(self, text="🔍",
@@ -50,12 +50,12 @@ class SearchBar(ctk.CTkFrame):
 
     def on_entry_click(self, event):
         # Adjust the entry widget to make room for the icon
-        self.search_entry.pack_configure(side="right", fill="x", expand=True,  pady=2, padx=(0,5))
+        self.search_entry.pack_configure(side="right", fill="x", expand=True,  pady=3, padx=(0,10))
 
         # Show the search icon label using pack instead of place
-        self.search_icon_label.pack(side="right", fill="none", pady=2, padx=(2,0))
+        self.search_icon_label.pack(side="right", fill="none", pady=2, padx=(6,0))
 
     def on_entry_focusout(self, event):
         # Hide the search icon label using pack_forget
         self.search_icon_label.pack_forget()
-        self.search_entry.pack(fill="x", expand=True,padx=2, pady=2)
+        self.search_entry.pack(fill="x", expand=True,padx=10, pady=2)
