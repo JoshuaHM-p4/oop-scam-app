@@ -6,6 +6,7 @@ import os
 from PIL import Image
 import requests
 import threading
+import queue
 
 # Add the common directory to the sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'searchbar')))  # src/common/searchbar
@@ -60,17 +61,32 @@ class FlashcardsFrame(ctk.CTkFrame):
 
     def fetch_flashcard_sets(self):
         self.flashcard_sets = []
-        token = self.controller.access_token
-        header = {"Authorization": f"Bearer {token}"}
 
-        response = requests.get(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", headers=header)
+        def get_request():
+            if not self.request_lock.acquire(blocking=False):
+                print("Request for Fetching Flashcards Already in Progress. Skipping this request.")
+                return
+            lock_acquired = True
+            try:
+                token = self.controller.access_token
+                header = {"Authorization": f"Bearer {token}"}
 
-        response_data = response.json()
+                response = requests.get(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", headers=header)
 
-        for data in response_data:
-            flashcard_set = FlashcardSetModel(id = data["id"], name = data["name"])
-            flashcard_set.flashcards = self.fetch_flashcards(data["id"])
-            self.flashcard_sets.append(flashcard_set)
+                response_data = response.json()
+
+                for data in response_data:
+                    flashcard_set = FlashcardSetModel(id = data["id"], name = data["name"])
+                    flashcard_set.flashcards = self.fetch_flashcards(data["id"])
+                    self.flashcard_sets.append(flashcard_set)
+                self.after(0, self.update_flashcard_sets)
+            except ConnectionError:
+                tk.messagebox.showerror("Connection Error", "Could not connect to server")
+            finally:
+                if lock_acquired:
+                    self.request_lock.release()
+
+        threading.Thread(target=get_request).start()
 
     def fetch_flashcards(self, set_id:int) -> list[FlashcardModel]:
         flashcards = []
@@ -88,7 +104,6 @@ class FlashcardsFrame(ctk.CTkFrame):
 
     def tkraise(self, aboveThis=None):
         self.fetch_flashcard_sets()
-        self.update_flashcard_sets()
         super().tkraise(aboveThis)
 
     # Method to show the first page with the top menu and container
@@ -317,7 +332,7 @@ class Container(ctk.CTkScrollableFrame):
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.pack(fill="both", expand=True, padx=2, pady=(0,3))
 
-    # Method to load flashcard sets from the database
+    # Method to display flashcard sets from the Flashcard Sets API
     def display_flashcard_sets(self, flashcard_sets):
         colors = ["red", "green", "blue", "gray14", "purple", "orange", "pink", "light blue", "grey"]
         for widget in self.winfo_children():
@@ -328,7 +343,6 @@ class Container(ctk.CTkScrollableFrame):
         star_image_active = ctk.CTkImage(Image.open("assets/images/star_after.png"), size=(23, 23))
 
         # Database connection to fetch flashcard sets
-        # Dummy flashcard sets REPLACE THE CODE WITH DATABASE QUERY
         for flashcard_set in flashcard_sets:
 
             print(f"Loading Flashcard Set {flashcard_set.id}: {flashcard_set.name}")
@@ -466,19 +480,6 @@ class FlashcardSetFrame(ctk.CTkFrame):
         self.progressbar = progressbar
 
         self.flashcards = flashcard_set.flashcards
-        # Dummy flashcards
-        # self.flashcards = [
-        #     ("Front 1", "Back 1"),
-        #     ("Front 2", "Back 2"),
-        #     ("Front 3", "Back 3"),
-        #     ("Front 4", "Back 4"),
-        #     ("Front 5", "Back 5"),
-        #     ("Front 6", "Back 6"),
-        #     ("Front 7", "Back 7"),
-        #     ("Front 8", "Back 8"),
-        #     ("Front 9", "Back 9"),
-        #     ("Front 10", "Back 10")
-        # ]
 
         # Colors for flashcards
         self.front_color = "#2B5EB2"
@@ -528,7 +529,7 @@ class FlashcardSetFrame(ctk.CTkFrame):
     # Method to update the displayed flashcard
     def update_flashcard(self):
         # FlashcardModel(id = data["id"], set_id = set_id, word = data["word"], definition = data["definition"])
-        current_flashcard = self.flashcards[self.current_index]
+        current_flashcard = self.flashcards[self.current_index] # TO FIX: handle empty flashcards
 
         self.label.configure(text=current_flashcard.word if self.is_front else current_flashcard.definition)
         self.container.configure(fg_color=self.front_color if self.is_front else self.back_color)
@@ -577,6 +578,10 @@ class AddSetFrame(ctk.CTkFrame):
         self.set_name_var = ctk.StringVar()
         self.word_var = ctk.StringVar()
         self.definition_var = ctk.StringVar()
+
+        self.request_lock = threading.Lock()
+        self.condition = threading.Condition()
+
         self.setup_ui()
         self.create_widgets()
         self.layout_widgets()
@@ -659,30 +664,66 @@ class AddSetFrame(ctk.CTkFrame):
 
         # Create a new set if set_name is not found
         if not flashcard_set:
-            set_data = {
-                "name": set_name,
-            }
-            response = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", json=set_data, headers=header)
-            data = response.json()['data']
-            flashcard_set = FlashcardSetModel(id=data["id"], name=data["name"])
-            self.master.flashcard_sets.append(flashcard_set)
-            self.master.container.display_flashcard_sets(self.master.flashcard_sets)
+            def post_flashcard_set():
+                if not self.request_lock.acquire(blocking=False):
+                    print("Request for Sending Flashcard Set Already in Progress. Skipping this request.")
+                    return
 
-        assert (type(flashcard_set) == FlashcardSetModel), "flashcard_set is not an instance of FlashcardSetModel"
+                lock_acquired = True
+                try:
+                    set_data = {
+                        "name": set_name,
+                    }
+                    response = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", json=set_data, headers=header)
+                    data = response.json()['data']
+
+                    flashcard_set = FlashcardSetModel(id=data["id"], name=data["name"])
+                    self.master.flashcard_sets.append(flashcard_set)
+
+                    with self.condition:
+                        self.condition.notify_all()  # Notify that the set has been created
+
+                    self.after(0, self.master.update_flashcard_sets)
+                except ConnectionError:
+                    tk.messagebox.showerror("Connection Error", "Could not connect to server")
+                finally:
+                    if lock_acquired:
+                        self.request_lock.release()
+
+            threading.Thread(target=post_flashcard_set).start()
 
         ## Flashcard ##
-        flashcard_data = {
-            "word": word,
-            "definition": definition
-        }
+        def post_flashcard():
+            if not self.request_lock.acquire(blocking=False):
+                print("Request for Sending Flashcard Already in Progress. Skipping this request.")
+                return
 
-        flashcard_response = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{flashcard_set.id}/flashcards", json=flashcard_data, headers=header)
+            lock_acquired = True
+            try:
+                with self.condition:
+                    if not flashcard_set:
+                        self.condition.wait()  # Wait until the set is created
 
-        if flashcard_response.status_code == 400:
-            print(flashcard_response["error"])
+                flashcard_data = {
+                    "word": word,
+                    "definition": definition
+                }
 
-        flashcard_data_api = flashcard_response.json()
-        flashcard_set.flashcards.append(FlashcardModel(id=flashcard_data_api["id"], set_id=flashcard_set.id, word=flashcard_data_api["word"], definition=flashcard_data_api["definition"]))
+                flashcard_response = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets/{flashcard_set.id}/flashcards", json=flashcard_data, headers=header)
+
+                if flashcard_response.status_code == 400:
+                    print(flashcard_response["error"])
+
+                flashcard_data_api = flashcard_response.json()
+                flashcard_set.flashcards.append(FlashcardModel(id=flashcard_data_api["id"], set_id=flashcard_set.id, word=flashcard_data_api["word"], definition=flashcard_data_api["definition"]))
+
+            except ConnectionError:
+                tk.messagebox.showerror("Connection Error", "Could not connect to server")
+            finally:
+                if lock_acquired:
+                    self.request_lock.release()
+
+        threading.Thread(target=post_flashcard).start()
 
         self.word_var.set("")
         self.definition_var.set("")
@@ -700,27 +741,44 @@ class AddSetFrame(ctk.CTkFrame):
         if not flashcard_set:
             return None
 
-        set_data = {
-            "name": set_name,
-        }
 
-        header = {
-            "Authorization": f"Bearer {token}",
-        }
+        def post_request():
+            if not self.request_lock.acquire(blocking=False):
+                print("Request for Already in Progress. Skipping this request.")
+                return
 
-        response = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", json=set_data, headers=header)
-        data = response.json()
-        flashcard_set = FlashcardSetModel(id = data["id"], name = data["name"])
+            lock_acquired = True
+            try:
 
-        self.master.flashcard_sets.append(flashcard_set)
+                set_data = {
+                    "name": set_name,
+                }
 
-        if response.status_code == 200:
-            # <handle dito ng succesful request>
-            data = response.json()
-            print(data['msg'])
-        else:
-            # <handle dito yung bad request>
-            pass
+                header = {
+                    "Authorization": f"Bearer {token}",
+                }
+
+                response = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", json=set_data, headers=header)
+                data = response.json()
+                flashcard_set = FlashcardSetModel(id = data["id"], name = data["name"])
+
+                self.master.flashcard_sets.append(flashcard_set)
+
+                if response.status_code == 200:
+                    # <handle dito ng succesful request>
+                    data = response.json()
+                    print(data['msg'])
+                else:
+                    # <handle dito yung bad request>
+                    pass
+            except ConnectionError:
+                tk.messagebox.showerror("Connection Error", "Could not connect to server")
+            finally:
+                if lock_acquired:
+                    self.request_lock.release()
+
+        threading.Thread(target=post_request).start()
+
         self.set_name_var.set("")
         self.word_var.set("")
         self.definition_var.set("")
