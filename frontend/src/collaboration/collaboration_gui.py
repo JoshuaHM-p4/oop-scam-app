@@ -289,7 +289,7 @@ class TeamDisplay(ctk.CTkScrollableFrame):
 
     def back_button(self):
         self.pack_forget()
-        self.collab_frame.module_frames[7].top_frame.pack(fill='both', expand=True)
+        self.collab_frame.main_screen_frames["CollaborationFrame"].top_frame.pack(fill='both', expand=True)
         
         
         
