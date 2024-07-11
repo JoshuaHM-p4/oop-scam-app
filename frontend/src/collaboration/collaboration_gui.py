@@ -17,6 +17,7 @@ class CollaborationFrame(ctk.CTkFrame):
 class TabOption(ctk.CTkTabview):
     def __init__(self, master):
         super().__init__(master)
+        self.master = master
         self.setup_ui()
         self.creating_tabs()
         self.creating_widgets()
@@ -26,7 +27,7 @@ class TabOption(ctk.CTkTabview):
 
         self.create_team_button = CreateTeamButton(self.teams_top_frame)
         for team in range(100):
-            self.teams_display = TeamsDisplayButton(self.teams_bottom_frame, team, self.team_number)
+            self.teams_display = TeamsDisplayButton(self.teams_bottom_frame, team, self.team_number, self.master)
             self.team_number +=1
 
         self.share_item_button = ShareItemButton(self.shared_top_frame)
@@ -39,16 +40,16 @@ class TabOption(ctk.CTkTabview):
         self.pack(fill="both", expand=True, padx=2, pady=(9,0))
 
     def creating_tabs(self):
-        self.add("Teams")
-        self.add("Shared")
+        self.teams = self.add("Teams")
+        self.shared = self.add("Shared")
 
     def creating_widgets(self):
-        self.teams_top_frame = ctk.CTkFrame(self.tab("Teams"))
-        self.teams_bottom_frame = ctk.CTkScrollableFrame(self.tab("Teams"))
+        self.teams_top_frame = ctk.CTkFrame(master=self.teams)
+        self.teams_bottom_frame = ctk.CTkScrollableFrame(master=self.teams)
 
-        self.shared_top_frame = ctk.CTkFrame(self.tab("Shared"))
-        self.shared_mid_frame = ctk.CTkFrame(self.tab("Shared"))
-        self.shared_bottom_frame = ctk.CTkScrollableFrame(self.tab("Shared"))
+        self.shared_top_frame = ctk.CTkFrame(master=self.shared)
+        self.shared_mid_frame = ctk.CTkFrame(master=self.shared)
+        self.shared_bottom_frame = ctk.CTkScrollableFrame(master=self.shared)
 
     def layout_widgets(self):
         self.teams_top_frame.configure(fg_color=BACKGROUND_COLOR)
@@ -75,7 +76,6 @@ class CreateTeamButton(ctk.CTkButton):
     def team_creation_floating_widget(self):
         # tk.messagebox.showinfo("Team Creation", "Create Team Button was clicked")
         CreateTeamTopLevel(self)
-        
 
 class ShareItemButton(ctk.CTkButton):
     def __init__(self, master):
@@ -142,12 +142,13 @@ class CreateTeamTopLevel(ctk.CTkToplevel):
         tk.messagebox.showinfo("Search Box", "Search Box was clicked")
 
 class TeamsDisplayButton(ctk.CTkButton):
-    def __init__(self,master, button_num, team_num):
+    def __init__(self,master, button_num, team_num, frame_master):
         super().__init__(master)
         self.button_num = button_num
         self.team_num = team_num
         self.row_num = button_num//3
         self.col_num = button_num%3
+        self.frame_master = frame_master
         self.colors = ["#f0f8ff", "#faebd7", "#7fffd4", "#007fff", "#f5f5dc", 
                        "#ffe4c4", "#ffebcd", "#deb887", "#5f9ea0", "#7fff00", 
                        "#ff7f50", "#fff8dc", "#6495ed", "#cd5c5c", "#dcdcdc", 
@@ -162,14 +163,20 @@ class TeamsDisplayButton(ctk.CTkButton):
                        text=f"Team {self.team_num}", 
                        text_color="black", 
                        font=("Arial", 20), 
-                       corner_radius=10)
+                       corner_radius=10, 
+                       command=self.on_click)
         self.grid(row=self.row_num, column=self.col_num, padx=(5,20), pady=10, sticky=ctk.NSEW)
-
+    
     # def create_widgets(self):
     #     self.team_name = ctk.CTkLabel(self, )
-
+                       
     # def layout_widgets(self):
     #     self.team_name.pack(fill="both", expand=True)
+
+    def on_click(self):
+        collaborationframe = self.frame_master.master
+        self.master.master.master.master.master.pack_forget()
+        TeamDisplay(self.frame_master, collaborationframe)
 
 class ShareItemTopLevel(ctk.CTkToplevel):
     def __init__(self, master):
@@ -191,6 +198,7 @@ class ShareItemTopLevel(ctk.CTkToplevel):
 
     def layout_widgets(self):
         self.search_bar.pack(side="left", fill="x", expand=True, padx=(5,5), pady=5)
+
 class ShareDisplayLabel(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
@@ -237,3 +245,51 @@ class ShareDisplayFrame(ctk.CTkFrame):
         self.items_label.pack(side="left", fill='x', expand=True, pady=5, padx=5)
         self.owner_label.pack(side='left', fill='x', expand=True, pady=5, padx=5)
         self.type_label.pack(side="left", fill='x', expand=True, pady=5, padx=5)
+
+class TeamDisplay(ctk.CTkScrollableFrame):
+    def __init__(self, master, collab_frame):
+        super().__init__(master)
+        self.collab_frame = collab_frame
+        self.setup_ui()
+        self.frame_setup()
+        for num in range(1,5):
+            self.create_widgets(num)
+            self.layout_widgets()
+
+    def setup_ui(self):
+        self.configure(fg_color=BACKGROUND_COLOR)
+        self.pack(fill='both', expand=True)
+
+    def frame_setup(self):
+        self.back_frame = ctk.CTkFrame(self)
+        self.back_button = ctk.CTkButton(self.back_frame, text="❮❮ Back", command=self.back_button)
+
+        self.upper_frame = ctk.CTkFrame(self)
+        self.lower_frame = ctk.CTkFrame(self)
+
+        self.back_frame.configure(fg_color = BACKGROUND_COLOR)
+        self.back_button.configure(fg_color=BACKGROUND_COLOR, border_color="#222B36", border_width=2, corner_radius=10)
+
+        self.upper_frame.configure(fg_color = BACKGROUND_COLOR, border_color ="#222B36", border_width= 2, corner_radius = 10)
+        self.lower_frame.configure(fg_color = BACKGROUND_COLOR, border_color ="#222B36", border_width= 2, corner_radius = 10)
+
+        self.back_frame.pack(fill='both', expand=True, side='top')
+        self.back_button.pack(side='left', padx=10, pady=5)
+
+        self.upper_frame.pack(fill='both', expand=True, pady=5, padx=(10,15), side='top')
+        self.lower_frame.pack(fill='both', expand=True, padx=(10,15), side='top')
+
+    def create_widgets(self, num):
+        self.members_label = ctk.CTkLabel(self.upper_frame, text=f"User {num}")
+        self.shared_item = ctk.CTkLabel(self.lower_frame, text=f"Item {num}")
+
+    def layout_widgets(self):
+        self.members_label.pack(padx=10, pady=10)
+        self.shared_item.pack(padx=10, pady=10)
+
+    def back_button(self):
+        self.pack_forget()
+        self.collab_frame.module_frames[7].top_frame.pack(fill='both', expand=True)
+        
+        
+        
