@@ -36,7 +36,7 @@ class MainApp(ctk.CTk):
         ctk.set_appearance_mode("dark")
 
         # Bindings to make the search bar focus out when clicked outside
-        self.bind_all("<Button-1>", lambda event: event.widget.focus_set())
+        self.bind_all("<Button-1>", self.handle_focus)
 
         # Binding to quit the app when the escape key is pressed
         self.bind("<Escape>", lambda event: self.quit())
@@ -90,6 +90,12 @@ class MainApp(ctk.CTk):
         self.dashboard_frame.set_user(self.user.username, self.user.email, self.user.user_id)
         self.on_login_success()
 
+    def handle_focus(self, event):
+        try:
+            event.widget.focus_set()
+        except AttributeError:
+            pass
+    
 if __name__ == "__main__":
     app = MainApp()
     app.mainloop()

@@ -16,7 +16,7 @@ class NotebookModel:
         """
         Returns the number of pages in the notebook.
         """
-        return len(self.notes) 
+        return len(self.notes)  
 
 class NoteModel:
     """

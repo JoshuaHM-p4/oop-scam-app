@@ -178,7 +178,20 @@ class LoginFrame(ctk.CTkFrame):
         self.google_signup_frame.pack(side='right', fill='both', padx=(0, 40), pady=20, expand=True)
 
     def google_signup(self):
-        print('Google sign up button clicked!')
+        email = 'test1@gmail.com'
+        password = 'test1'
+
+        # Email domain validation
+        valid_domains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com"]
+        if email != "admin":
+            domain = email.split('@')[-1]
+            if domain not in valid_domains:
+                messagebox.showerror("Input Error", "Please enter a valid email domain (gmail, yahoo, hotmail, outlook).")
+                return
+
+        # Start a new thread to make the request
+        login_thread = threading.Thread(target=self.login, args=(email, password))
+        login_thread.start()
 
     def login_button_click(self, event=None):
         email = self.email_entry.get()
