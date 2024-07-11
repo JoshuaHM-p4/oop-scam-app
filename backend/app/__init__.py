@@ -33,6 +33,7 @@ def create_app():
     register_error_handlers(app)
 
     from .routes.auth import auth_bp
+    from .routes.users import users_bp
     from .routes.notes import notes_bp
     # from .routes.templates import templates_bp
     # from .routes.calendar import calendar_bp
@@ -42,6 +43,7 @@ def create_app():
     from .routes.collaboration import collaboration_bp
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(users_bp)
     app.register_blueprint(notes_bp)
     # app.register_blueprint(templates_bp)
     # app.register_blueprint(calendar_bp)

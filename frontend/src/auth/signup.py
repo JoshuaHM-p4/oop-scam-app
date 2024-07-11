@@ -169,6 +169,7 @@ class SignupFrame(ctk.CTkFrame):
             self.email_error_label.configure(text=message)
             self.username_error_label.configure(text=message)
 
+
     def display_success(self, message):
         messagebox.showinfo("Signup Successful", message)
         self.return_login()

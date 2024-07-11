@@ -43,6 +43,8 @@ class SearchBar(ctk.CTkFrame):
 
         # Bind Enter key to trigger the search function
         self.search_entry.bind("<Return>", self.search)
+        self.search_entry.bind("<BackSpace>", self.search)
+        self.search_entry.bind("<KP_Enter>", self.search)
 
     def search(self, event=None):
         query = self.search_entry.get()

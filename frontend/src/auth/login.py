@@ -213,6 +213,7 @@ class LoginFrame(ctk.CTkFrame):
             print("LOGIN GUI: Login Request Prevented. A login request is already being processed.")
             return
 
+        lock_acquired = True
         try:
             login_data = {'email': email, 'password': password}
             response = requests.post(LOGIN_ENDPOINT, json=login_data, timeout=10)
@@ -224,7 +225,9 @@ class LoginFrame(ctk.CTkFrame):
         except ConnectionError:
             self.master.after(0, lambda: self.display_error("Could not connect to server"))
         finally:
-            self.request_lock.release()  # Release the lock
+
+            if lock_acquired:
+                self.request_lock.release()  # Release the lock
 
     def display_error(self, message):
         if "password" in message.lower():
@@ -234,3 +237,4 @@ class LoginFrame(ctk.CTkFrame):
         else:
             self.password_error_label.configure(text=message)
             self.email_error_label.configure(text=message)
+
