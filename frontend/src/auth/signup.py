@@ -80,20 +80,28 @@ class SignupFrame(ctk.CTkFrame):
 
 
     def signup(self, username, password, email):
-        signup_data = {
-            'username': username,
-            'password': password,
-            'email': email
-        }
+        if not self.request_lock.acquire(blocking=False):
+            print("LOGIN GUI: Login Request Prevented. A login request is already being processed.")
+            return
 
-        response = requests.post(SIGNUP_ENDPOINT, json=signup_data, timeout=10)
+        try:
+            signup_data = {
+                'username': username,
+                'password': password,
+                'email': email
+            }
 
-        if response.status_code == 201:
-            messagebox.showinfo("Signup Successful", response.json()['message'])
-            # <Signup Successful Here>
-            # <Back to Login Screen>
-        else:
-            print("Signup Error:", response.json()['message'])
-            # <Signup >
+            response = requests.post(SIGNUP_ENDPOINT, json=signup_data, timeout=10)
 
+            if response.status_code == 201:
+                messagebox.showinfo("Signup Successful", response.json()['message'])
+                # <Signup Successful Here>
+                # <Back to Login Screen>
+            else:
+                print("Signup Error:", response.json()['message'])
+                # <Signup >
+        except ConnectionError:
+            messagebox.showerror("Connection Error", "Could not connect to server")
+        finally:
+            self.request_lock.release()
 
