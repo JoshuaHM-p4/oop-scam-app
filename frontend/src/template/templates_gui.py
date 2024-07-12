@@ -189,15 +189,16 @@ class HomeworkFrame(ctk.CTkFrame):
         self.save_img_disabled = self.master.save_img_disabled
         self.remove_icon_disabled = self.master.remove_icon_disabled
         self.remove_icon = self.master.remove_icon
-        
+        self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.questions = []  # List to store questions
         self.setup_ui()
         
 
 
     def setup_ui(self):
-        self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         
+        for widget in self.winfo_children():
+            widget.destroy()
         # Entry for question input
         self.question_entry = ctk.CTkEntry(self, placeholder_text="Type your question here", corner_radius=20, border_width=1,
                                            height=30)
@@ -296,11 +297,16 @@ class HomeworkFrame(ctk.CTkFrame):
                     if self.header.check_var.get() == "on": 
                         homework_template.write_header(file_path)
                     homework_template.write_questions(file_path)
+                    
                     self.questions = []
                     self.questions_listbox.delete(0, ctk.END)
+                    
                     messagebox.showinfo("Save Success", f"The file was saved successfully")
-                    if self.questions_listbox.size() == 0:
-                        self.save_homework_btn.configure(state="disabled", image=self.save_img_disabled)
+                    self.save_homework_btn.configure(state="disabled", image=self.save_img_disabled)
+                    self.remove_question_btn.configure(state="disabled", image=self.remove_icon_disabled)
+                    self.question_entry.delete(0, ctk.END)
+                    self.setup_ui()
+                    
         except Exception as e:
             messagebox.showerror("Save Error", f"The file was not saved")       
         
@@ -350,6 +356,14 @@ class LetterFrame(ctk.CTkFrame):
         if self.header.check_var.get() == "on" and (name == "" or title == "" or subject == "" or professor == ""):
             messagebox.showerror("Error", "Name, title, subject, professor, and date are required")
             return
+        else:
+            name = ""
+            title = ""
+            subject = ""
+            professor = ""
+            instructions = ""
+            section = ""
+            school = ""
         
         letter_template = LetterModel(
             name = name,
@@ -373,6 +387,9 @@ class LetterFrame(ctk.CTkFrame):
                     letter_template.write_header(file_path)
                 letter_template.write_letter(file_path)
                 messagebox.showinfo("Save Success", f"The file was saved successfully")
+                self.recipient_entry.delete(0, ctk.END)
+                self.address_entry.delete(0, ctk.END)
+                
         except Exception as e:
             messagebox.showerror("Save Error", f"The file was not saved")
         
@@ -389,7 +406,7 @@ class EssayFrame(ctk.CTkFrame):
     def setup_ui(self):
         
         self.frame_container = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR, corner_radius=20, border_width=1)
-        self.essay_topic_entry = ctk.CTkEntry(self.frame_container, placeholder_text="Essay Topic", height=30, width=150, corner_radius=20)
+        self.essay_topic_entry = ctk.CTkEntry(self.frame_container, placeholder_text="Essay Topic", height=30, width=350, corner_radius=20)
         self.save_button = ctk.CTkButton(self, text="", fg_color="#222B36", height=30, corner_radius=20, command= self.save_essay,
                                          image=self.save_img)
         self.pack_essay()
@@ -417,6 +434,15 @@ class EssayFrame(ctk.CTkFrame):
         if self.header.check_var.get() == "on" and (name == "" or title == "" or subject == "" or professor == ""):
             messagebox.showerror("Error", "Name, title, subject, professor, and date are required")
             return
+        
+        else:
+            name = ""
+            title = ""
+            subject = ""
+            professor = ""
+            instructions = ""
+            section = ""
+            school = ""
         
         essay_template = EssayModel(
             name = name,
@@ -459,6 +485,9 @@ class MathFrame(ctk.CTkFrame):
         self.setup_ui()
     
     def setup_ui(self):
+        for widget in self.winfo_children():
+            widget.destroy()
+            
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         
         # Entry for question input
@@ -514,6 +543,7 @@ class MathFrame(ctk.CTkFrame):
             self.math_questions.append(math_question)  # Add question to the list
             self.questions_listbox.insert(ctk.END, math_question)  # Display question in the listbox
             self.question_entry.delete(0, ctk.END)  # Clear the entry widget
+            self.save_homework_btn.configure(state="normal", image=self.save_img)
             
     def save_math(self):
         name: str = self.header.name_entry.get()
@@ -528,7 +558,7 @@ class MathFrame(ctk.CTkFrame):
         if self.header.check_var.get() == "on" and (name == "" or title == "" or subject == "" or professor == ""):
             messagebox.showerror("Error", "Name, title, subject, professor, and date are required")
             return
-
+        
         math_questions: list[str] = self.math_questions
         
         math_template = MathModel(
@@ -555,8 +585,10 @@ class MathFrame(ctk.CTkFrame):
                     self.math_questions = []
                     self.questions_listbox.delete(0, ctk.END)
                     messagebox.showinfo("Save Success", f"The file was saved successfully")
-                    if self.questions_listbox.size() == 0:
-                        self.save_homework_btn.configure(state="disabled")
+                    self.save_homework_btn.configure(state="disabled")
+                    self.remove_question_btn.configure(state="disabled")
+                    
+                    self.setup_ui()
         except Exception as e:
             messagebox.showerror("Save Error", f"The file was not saved") 
 
