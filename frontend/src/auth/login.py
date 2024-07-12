@@ -78,7 +78,7 @@ class LoginFrame(ctk.CTkFrame):
         self.password_entry = ctk.CTkEntry(self.password_frame, show="*", placeholder_text='Password',
                                            placeholder_text_color='#141A1F', corner_radius=22, border_color='white',
                                            fg_color='white', width=240, height=25, text_color='#141A1F')
-        self.password_entry.pack(side="left", fill="y", padx=7, pady=7)
+        self.password_entry.pack(side="left", fill="both", expand=True, padx=7, pady=7)
 
         # Hide Icon
         self.hide_password_icon = ctk.CTkImage(Image.open("assets/images/hide_password.png"), size=(20, 20))
@@ -88,7 +88,7 @@ class LoginFrame(ctk.CTkFrame):
                                                   text_color='black', hover_color='gray', fg_color='white',
                                                   command=self.toggle_password_visibility, corner_radius=22,
                                                   image=self.hide_password_icon)
-        self.show_password_button.pack(side="right", padx=(0,5))
+        self.show_password_button.pack(side="left", padx=(0,7))
 
         # Error label for password
         self.password_error_label = ctk.CTkLabel(self.center_frame_login , text='', font=("Arial", 15), text_color="red")
