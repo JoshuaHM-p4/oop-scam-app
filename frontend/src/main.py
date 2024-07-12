@@ -17,7 +17,7 @@ from tasks import TasksFrame
 from flashcards import FlashcardsFrame
 from progress import ProgressFrame
 from collaboration import CollaborationFrame
-from settings import SettingsFrame
+from exit import ExitFrame
 
 # Append the parent directory to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))

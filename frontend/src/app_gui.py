@@ -10,7 +10,7 @@ from tasks import TasksFrame
 from flashcards import FlashcardsFrame
 from progress import ProgressFrame
 from collaboration import CollaborationFrame
-from settings import SettingsFrame
+from exit import ExitFrame
 
 from config import APP_NAME, BACKGROUND_COLOR
 
@@ -30,7 +30,7 @@ class AppFrame(ctk.CTkFrame):
             FlashcardsFrame,
             ProgressFrame,
             CollaborationFrame,
-            SettingsFrame
+            ExitFrame
         )
         self.main_screen_frames = {}
         self.container = self.dashboard_frame = None
