@@ -138,25 +138,25 @@ class HomeFrame(ctk.CTkFrame):
         return frame
 
     def notes_button_click(self):
-        print("Notes button clicked")
+        self.controller.app_frame.show_frame("NotebookFrame")
 
     def event_calender_click(self):
-        print("Event Calendar button clicked")
-    
+        self.controller.app_frame.show_frame("CalendarFrame")
+
     def templates_button_click(self):
-        print("Templates button clicked")
+        self.controller.app_frame.show_frame("TemplatesFrame")
 
     def task_scheduler_button_click(self):
-        print("Task Scheduler button clicked")
-    
+        self.controller.app_frame.show_frame("TasksFrame")
+
     def progress_tracker_button_click(self):
-        print("Progress Tracker button clicked")
-    
+        self.controller.app_frame.show_frame("ProgressFrame")
+
     def flashcard_button_click(self):
-        print("Flashcard button clicked")
+        self.controller.app_frame.show_frame("FlashcardsFrame")
 
     def collaboration_button_click(self):
-        print("Collaboration button clicked")
+        self.controller.app_frame.show_frame("CollaborationFrame")
 
     def edit_button_click(self):
         self.target_button_askstring = askstring("Edit Button", "Enter button you want to edit:")
@@ -211,26 +211,26 @@ class HomeFrame(ctk.CTkFrame):
                     if new_text == "Event Calendar":
                         self.event_calendar_frame = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
                         break
-                        
+
                     if new_text == "Template":
                         self.templates = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
                         break
-                        
+
                     if new_text == "Task Scheduler":
                         self.task_scheduler = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
                         break
-                        
+
                     if new_text == "Progress Tracker":
                         self.progress_tracker = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
                         break
-                    
+
                     if new_text == "Flashcard":
                         self.flashcard = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
                         break
-                    
+
                     if new_text == "Collaboration":
-                        self.collaboration = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)  
-                        break  
+                        self.collaboration = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
             else:
                 messagebox.showerror("Error", "Function not defined")
 
@@ -239,7 +239,7 @@ class HomeFrame(ctk.CTkFrame):
             return self.frame_bottom
         else:
             return self.frame_top
-                            
+
 
     def choose_new_command(self, target_button):
         commands = {
