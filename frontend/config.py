@@ -31,6 +31,7 @@ TASKS_ENDPOINT = f"{API_BASE_URL}/tasks"
 PROGRESS_ENDPOINT = f"{API_BASE_URL}/progress"
 FLASHCARDS_ENDPOINT = f"{API_BASE_URL}/flashcards"
 COLLABORATION_ENDPOINT = f"{API_BASE_URL}/collaboration"
+USERS_ENDPOINT = f"{API_BASE_URL}/users"
 
 # Other Settings
 AUTO_SAVE_INTERVAL = 300000  # 5 minutes in milliseconds

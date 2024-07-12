@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from .flashcards_model import FlashcardModel, FlashcardSetModel
+from .flashcards_user_window import FlashcardsUserWindow
 import tkinter as tk
 import sys
 import os
@@ -58,6 +59,9 @@ class FlashcardsFrame(ctk.CTkFrame):
 
     def update_flashcard_sets(self):
         self.container.display_flashcard_sets(self.flashcard_sets)
+
+        if self.top_menu.active_set:
+            self.top_menu.active_set.update_set_selection()
 
     def filter_flashcard_sets(self, query: str):
         filtered_set = [flashcard_set for flashcard_set in self.flashcard_sets if query.lower() in flashcard_set.name.lower()]
@@ -867,6 +871,12 @@ class EditSetFrame(ctk.CTkFrame):
         self.pack_forget()
         EditSetDetailsFrame(self.master)
 
+    def update_set_selection(self):
+        self.set_selection.set("")
+        sets = [flashcard.name for flashcard in self.master.flashcard_sets]
+        self.set_selection.configure(values=sets)
+        self.set_selection.set(sets[0])
+
     def delete_set(self):
         tk.messagebox.showinfo("Delete Set Button Response", "Delete Set button was clicked")
 
@@ -928,7 +938,6 @@ class EditSetFrame(ctk.CTkFrame):
         self.master.top_menu.hamburger_option_is_active = False
         self.master.top_menu.active_set = None
 
-
 class ShareSetFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
@@ -949,19 +958,22 @@ class ShareSetFrame(ctk.CTkFrame):
 
         self.upper_frame = ctk.CTkFrame(self.middle_frame)
 
-        self.set_selection = ctk.CTkComboBox(self.upper_frame, values=self.master.flashcard_sets)
+        sets = [flashcard_set.name for flashcard_set in self.master.flashcard_sets]
+        self.set_selection = ctk.CTkComboBox(self.upper_frame, values=sets)
+
+        self.share_set_button = ctk.CTkButton(self.upper_frame, text="Share Set", command=self.share_set)
 
         self.lower_frame = ctk.CTkFrame(self.middle_frame)
-
-        self.share_set_button = ctk.CTkButton(self.lower_frame, text="Share Set", command=self.share_set)
         self.back_button = ctk.CTkButton(self.lower_frame, text="Back", command=self.back_command)
 
     # Making widgets visible
     def layout_widgets(self):
         self.left_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.left_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+
         self.middle_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.middle_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+
         self.right_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.right_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
 
@@ -972,18 +984,24 @@ class ShareSetFrame(ctk.CTkFrame):
         self.set_selection.pack()
 
         self.lower_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
-        self.lower_frame.pack(side='top', fill="x", padx=2, pady=(200,3))
+        self.lower_frame.pack(side='top', fill="x", padx=2, pady=(0,3))
 
         self.share_set_button.configure(height=35)
-        self.share_set_button.pack(side='left')
+        self.share_set_button.pack(side='top', expand=True, pady=(125, 3))
         self.back_button.configure(height=35)
-        self.back_button.pack(side='right')
+        self.back_button.pack(side='top', expand=True, pady=(0, 3))
 
     def share_set(self):
-        tk.messagebox.showinfo("Share Set Button Response", "Share Set button was clicked")
+        def post_request():
+            print("Share Set Button Response", "Share Set button was clicked")
 
-        token = self.master.controller.access_token
-        set_name = self.set_selection.get()
+        FlashcardsUserWindow(self, callback=post_request, flashcard_set_title=self.set_selection.get())
+
+    def update_set_selection(self):
+        self.set_selection.set("")
+        sets = [flashcard.name for flashcard in self.master.flashcard_sets]
+        self.set_selection.configure(values=sets)
+        self.set_selection.set(sets[0])
 
     # Destroys the active frame and layouts the main frame of flashcards
     def back_command(self):
@@ -1216,6 +1234,11 @@ class EditSetDetailsFrame(ctk.CTkFrame):
 
         return None
 
+    def update_set_selection(self):
+        self.set_selection.set("")
+        sets = [flashcard.name for flashcard in self.master.flashcard_sets]
+        self.set_selection.configure(values=sets)
+        self.set_selection.set(sets[0])
 
     # Destroys the active frame and edit set flashcards frame
     def back_command(self):

@@ -34,7 +34,7 @@ class TabOption(ctk.CTkTabview):
         self.share_display_label = ShareDisplayLabel(self.shared_mid_frame)
         for item in range(100):
             self.share_display_frame = ShareDisplayFrame(self.shared_bottom_frame, item)
-    
+
     def setup_ui(self):
         self.configure(fg_color=BACKGROUND_COLOR)
         self.pack(fill="both", expand=True, padx=2, pady=(9,0))
@@ -108,7 +108,7 @@ class CreateTeamTopLevel(ctk.CTkToplevel):
         self.top_frame  = ctk.CTkFrame(master=self)
         self.team_name_entry = ctk.CTkEntry(master=self.top_frame, placeholder_text="Team Name")
         self.create_button = ctk.CTkButton(master=self.top_frame, text="Create")
-        
+
         self.mid_frame = ctk.CTkFrame(master=self)
         self.search_bar = SearchBar(self.mid_frame, search_handler=self.search_flashcards)
 
@@ -121,7 +121,7 @@ class CreateTeamTopLevel(ctk.CTkToplevel):
             self.user_frame.configure(fg_color=BACKGROUND_COLOR)
             self.user_frame.pack()
             self.user_list.pack(side="left", padx=(0, 10))
-            self.user_check_button.pack(side="right", padx=(5,0))       
+            self.user_check_button.pack(side="right", padx=(5,0))
 
     def layout_widgets(self):
         self.top_frame.configure(fg_color=BACKGROUND_COLOR)
@@ -149,27 +149,27 @@ class TeamsDisplayButton(ctk.CTkButton):
         self.row_num = button_num//3
         self.col_num = button_num%3
         self.frame_master = frame_master
-        self.colors = ["#f0f8ff", "#faebd7", "#7fffd4", "#007fff", "#f5f5dc", 
-                       "#ffe4c4", "#ffebcd", "#deb887", "#5f9ea0", "#7fff00", 
-                       "#ff7f50", "#fff8dc", "#6495ed", "#cd5c5c", "#dcdcdc", 
-                       "#fffff0", "#c3b091"] 
+        self.colors = ["#f0f8ff", "#faebd7", "#7fffd4", "#007fff", "#f5f5dc",
+                       "#ffe4c4", "#ffebcd", "#deb887", "#5f9ea0", "#7fff00",
+                       "#ff7f50", "#fff8dc", "#6495ed", "#cd5c5c", "#dcdcdc",
+                       "#fffff0", "#c3b091"]
         self.setup_ui()
         # self.create_widgets() "orange", "yellow", "green", "blue", "violet"
         # self.layout_widgets()
 
     def setup_ui(self):
         #self.master.master.master.team_number
-        self.configure(width=250, height=200, fg_color = random.choice(self.colors), 
-                       text=f"Team {self.team_num}", 
-                       text_color="black", 
-                       font=("Arial", 20), 
-                       corner_radius=10, 
+        self.configure(width=250, height=200, fg_color = random.choice(self.colors),
+                       text=f"Team {self.team_num}",
+                       text_color="black",
+                       font=("Arial", 20),
+                       corner_radius=10,
                        command=self.on_click)
         self.grid(row=self.row_num, column=self.col_num, padx=(5,20), pady=10, sticky=ctk.NSEW)
-    
+
     # def create_widgets(self):
     #     self.team_name = ctk.CTkLabel(self, )
-                       
+
     # def layout_widgets(self):
     #     self.team_name.pack(fill="both", expand=True)
 
@@ -290,6 +290,5 @@ class TeamDisplay(ctk.CTkScrollableFrame):
     def back_button(self):
         self.pack_forget()
         self.collab_frame.main_screen_frames["CollaborationFrame"].top_frame.pack(fill='both', expand=True)
-        
-        
-        
+
+

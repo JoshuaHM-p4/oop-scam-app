@@ -18,6 +18,19 @@ def get_users():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Get User by Query
+@users_bp.route('/search', methods=['GET'])
+@jwt_required()
+def search_user():
+    try:
+        query = request.args.get('query')
+        users = User.query.filter(User.username.ilike(f'%{query}%')).all()
+        result = [user.to_json() for user in users]
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # Get User by ID
 @users_bp.route('/<int:id>', methods=['GET'])
 @jwt_required()

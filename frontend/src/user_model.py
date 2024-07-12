@@ -37,3 +37,6 @@ class UserModel:
             username=data['username'],
             email=data['email']
         )
+
+    def __str__(self) -> str:
+        return self.__username
