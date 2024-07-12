@@ -1,11 +1,18 @@
 class FlashcardSetModel:
-    def __init__(self, id):
+    def __init__(self, id, name):
         self.id = id
-        self.name = None
+        self.name = name
+        self.starred = False
         self.flashcards = []
 
     def add_flashcard(self, flashcard):
-        pass
+        self.flashcards.append(flashcard)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f"{self.id} - {self.name} - {'starred' if self.starred else ''} - {len(self.flashcards)} Flashcards"
 
 class FlashcardModel:
     def __init__(self, id, set_id, word, definition):
