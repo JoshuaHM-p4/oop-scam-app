@@ -957,7 +957,7 @@ class EditSetFrame(ctk.CTkFrame):
                     data = response.json()
                     print(data['msg'])
                 else:
-                    print(f"Error {response.status_code}: {data["error"]}")
+                    print(f"Error {response.status_code}: {data['error']}")
             except ConnectionError:
                 tk.messagebox.showerror("Connection Error", "Could not connect to server")
             finally:
@@ -1075,7 +1075,7 @@ class ShareSetFrame(ctk.CTkFrame):
                     data = response.json()
                     print(data['msg'])
                 else:
-                    print(f"Error {response.status_code}: {data["error"]}")
+                    print(f"Error {response.status_code}: {data['error']}")
             except ConnectionError:
                 tk.messagebox.showerror("Connection Error", "Could not connect to server")
             finally:
@@ -1118,7 +1118,7 @@ class ShareSetFrame(ctk.CTkFrame):
                     data = response.json()
                     print(data['msg'])
                 else:
-                    print(f"Error {response.status_code}: {data["error"]}")
+                    print(f"Error {response.status_code}: {data['error']}")
             except ConnectionError:
                 tk.messagebox.showerror("Connection Error", "Could not connect to server")
             finally:
