@@ -15,6 +15,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 
 from searchbar import SearchBar
 from config import APP_NAME, BACKGROUND_COLOR, FLASHCARDS_ENDPOINT
+from user_model import UserModel
 
 # FlashcardsFrame: Main frame for the flashcards application
 class FlashcardsFrame(ctk.CTkFrame):
@@ -942,6 +943,9 @@ class ShareSetFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         self.master = master
+
+        self.share_lock = threading.Lock()
+
         self.setup_ui()
         self.create_widgets()
         self.layout_widgets()
@@ -962,6 +966,7 @@ class ShareSetFrame(ctk.CTkFrame):
         self.set_selection = ctk.CTkComboBox(self.upper_frame, values=sets)
 
         self.share_set_button = ctk.CTkButton(self.upper_frame, text="Share Set", command=self.share_set)
+        self.unshare_set_button = ctk.CTkButton(self.upper_frame, text="Share Set", command=self.unshare_set)
 
         self.lower_frame = ctk.CTkFrame(self.middle_frame)
         self.back_button = ctk.CTkButton(self.lower_frame, text="Back", command=self.back_command)
@@ -992,10 +997,90 @@ class ShareSetFrame(ctk.CTkFrame):
         self.back_button.pack(side='top', expand=True, pady=(0, 3))
 
     def share_set(self):
-        def post_request():
-            print("Share Set Button Response", "Share Set button was clicked")
+        token = self.master.controller.access_token
+        set_name = self.set_selection.get()
 
-        FlashcardsUserWindow(self, callback=post_request, flashcard_set_title=self.set_selection.get())
+        if not set_name:
+            return None
+
+        flashcard_set = next((set for set in self.master.flashcard_sets if set.name == set_name), None)
+
+        if not flashcard_set:
+            return None
+
+        def share_request(shared_users: list[UserModel]):
+            if not self.share_lock.acquire(blocking=False):
+                print("Request for Sharing Set Already in Progress. Skipping this request.")
+                return
+
+            lock_acquired = True
+            try:
+                header = {
+                    "Authorization": f"Bearer {token}",
+                }
+
+                body = {
+                    "user_ids": [user.user_id for user in shared_users]
+                }
+
+                response = requests.post(f"{FLASHCARDS_ENDPOINT}/share_flashcard_set/{flashcard_set.id}", json = body, headers=header)
+                data = response.json()
+
+                if response.status_code == 200:
+                    data = response.json()
+                    print(data['msg'])
+                else:
+                    print(f"Error {response.status_code}: {data["error"]}")
+            except ConnectionError:
+                tk.messagebox.showerror("Connection Error", "Could not connect to server")
+            finally:
+                if lock_acquired:
+                    self.share_lock.release()
+
+        FlashcardsUserWindow(self, callback=share_request, flashcard_set_title=self.set_selection.get(), set_selection=self.set_selection)
+
+    def unshare_set(self):
+        token = self.master.controller.access_token
+        set_name = self.set_selection.get()
+
+        if not set_name:
+            return None
+
+        flashcard_set = next((set for set in self.master.flashcard_sets if set.name == set_name), None)
+
+        if not flashcard_set:
+            return None
+
+        def share_request(shared_users: list[UserModel]):
+            if not self.share_lock.acquire(blocking=False):
+                print("Request for Sharing Set Already in Progress. Skipping this request.")
+                return
+
+            lock_acquired = True
+            try:
+                header = {
+                    "Authorization": f"Bearer {token}",
+                }
+
+                body = {
+                    "user_ids": [user.user_id for user in shared_users]
+                }
+
+                response = requests.delete(f"{FLASHCARDS_ENDPOINT}/unshare_flashcard_set/{flashcard_set.id}", json=body, headers=header)
+                data = response.json()
+
+                if response.status_code == 200:
+                    data = response.json()
+                    print(data['msg'])
+                else:
+                    print(f"Error {response.status_code}: {data["error"]}")
+            except ConnectionError:
+                tk.messagebox.showerror("Connection Error", "Could not connect to server")
+            finally:
+                if lock_acquired:
+                    self.share_lock.release()
+
+        FlashcardsUserWindow(self, callback=share_request, flashcard_set_title=self.set_selection.get(), set_selection=self.set_selection)
 
     def update_set_selection(self):
         self.set_selection.set("")

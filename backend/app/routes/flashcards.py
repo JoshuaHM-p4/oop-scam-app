@@ -12,6 +12,8 @@ flashcards_bp = Blueprint('flashcards', __name__, url_prefix='/flashcards')
 
 """
 
+
+# Share Flashcard Set with a Single User
 @flashcards_bp.route('/share_flashcard_set/<int:flashcard_set_id>/<int:shared_user_id>', methods=['POST'])
 @jwt_required()
 def share_flashcard_set(flashcard_set_id, shared_user_id):
@@ -32,6 +34,76 @@ def share_flashcard_set(flashcard_set_id, shared_user_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"An error occurred while sharing the flashcard set: {e}"}), 500
+
+# Share Flashcard Set with Multiple Users
+@flashcards_bp.route('/share_flashcard_set/<int:flashcard_set_id>', methods=['POST'])
+@jwt_required()
+def share_flashcard_set_users(flashcard_set_id):
+    try:
+        # Ensure the current user owns the flashcard set
+        current_user_id = get_jwt_identity()
+        flashcard_set = FlashcardSet.query.get(flashcard_set_id)
+
+        if flashcard_set is None:
+            return jsonify({'error': 'Flashcard set not found.'}), 404
+
+        if flashcard_set.user_id != current_user_id:
+            return jsonify({'error': 'You do not have permission to share this flashcard set.'}), 403
+
+        # Retrieve the list of user IDs from the request JSON
+        shared_user_ids = request.json.get('user_ids', [])
+        if not shared_user_ids:
+            return jsonify({'error': 'No user IDs provided for sharing.'}), 400
+
+        # Create a new UserFlashcardSet entry for each user ID in the list
+        for shared_user_id in shared_user_ids:
+            new_share = UserFlashcardSet(user_id=shared_user_id, flashcard_set_id=flashcard_set.id)
+            db.session.add(new_share)
+
+        db.session.commit()
+        return jsonify({"msg": "Flashcard set shared successfully with all specified users."}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An error occurred while sharing the flashcard set: {e}"}), 500
+
+@flashcards_bp.route('/unshare_flashcard_set/<int:flashcard_set_id>', methods=['DELETE'])
+@jwt_required()
+def unshare_flashcard_set(flashcard_set_id):
+    try:
+        current_user_id = get_jwt_identity()
+        flashcard_set = FlashcardSet.query.get(flashcard_set_id)
+
+        if flashcard_set is None:
+            return jsonify({'error': 'Flashcard set not found.'}), 404
+
+        if flashcard_set.user_id != current_user_id:
+            return jsonify({'error': 'You do not have permission to unshare this flashcard set. Try deleting instead.'}), 403
+
+        # Retrieve the list of user IDs from the request JSON
+        shared_user_ids = request.json.get('user_ids', [])
+        if not shared_user_ids:
+            return jsonify({'error': 'No user IDs provided for unsharing.'}), 400
+
+        # Filter UserFlashcardSet for the given flashcard_set_id and user_ids
+        user_flashcard_sets = UserFlashcardSet.query.filter(
+            UserFlashcardSet.user_id.in_(shared_user_ids),
+            UserFlashcardSet.flashcard_set_id == flashcard_set_id
+        ).all()
+
+        if not user_flashcard_sets:
+            return jsonify({'error': 'No shared flashcard sets found for the provided user IDs.'}), 404
+
+        # Delete the filtered UserFlashcardSet records
+        for user_flashcard_set in user_flashcard_sets:
+            db.session.delete(user_flashcard_set)
+
+        db.session.commit()
+
+        return jsonify({'message': 'Flashcard set unshared successfully.'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An error occurred while unsharing the flashcard set: {e}"}), 500
 
 """########################################## Flashcard Sets ##########################################
 # ENDPOINTS
