@@ -374,7 +374,7 @@ class EssayFrame(ctk.CTkFrame):
         section: str = self.header.section_entry.get()  # optional
         school: str = self.header.school_entry.get()  # optional
         date: str = self.header.date_entry.get()  # auto
-        essay: str = self.essay_topic_entry.get()
+        topic: str = self.essay_topic_entry.get()
         
         
         essay_template = EssayModel(
@@ -385,7 +385,7 @@ class EssayFrame(ctk.CTkFrame):
             section = section,
             school = school,
             date = date,
-            essay = essay
+            topic = topic
         )
         
         essay_template.add_instructions(instructions)
