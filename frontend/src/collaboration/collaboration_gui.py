@@ -67,6 +67,7 @@ class TabOption(ctk.CTkTabview):
 class CreateTeamButton(ctk.CTkButton):
     def __init__(self, master):
         super().__init__(master)
+        self.is_active = False
         self.setup_ui()
 
     def setup_ui(self):
@@ -74,12 +75,17 @@ class CreateTeamButton(ctk.CTkButton):
         self.pack(side="left", padx=(42,0))
 
     def team_creation_floating_widget(self):
-        # tk.messagebox.showinfo("Team Creation", "Create Team Button was clicked")
-        CreateTeamTopLevel(self)
+        if self.is_active == False:
+            self.top_level = CreateTeamTopLevel(self)
+            self.is_active = True
+        elif self.is_active == True:
+            self.top_level.destroy()
+            self.top_level = CreateTeamTopLevel(self)
 
 class ShareItemButton(ctk.CTkButton):
     def __init__(self, master):
         super().__init__(master)
+        self.is_active = False
         self.setup_ui()
 
     def setup_ui(self):
@@ -87,8 +93,13 @@ class ShareItemButton(ctk.CTkButton):
         self.pack(side="left", padx=(43,0))
 
     def share_item_floating_widget(self):
-        # tk.messagebox.showinfo("Share Item", "Share Item Button was clicked")
-        ShareItemTopLevel(self)
+        if self.is_active == False:
+            self.top_level = ShareItemTopLevel(self)
+            self.is_active = True
+        elif self.is_active == True:
+            self.top_level.destroy()
+            self.top_level = ShareItemTopLevel(self)
+        
 
 class CreateTeamTopLevel(ctk.CTkToplevel):
     def __init__(self, master):
