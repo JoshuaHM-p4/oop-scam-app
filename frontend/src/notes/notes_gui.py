@@ -37,7 +37,7 @@ class NotebookFrame(ctk.CTkFrame):
                        corner_radius=10)
         self.grid_configure(padx=10, pady=10)
 
-        sio.connect('http://192.168.2.108:5000')
+        sio.connect('http://localhost:5000')
         sio.on('note_received', self.note_received)
         self.current_room = None
     
@@ -428,7 +428,7 @@ class NotebookPage(ctk.CTkFrame):
             return
         note = response.json()['note']
         self.total_pages += 1
-        self.content_dict[self.total_pages] = {'note_id': note['id'], 'content': note['content'], 'title': note['title']}
+        self.content_dict[self.total_pages] = {'note_id': note['note_id'], 'content': note['content'], 'title': note['title']}
         self.current_page = self.total_pages
         self.update_content()
         self.update_button_states()
