@@ -9,6 +9,11 @@ class TasksFrame(ctk.CTkFrame):
         self.controller = controller
         self.filter_window = None
         self.new_task_window = None
+        self.tasks_list = []
+        self.task_deadline = []
+        self.task_status = []
+        self.task_type = []
+        self.task_priority = []
 
         self.setup_ui()
 
@@ -34,26 +39,77 @@ class TasksFrame(ctk.CTkFrame):
                                              font=('Montserrat', 30), corner_radius=10, image=self.add_new_icon,
                                              text_color='white', fg_color='#2B5EB2', command=self.show_new_task_window)
         self.new_task_button.pack(side='right')
-
-        # task bg
+        
         self.tasks_frame = ctk.CTkFrame(self, fg_color='#222B36')
         self.tasks_frame.pack(fill='both', expand=True, padx=20, pady=(0, 20))
+            
+        self.load_tasks()
 
-        # no task frame
-        self.no_tasks_frame = ctk.CTkFrame(self.tasks_frame, fg_color='#222B36')
-        self.no_tasks_frame.pack(anchor='center', expand=True)
+        # Load tasks
+    def load_tasks(self):
+        for widget in self.tasks_frame.winfo_children():
+            widget.destroy()
+        if self.tasks_list:
+            upper_frame = ctk.CTkFrame(self.tasks_frame, fg_color='#141A1F', height=50)
 
-        # no tasks icon
-        self.no_tasks_icon = ctk.CTkImage(Image.open("assets/images/no_task_icon.png"), size=(150, 150))
+            name_label = ctk.CTkLabel(upper_frame, text="Aa Name")
+            date_label = ctk.CTkLabel(upper_frame, text="📅Date")
+            status_label = ctk.CTkLabel(upper_frame, text="↻Status")
+            type_label = ctk.CTkLabel(upper_frame, text="▼Type")
+            priority_label = ctk.CTkLabel(upper_frame, text="▼Priority")
+            done_label = ctk.CTkLabel(upper_frame, text="✓Done")
 
-        # no tasks
-        self.no_tasks = ctk.CTkLabel(self.no_tasks_frame, image=self.no_tasks_icon, text='')
-        self.no_tasks.pack(padx=20, pady=(20, 10))
+            lower_frame = ctk.CTkScrollableFrame(self.tasks_frame, fg_color='#222B36', corner_radius=10)
+            for task in range(len(self.tasks_list)):
+                format_frame = ctk.CTkFrame(lower_frame, fg_color='#141A1F', corner_radius=0)
+                task_name = ctk.CTkLabel(format_frame, text=self.tasks_list[task])
+                task_deadline = ctk.CTkLabel(format_frame, text=self.task_deadline[task])
+                task_status = ctk.CTkOptionMenu(format_frame, values=["Not Started", "Completed", "In Progress"])
+                task_type = ctk.CTkLabel(format_frame, text=self.task_type[task])
+                task_priority = ctk.CTkLabel(format_frame, text=self.task_priority[task])
+                task_check = ctk.CTkCheckBox(format_frame, text="", corner_radius=20, checkbox_height=15, checkbox_width=15)
 
-        # no task label
-        self.no_tasks_label = ctk.CTkLabel(self.no_tasks_frame, text='Tasks are displayed here.', text_color='white',
-                                           font=('Montserrat', 15))
-        self.no_tasks_label.pack(padx=20, pady=(10, 20))
+                format_frame.pack(fill='x', expand=True, side='top',pady=1)
+                task_name.pack(side="left", fill='x', expand=True, pady=5, padx=5)
+                task_deadline.pack(side="left", fill='x', expand=True, pady=5, padx=5)
+                task_status.pack(side="left", fill='x', expand=True, pady=5, padx=5)
+                task_type.pack(side="left", fill='x', expand=True, pady=5, padx=5)
+                task_priority.pack(side="left", fill='x', expand=True, pady=5, padx=5)
+                task_check.pack(side="right", fill='x', expand=True, pady=5, padx=5)
+
+                self.task_name_var.set("")
+                self.deadline_var.set("")
+                self.status_var.set("")
+                self.type_var.set("")
+                self.priority_var.set("")
+
+            upper_frame.pack(fill='x', padx=30, pady=(10,0), side='top')
+                
+            name_label.pack(side="left", fill='x', expand=True, pady=5, padx=5)
+            date_label.pack(side="left", fill='x', expand=True, pady=5, padx=5)
+            status_label.pack(side="left", fill='x', expand=True, pady=5, padx=5)
+            type_label.pack(side="left", fill='x', expand=True, pady=5, padx=5)
+            priority_label.pack(side="left", fill='x', expand=True, pady=5, padx=5)
+            done_label.pack(side="left", fill='x', expand=True, pady=5, padx=5)
+                
+            lower_frame.pack(fill='both', expand=True, padx=20, pady=(0,10), side='top')
+
+        else:
+            # no task frame
+            self.no_tasks_frame = ctk.CTkFrame(self.tasks_frame, fg_color='#222B36')
+            self.no_tasks_frame.pack(anchor='center', expand=True)
+
+            # no tasks icon
+            self.no_tasks_icon = ctk.CTkImage(Image.open("assets/images/no_task_icon.png"), size=(150, 150))
+
+            # no tasks
+            self.no_tasks = ctk.CTkLabel(self.no_tasks_frame, image=self.no_tasks_icon, text='')
+            self.no_tasks.pack(padx=20, pady=(20, 10))
+
+            # no task label
+            self.no_tasks_label = ctk.CTkLabel(self.no_tasks_frame, text='Tasks are displayed here.', text_color='white',
+                                            font=('Montserrat', 15))
+            self.no_tasks_label.pack(padx=20, pady=(10, 20))
 
     def show_filter_window(self):
         if not self.filter_window or not self.filter_window.winfo_exists():
@@ -141,11 +197,11 @@ class TasksFrame(ctk.CTkFrame):
             self.new_task_window.attributes('-topmost', 1)
 
             # Create variables to store task details
-            task_name_var = StringVar()
-            deadline_var = StringVar()
-            status_var = StringVar()
-            type_var = StringVar()
-            priority_var = StringVar()
+            self.task_name_var = StringVar()
+            self.deadline_var = StringVar()
+            self.status_var = StringVar()
+            self.type_var = StringVar()
+            self.priority_var = StringVar()
 
             # Create a main frame for new task options
             main_frame = ctk.CTkScrollableFrame(self.new_task_window, fg_color='#141A1F')
@@ -154,13 +210,13 @@ class TasksFrame(ctk.CTkFrame):
             # Task name entry
             task_name_label = ctk.CTkLabel(main_frame, text="Task Name:", text_color='white', font=('Montserrat', 15))
             task_name_label.pack(anchor='w', padx=10, pady=10)
-            task_name_entry = ctk.CTkEntry(main_frame, textvariable=task_name_var, width=250, placeholder_text="Title")
+            task_name_entry = ctk.CTkEntry(main_frame, textvariable=self.task_name_var, width=250, placeholder_text="Title")
             task_name_entry.pack(anchor='w', padx=(10,23), pady=10)
 
             # Deadline entry
             deadline_label = ctk.CTkLabel(main_frame, text="Deadline:", text_color='white', font=('Montserrat', 15))
             deadline_label.pack(anchor='w', padx=10, pady=10)
-            deadline_entry = ctk.CTkEntry(main_frame, textvariable=deadline_var, width=250, placeholder_text="Due Date")
+            deadline_entry = ctk.CTkEntry(main_frame, textvariable=self.deadline_var, width=250, placeholder_text="Due Date")
             deadline_entry.pack(anchor='w', padx=(10,23), pady=10)
 
             # Status options
@@ -169,7 +225,7 @@ class TasksFrame(ctk.CTkFrame):
             status_options = ["Completed", "In Progress", "Not Started"]
             for option in status_options:
                 radio_button = ctk.CTkRadioButton(main_frame, text=option, text_color='white',
-                                                  font=('Montserrat', 12), value=option, variable=status_var)
+                                                  font=('Montserrat', 12), value=option, variable=self.status_var)
                 radio_button.pack(anchor='w', padx=10, pady=5)
 
             # Type options
@@ -178,7 +234,7 @@ class TasksFrame(ctk.CTkFrame):
             type_options = ["Tasks", "Review", "Assignment", "Exam"]
             for option in type_options:
                 radio_button = ctk.CTkRadioButton(main_frame, text=option, text_color='white',
-                                                  font=('Montserrat', 12), value=option, variable=type_var)
+                                                  font=('Montserrat', 12), value=option, variable=self.type_var)
                 radio_button.pack(anchor='w', padx=10, pady=5)
 
             # Priority options
@@ -187,15 +243,15 @@ class TasksFrame(ctk.CTkFrame):
             priority_options = ["Low", "Mid", "High"]
             for option in priority_options:
                 radio_button = ctk.CTkRadioButton(main_frame, text=option, text_color='white',
-                                                  font=('Montserrat', 12), value=option, variable=priority_var)
+                                                  font=('Montserrat', 12), value=option, variable=self.priority_var)
                 radio_button.pack(anchor='w', padx=10, pady=5)
 
             # Save button
-            save_button = ctk.CTkButton(main_frame, text="Save", fg_color='#222B36', command=lambda: self.save_new_task(task_name_var.get(),
-                                                                                                  deadline_var.get(),
-                                                                                                  status_var.get(),
-                                                                                                  type_var.get(),
-                                                                                                  priority_var.get()))
+            save_button = ctk.CTkButton(main_frame, text="Save", fg_color='#222B36', command=lambda: self.save_new_task(self.task_name_var.get(),
+                                                                                                  self.deadline_var.get(),
+                                                                                                  self.status_var.get(),
+                                                                                                  self.type_var.get(),
+                                                                                                  self.priority_var.get()))
             save_button.pack(pady=(20,10), padx=(10,23), fill='both', expand=True)
 
         else:
@@ -210,3 +266,10 @@ class TasksFrame(ctk.CTkFrame):
     def save_new_task(self, name, deadline, status, type, priority):
         print(f"New Task saved: Name-{name}, Deadline-{deadline}, Status-{status}, Type-{type}, Priority-{priority}")
         # Add your logic to save the new task here
+        if name:
+            self.tasks_list.append(name)
+            self.task_deadline.append(deadline)
+            self.task_status.append(status)
+            self.task_type.append(type)
+            self.task_priority.append(priority)
+            self.load_tasks()
