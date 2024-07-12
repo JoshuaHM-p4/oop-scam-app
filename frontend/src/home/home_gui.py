@@ -1,5 +1,7 @@
 import customtkinter as ctk
 import os, sys
+from tkinter.simpledialog import askstring
+import tkinter.messagebox as messagebox
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'searchbar')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))  # frontend/
@@ -30,63 +32,153 @@ class HomeFrame(ctk.CTkFrame):
         self.searchbar = SearchBar(self.main_frame)
         self.searchbar.pack(side="top", fill="x", pady=1)
 
-
         self.frame_top = ctk.CTkFrame(self.main_frame, fg_color = second_main_bg_color)
         self.frame_top.pack(side="top", fill="both", expand=True)
 
-        self.notes_frame = ctk.CTkFrame(self.frame_top, fg_color = bg_color, border_width = 10, border_color = second_main_bg_color, corner_radius = 40)
-        self.notes_frame.pack(side="left", fill="both", expand=True, padx=(10, 0))
-        self.notes_label = ctk.CTkButton(self.notes_frame, text="Notes", font=("Arial", 30), fg_color = bg_color, hover_color = hovering_color, corner_radius = 100)
-        self.notes_label.pack(side="top", fill="both", expand=True, pady=(20), padx=(20, 20))
-        self.notes_label.bind("<Button-1>", lambda event: self.notes_button_click())
-        self.notes_frame.bind("<Button-1>", lambda event: self.notes_button_click())
-
-        self.event_calendar_frame = ctk.CTkFrame(self.frame_top, fg_color = bg_color, border_width = 10, border_color = second_main_bg_color, corner_radius = 40)
-        self.event_calendar_frame.pack(side="left", fill="both", expand=True, padx = (0,10))
-        self.event_calendar_label = ctk.CTkButton(self.event_calendar_frame, text="Event Calendar", font=("Arial", 30), fg_color = bg_color, hover_color = hovering_color, corner_radius = 100)
-        self.event_calendar_label.pack(side="top", fill="both", expand=True, pady=(20), padx=(20, 20))
-        self.event_calendar_frame.bind("<Button-1>", lambda event: self.event_calender_click())
-        self.event_calendar_label.bind("<Button-1>", lambda event: self.event_calender_click())
+        self.notes_frame = self.create_button_frame(self.frame_top, "Notes", self.notes_button_click)
+        self.event_calendar_frame = self.create_button_frame(self.frame_top, "Event Calendar", self.event_calender_click)
 
         self.frame_bottom = ctk.CTkFrame(self.main_frame, fg_color = second_main_bg_color)
         self.frame_bottom.pack(side="top", fill="both", expand=True)
 
-        self.templates = ctk.CTkFrame(self.frame_bottom, fg_color = bg_color, border_width = 10, border_color = second_main_bg_color, corner_radius = 40)
-        self.templates.pack(side="left", fill="both", expand=True, padx=(10,0))
-        self.templates_label = ctk.CTkButton(self.templates, text="Templates", font=("Arial", 30), fg_color = bg_color, hover_color = hovering_color, corner_radius = 100)
-        self.templates_label.pack(side="top", fill="both", expand=True, pady=(20), padx=(20))
-        self.templates_label.bind("<Button-1>", lambda event: self.templates_button_click())
-        self.templates.bind("<Button-1>", lambda event: self.templates_button_click())
+        self.templates = self.create_button_frame(self.frame_bottom, "Templates", self.templates_button_click)
 
-        self.frame_bottom_right = ctk.CTkFrame(self.frame_bottom, fg_color = second_main_bg_color)
-        self.frame_bottom_right.pack(side="left", fill="both", expand=True)
+        self.task_scheduler = self.create_button_frame(self.frame_bottom, "Task Scheduler", self.task_scheduler_button_click)
+        self.progress_tracker = self.create_button_frame(self.frame_bottom, "Progress Tracker", self.progress_tracker_button_click)
 
-        self.task_scheduler = ctk.CTkFrame(self.frame_bottom_right, fg_color = bg_color, border_width = 10, border_color = second_main_bg_color, corner_radius = 40)
-        self.task_scheduler.pack(side="top", fill="both", expand=True, padx=(0,10))
-        self.task_scheduler_label = ctk.CTkButton(self.task_scheduler, text="Task Scheduler", font=("Arial", 30), fg_color = bg_color, hover_color = hovering_color, corner_radius = 100)
-        self.task_scheduler_label.pack(side="top", fill="both", expand=True, pady=20, padx=(20))
-        self.task_scheduler_label.bind("<Button-1>", lambda event: self.task_scheduler_button_click())
-        self.task_scheduler.bind("<Button-1>", lambda event: self.task_scheduler_button_click())
+        # Edit button
+        self.edit_button = ctk.CTkButton(self.main_frame, text="Edit Button", font=("Arial", 20), command=self.edit_button_click)
+        self.edit_button.pack(side="top", pady=10)
 
-        self.progress_tracker = ctk.CTkFrame(self.frame_bottom_right, fg_color = bg_color, border_width = 10, border_color = second_main_bg_color, corner_radius = 40)
-        self.progress_tracker.pack(side="top", fill="both", expand=True, padx=(0,10))
-        self.progress_tracker_label = ctk.CTkButton(self.progress_tracker, text="Progress Tracker", font=("Arial", 30), fg_color = bg_color, hover_color = hovering_color, corner_radius = 100)
-        self.progress_tracker_label.pack(side="top", fill="both", expand=True, pady=(20), padx=(20))
-        self.progress_tracker_label.bind("<Button-1>", lambda event: self.progress_tracker_button_click())
-        self.progress_tracker.bind("<Button-1>", lambda event: self.progress_tracker_button_click())
+        self.button_labels = ["Note", "Event Calendar", "Template", "Task Scheduler", "Progress Tracker"]
+        self.all_buttons_labels = ["Note", "Event Calendar", "Template", "Task Scheduler", "Progress Tracker", "Flashcard", "Collaboration"]
+
+    def create_button_frame(self, parent, text, command):
+        frame = ctk.CTkFrame(parent, fg_color=bg_color, border_width=10, border_color=second_main_bg_color, corner_radius=40)
+        frame.pack(side="left", fill="both", expand=True, padx=10)
+        button = ctk.CTkButton(frame, text=text, font=("Arial", 30), fg_color=bg_color, hover_color=hovering_color, corner_radius=100)
+        button.pack(side="top", fill="both", expand=True, pady=20, padx=20)
+        button.bind("<Button-1>", lambda event: command())
+        return frame
 
     def notes_button_click(self):
-        print("geraldo")
+        print("Notes button clicked")
 
     def event_calender_click(self):
-        print("event calender")
+        print("Event Calendar button clicked")
     
     def templates_button_click(self):
-        print("templates")
+        print("Templates button clicked")
 
     def task_scheduler_button_click(self):
-        print("task scheduler")
+        print("Task Scheduler button clicked")
     
     def progress_tracker_button_click(self):
-        print("progress tracker")
+        print("Progress Tracker button clicked")
+    
+    def flashcard_button_click(self):
+        print("Flashcard button clicked")
+
+    def collaboration_button_click(self):
+        print("Collaboration button clicked")
+
+    def edit_button_click(self):
+        self.target_button_askstring = askstring("Edit Button", "Enter button you want to edit:")
+        if self.target_button_askstring in self.button_labels:
+            target_button = self.target_button_askstring
+            for i in self.button_labels:
+                if target_button == i:
+                    self.button_labels.remove(i)
+                    if target_button == "Note":
+                        self.notes_frame.pack_forget()
+                        self.notes_frame.destroy()
+                        self.new_text(target_button)
+                    elif target_button == "Event Calendar":
+                        self.event_calendar_frame.pack_forget()
+                        self.event_calendar_frame.destroy()
+                        self.new_text(target_button)
+                    elif target_button == "Template":
+                        self.templates.pack_forget()
+                        self.templates.destroy()
+                        self.new_text(target_button)
+                    elif target_button == "Task Scheduler":
+                        self.task_scheduler.pack_forget()
+                        self.task_scheduler.destroy()
+                        self.new_text(target_button)
+                    elif target_button == "Progress Tracker":
+                        self.progress_tracker.pack_forget()
+                        self.progress_tracker.destroy()
+                        self.new_text(target_button)
+                    elif target_button == "Flashcard":
+                        self.flashcard.pack_forget()
+                        self.flashcard.destroy()
+                        self.new_text(target_button)
+                    elif target_button == "Collaboration":
+                        self.collaboration.pack_forget()
+                        self.collaboration.destroy()
+                        self.new_text(target_button)
+        else:
+            messagebox.showerror("Error", "Button not found")
+
+                    
+
+    def new_text(self, target_button):
+        while True:
+            text = askstring("Edit Button", "Enter new button label:")
+            if text in self.all_buttons_labels:
+                new_text = text
+                new_command = self.choose_new_command(new_text)
+                self.button_labels.append(new_text)
+                if new_command:
+                    if new_text == "Note":
+                        self.notes_frame = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
+                        
+                    if new_text == "Event Calendar":
+                        self.event_calendar_frame = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
+                        
+                    if new_text == "Template":
+                        self.templates = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
+                        
+                    if new_text == "Task Scheduler":
+                        self.task_scheduler = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
+                        
+                    if new_text == "Progress Tracker":
+                        self.progress_tracker = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
+                    
+                    if new_text == "Flashcard":
+                        self.flashcard = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
+                    
+                    if new_text == "Collaboration":
+                        self.collaboration = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)  
+                        break  
+            else:
+                messagebox.showerror("Error", "Function not defined")
+
+
+
+    def higher_number_of_widgets_in_frame(self):
+        if len(self.frame_top.winfo_children()) >= len(self.frame_bottom.winfo_children()):
+            return self.frame_bottom
+        else:
+            return self.frame_top
+                            
+
+    def choose_new_command(self, target_button):
+        commands = {
+            "note": self.notes_button_click,
+            "calendar": self.event_calender_click,
+            "template": self.templates_button_click,
+            "task scheduler": self.task_scheduler_button_click,
+            "progress tracker": self.progress_tracker_button_click,
+            "flashcard": self.flashcard_button_click,
+            "collaboration": self.collaboration_button_click,
+        }
+        return commands.get(target_button.lower(), lambda: print(f"{target_button} function not defined"))
+
 
