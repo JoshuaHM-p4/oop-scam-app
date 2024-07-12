@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from .flashcards_model import FlashcardModel, FlashcardSetModel
+from .flashcards_user_window import FlashcardsUserWindow
 import tkinter as tk
 import sys
 import os
@@ -14,6 +15,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 
 from searchbar import SearchBar
 from config import APP_NAME, BACKGROUND_COLOR, FLASHCARDS_ENDPOINT
+from user_model import UserModel
 
 # FlashcardsFrame: Main frame for the flashcards application
 class FlashcardsFrame(ctk.CTkFrame):
@@ -59,6 +61,9 @@ class FlashcardsFrame(ctk.CTkFrame):
     def update_flashcard_sets(self):
         self.container.display_flashcard_sets(self.flashcard_sets)
 
+        if self.top_menu.active_set:
+            self.top_menu.active_set.update_set_selection()
+
     def filter_flashcard_sets(self, query: str):
         filtered_set = [flashcard_set for flashcard_set in self.flashcard_sets if query.lower() in flashcard_set.name.lower()]
         self.container.display_flashcard_sets(filtered_set)
@@ -82,7 +87,7 @@ class FlashcardsFrame(ctk.CTkFrame):
                 response_data = response.json()
 
                 for data in response_data:
-                    flashcard_set = FlashcardSetModel(id = data["id"], name = data["name"])
+                    flashcard_set = FlashcardSetModel(id = data["id"], name = data["name"], user_id = data["user_id"])
                     flashcard_set.flashcards = self.fetch_flashcards(data["id"])
                     self.flashcard_sets.append(flashcard_set)
                 self.after(0, self.update_flashcard_sets)
@@ -867,6 +872,12 @@ class EditSetFrame(ctk.CTkFrame):
         self.pack_forget()
         EditSetDetailsFrame(self.master)
 
+    def update_set_selection(self):
+        self.set_selection.set("")
+        sets = [flashcard.name for flashcard in self.master.flashcard_sets]
+        self.set_selection.configure(values=sets)
+        self.set_selection.set(sets[0])
+
     def delete_set(self):
         tk.messagebox.showinfo("Delete Set Button Response", "Delete Set button was clicked")
 
@@ -880,6 +891,7 @@ class EditSetFrame(ctk.CTkFrame):
 
         if not flashcard_set:
             return None
+
 
         def delete_request():
             if not self.delete_lock.acquire(blocking=False):
@@ -914,7 +926,41 @@ class EditSetFrame(ctk.CTkFrame):
                 if lock_acquired:
                     self.delete_lock.release()
 
-        threading.Thread(target=delete_request).start()
+        def unshare_request():
+            if not self.delete_lock.acquire(blocking=False):
+                print("Request for Sharing Set Already in Progress. Skipping this request.")
+                return
+
+            lock_acquired = True
+            try:
+                header = {
+                    "Authorization": f"Bearer {token}",
+                }
+
+                response = requests.delete(f"{FLASHCARDS_ENDPOINT}/unshare_flashcard_set_self/{flashcard_set.id}", headers=header)
+                data = response.json()
+
+                # Delete Flashcard Set from
+                flashcard_sets = [set for set in self.master.flashcard_sets if set.name != set_name]
+                self.master.flashcard_sets = flashcard_sets
+                self.set_selection.set("")
+                self.set_selection.configure(values=[flashcard.name for flashcard in self.master.flashcard_sets])
+
+                if response.status_code == 200:
+                    data = response.json()
+                    print(data['msg'])
+                else:
+                    print(f"Error {response.status_code}: {data["error"]}")
+            except ConnectionError:
+                tk.messagebox.showerror("Connection Error", "Could not connect to server")
+            finally:
+                if lock_acquired:
+                    self.delete_lock.release()
+
+        if flashcard_set.user_id == self.master.controller.user.user_id:
+            threading.Thread(target=delete_request).start()
+        else:
+            threading.Thread(target=unshare_request).start()
 
         self.set_selection.set("")
 
@@ -928,11 +974,13 @@ class EditSetFrame(ctk.CTkFrame):
         self.master.top_menu.hamburger_option_is_active = False
         self.master.top_menu.active_set = None
 
-
 class ShareSetFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         self.master = master
+
+        self.share_lock = threading.Lock()
+
         self.setup_ui()
         self.create_widgets()
         self.layout_widgets()
@@ -949,19 +997,23 @@ class ShareSetFrame(ctk.CTkFrame):
 
         self.upper_frame = ctk.CTkFrame(self.middle_frame)
 
-        self.set_selection = ctk.CTkComboBox(self.upper_frame, values=self.master.flashcard_sets)
+        sets = [flashcard_set.name for flashcard_set in self.master.flashcard_sets]
+        self.set_selection = ctk.CTkComboBox(self.upper_frame, values=sets)
+
+        self.share_set_button = ctk.CTkButton(self.upper_frame, text="Share Set", command=self.share_set)
+        self.unshare_set_button = ctk.CTkButton(self.upper_frame, text="Unshare Set", command=self.unshare_set)
 
         self.lower_frame = ctk.CTkFrame(self.middle_frame)
-
-        self.share_set_button = ctk.CTkButton(self.lower_frame, text="Share Set", command=self.share_set)
         self.back_button = ctk.CTkButton(self.lower_frame, text="Back", command=self.back_command)
 
     # Making widgets visible
     def layout_widgets(self):
         self.left_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.left_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+
         self.middle_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.middle_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
+
         self.right_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.right_frame.pack(side='left', fill="both", expand=True, padx=2, pady=(0,3))
 
@@ -972,18 +1024,107 @@ class ShareSetFrame(ctk.CTkFrame):
         self.set_selection.pack()
 
         self.lower_frame.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
-        self.lower_frame.pack(side='top', fill="x", padx=2, pady=(200,3))
+        self.lower_frame.pack(side='top', fill="x", padx=2, pady=(0,3))
 
         self.share_set_button.configure(height=35)
-        self.share_set_button.pack(side='left')
+        self.share_set_button.pack(side='top', expand=True, pady=(125, 5))
+        self.unshare_set_button.configure(height=35)
+        self.unshare_set_button.pack(side='top', expand=True, pady=(0, 3))
+
         self.back_button.configure(height=35)
-        self.back_button.pack(side='right')
+        self.back_button.pack(side='top', expand=True, pady=(0, 3))
 
     def share_set(self):
-        tk.messagebox.showinfo("Share Set Button Response", "Share Set button was clicked")
-
         token = self.master.controller.access_token
         set_name = self.set_selection.get()
+
+        if not set_name:
+            return None
+
+        flashcard_set = next((set for set in self.master.flashcard_sets if set.name == set_name), None)
+
+        if not flashcard_set:
+            return None
+
+        def share_request(shared_users: list[UserModel]):
+            if not self.share_lock.acquire(blocking=False):
+                print("Request for Sharing Set Already in Progress. Skipping this request.")
+                return
+
+            lock_acquired = True
+            try:
+                header = {
+                    "Authorization": f"Bearer {token}",
+                }
+
+                body = {
+                    "user_ids": [user.user_id for user in shared_users]
+                }
+
+                response = requests.post(f"{FLASHCARDS_ENDPOINT}/share_flashcard_set/{flashcard_set.id}", json = body, headers=header)
+                data = response.json()
+
+                if response.status_code == 200:
+                    data = response.json()
+                    print(data['msg'])
+                else:
+                    print(f"Error {response.status_code}: {data["error"]}")
+            except ConnectionError:
+                tk.messagebox.showerror("Connection Error", "Could not connect to server")
+            finally:
+                if lock_acquired:
+                    self.share_lock.release()
+
+        FlashcardsUserWindow(self, callback=share_request, flashcard_set_title=self.set_selection.get(), set_selection=self.set_selection)
+
+    def unshare_set(self):
+        token = self.master.controller.access_token
+        set_name = self.set_selection.get()
+
+        if not set_name:
+            return None
+
+        flashcard_set = next((set for set in self.master.flashcard_sets if set.name == set_name), None)
+
+        if not flashcard_set:
+            return None
+
+        def share_request(shared_users: list[UserModel]):
+            if not self.share_lock.acquire(blocking=False):
+                print("Request for Sharing Set Already in Progress. Skipping this request.")
+                return
+
+            lock_acquired = True
+            try:
+                header = {
+                    "Authorization": f"Bearer {token}",
+                }
+
+                body = {
+                    "user_ids": [user.user_id for user in shared_users]
+                }
+
+                response = requests.delete(f"{FLASHCARDS_ENDPOINT}/unshare_flashcard_set/{flashcard_set.id}", json=body, headers=header)
+                data = response.json()
+
+                if response.status_code == 200:
+                    data = response.json()
+                    print(data['msg'])
+                else:
+                    print(f"Error {response.status_code}: {data["error"]}")
+            except ConnectionError:
+                tk.messagebox.showerror("Connection Error", "Could not connect to server")
+            finally:
+                if lock_acquired:
+                    self.share_lock.release()
+
+        FlashcardsUserWindow(self, callback=share_request, flashcard_set_title=self.set_selection.get(), set_selection=self.set_selection)
+
+    def update_set_selection(self):
+        self.set_selection.set("")
+        sets = [flashcard.name for flashcard in self.master.flashcard_sets]
+        self.set_selection.configure(values=sets)
+        self.set_selection.set(sets[0])
 
     # Destroys the active frame and layouts the main frame of flashcards
     def back_command(self):
@@ -1216,6 +1357,11 @@ class EditSetDetailsFrame(ctk.CTkFrame):
 
         return None
 
+    def update_set_selection(self):
+        self.set_selection.set("")
+        sets = [flashcard.name for flashcard in self.master.flashcard_sets]
+        self.set_selection.configure(values=sets)
+        self.set_selection.set(sets[0])
 
     # Destroys the active frame and edit set flashcards frame
     def back_command(self):

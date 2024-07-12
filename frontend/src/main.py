@@ -72,6 +72,7 @@ class MainApp(ctk.CTk):
         self.app_frame.pack(side='left', expand=True, fill='both')
         self.app_frame.pack_configure(padx=1, pady=1)
         self.app_frame.configure(fg_color='#222B36')
+        self.app_frame.show_frame('HomeFrame')
 
     def pack_login(self) -> None:
         # Add the Login Frame
@@ -95,7 +96,7 @@ class MainApp(ctk.CTk):
             event.widget.focus_set()
         except AttributeError:
             pass
-    
+
 if __name__ == "__main__":
     app = MainApp()
     app.mainloop()
