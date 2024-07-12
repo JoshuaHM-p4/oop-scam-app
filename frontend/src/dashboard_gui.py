@@ -83,7 +83,7 @@ class ButtonsFrame(ctk.CTkFrame):
                     font=(FONT_FAMILY, 16),
                     fg_color='transparent',
                     hover_color='#222B36',
-                    command=lambda frame_name=frame_name: show_frame(frame_name)
+                    command=lambda : self.quit()
                  )
             if frame_name != 'ExitFrame':
                 button.pack(pady=2, fill='x', expand=True)
