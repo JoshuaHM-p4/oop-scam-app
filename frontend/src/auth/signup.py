@@ -18,18 +18,25 @@ class SignupFrame(ctk.CTkFrame):
 
     def setup_ui(self):
         # Back button
+        self.container_frame_gray = ctk.CTkFrame(self, corner_radius=20, fg_color='#222B36')
+        self.container_frame_gray.pack(fill='both', expand=True, padx=10, pady=10)
+        
         self.back_button_logo = ctk.CTkImage(Image.open("assets/images/left_arrow.png"), size=(25, 25))
-        self.back_button = ctk.CTkButton(self, text='Login page', text_color='white', fg_color='#141A1F',
+        self.back_button = ctk.CTkButton(self.container_frame_gray, text='Login page', text_color='white', fg_color='#222B36',
                                          hover_color='gray',
                                          command=self.return_login, corner_radius=10, image=self.back_button_logo,
                                          width=50, height=25)
-        self.back_button.pack(side='top', anchor='nw', padx=15, pady=(15, 0))
+        self.back_button.pack(side='top', anchor='nw', padx=15, pady=(10, 0))
+
+
+        self.center_frame = ctk.CTkFrame(self.container_frame_gray, fg_color='#222B36')
+        self.center_frame.pack(expand=True)
 
         # Frame for logo and title
-        self.logo_frame = ctk.CTkFrame(self, fg_color='#141A1F')
-        self.logo_frame.pack(pady=5, padx=10)
+        self.logo_frame = ctk.CTkFrame(self.center_frame, fg_color='#222B36')
+        self.logo_frame.pack( padx=10)
 
-        self.app_logo = ctk.CTkImage(Image.open("assets/images/app_logo.png"), size=(200, 200))
+        self.app_logo = ctk.CTkImage(Image.open("assets/images/app_logo.png"), size=(180, 180))
         self.app_label = ctk.CTkLabel(self.logo_frame, image=self.app_logo, text='')
         self.app_label.pack(side='left', padx=(0, 10))
 
@@ -37,46 +44,46 @@ class SignupFrame(ctk.CTkFrame):
         self.title_label.pack(side='left', padx=(10, 0))
 
         # Create a container frame for labels, entries, and button
-        self.container_frame = ctk.CTkFrame(self, fg_color='#141A1F')
-        self.container_frame.pack(pady=(90, 10), padx=10)
+        self.container_frame = ctk.CTkFrame(self.center_frame, fg_color='#222B36')
+        self.container_frame.pack(padx=10, expand=True, pady=10)
 
         # Email Label and Entry
-        self.email_label_frame = ctk.CTkFrame(self.container_frame, fg_color='#141A1F')
+        self.email_label_frame = ctk.CTkFrame(self.container_frame, fg_color='#222B36')
         self.email_label_frame.pack(anchor='w')
         self.email_label = ctk.CTkLabel(self.email_label_frame, text="   Email:", text_color='white')
         self.email_label.pack(side='left')
         self.email_error_label = ctk.CTkLabel(self.email_label_frame, text='', font=("Arial", 12), text_color="red")
         self.email_error_label.pack(side='left', padx=10)
-        self.email_entry = ctk.CTkEntry(self.container_frame, placeholder_text='Email', corner_radius=10, width=300,
-                                        height=40, text_color='#141A1F', fg_color='white', border_color='#141A1F')
+        self.email_entry = ctk.CTkEntry(self.container_frame, placeholder_text='Email', corner_radius=20, width=300,
+                                        height=40, text_color='#141A1F', fg_color='white', border_color='#222B36')
         self.email_entry.pack(anchor='w', pady=10)
 
         # Username Label and Entry
-        self.username_label_frame = ctk.CTkFrame(self.container_frame, fg_color='#141A1F')
+        self.username_label_frame = ctk.CTkFrame(self.container_frame, fg_color='#222B36')
         self.username_label_frame.pack(anchor='w')
         self.username_label = ctk.CTkLabel(self.username_label_frame, text="   Username:", text_color='white')
         self.username_label.pack(side='left')
         self.username_error_label = ctk.CTkLabel(self.username_label_frame, text='', font=("Arial", 12), text_color="red")
         self.username_error_label.pack(side='left', padx=10)
-        self.username_entry = ctk.CTkEntry(self.container_frame, placeholder_text='Username', corner_radius=10,
+        self.username_entry = ctk.CTkEntry(self.container_frame, placeholder_text='Username', corner_radius=20,
                                            width=300, height=40, text_color='#141A1F', fg_color='white',
-                                           border_color='#141A1F')
+                                           border_color='#222B36')
         self.username_entry.pack(anchor='w', pady=10)
 
         # Password Label and Entry
-        self.password_label_frame = ctk.CTkFrame(self.container_frame, fg_color='#141A1F')
+        self.password_label_frame = ctk.CTkFrame(self.container_frame, fg_color='#222B36')
         self.password_label_frame.pack(anchor='w')
         self.password_label = ctk.CTkLabel(self.password_label_frame, text="   Password:", text_color='white')
         self.password_label.pack(side='left')
         self.password_error_label = ctk.CTkLabel(self.password_label_frame, text='', font=("Arial", 12), text_color="red")
         self.password_error_label.pack(side='left', padx=10)
 
-        self.password_frame = ctk.CTkFrame(self.container_frame, fg_color='white', corner_radius=10,
+        self.password_frame = ctk.CTkFrame(self.container_frame, fg_color='white', corner_radius=20,
                                            height=40, width=300)
         self.password_frame.pack(anchor='w', pady=10)
 
-        self.password_entry = ctk.CTkEntry(self.password_frame, placeholder_text='Password', show="*", corner_radius=10,
-                                           width=220, height=20, text_color='#141A1F', fg_color='white',
+        self.password_entry = ctk.CTkEntry(self.password_frame, placeholder_text='Password', show="*", corner_radius=20,
+                                           width=220, height=20, text_color='#222B36', fg_color='white',
                                            border_color='white')
         self.password_entry.pack(anchor='w', pady=7, padx=7, side='left', fill='y')
 
@@ -93,9 +100,9 @@ class SignupFrame(ctk.CTkFrame):
         # Signup Button
         self.signup_button = ctk.CTkButton(self.container_frame, text="Signup", command=self.signup_button_click,
                                            hover_color='navy blue',
-                                           width=120, height=40, corner_radius=10)
-        self.signup_button.pack(pady=30)
-
+                                           width=120, height=40, corner_radius=20)
+        self.signup_button.pack(pady=20)
+        
     def toggle_password_visibility(self):
         if self.password_entry.cget('show') == '*':
             self.password_entry.configure(show='')

@@ -47,29 +47,32 @@ class LoginFrame(ctk.CTkFrame):
         self.pack(fill='both')
 
         # Set Profile Button
+        
+        self.center_frame_login = ctk.CTkFrame(self.login_frame, fg_color='#222B36')
+        self.center_frame_login.pack(expand=True, anchor='center', fill='x', padx=20)
+        
         self.default_profile = ctk.CTkImage(Image.open("assets/images/default_profile_picture.png"), size=(120, 120))
 
-        self.profile_button = ctk.CTkButton(self.login_frame, width=80, height=80, image=self.default_profile, text='',
-                                            fg_color='#222B36', hover_color='#D9D9D9', command=self.change_profile)
-        self.profile_button.pack(padx=10, pady=(200, 20))
+        self.profile_button = ctk.CTkButton(self.center_frame_login , width=120, height=120, image=self.default_profile, text='',
+                                            fg_color='#222B36', hover_color='#737373', command=self.change_profile)
 
-        self.welcome_label = ctk.CTkLabel(self.login_frame, text='Welcome Back!', font=("Arial", 35))
-        self.welcome_label.pack(padx=10, pady=(5, 30))
+        self.welcome_label = ctk.CTkLabel(self.center_frame_login , text='Welcome Back!', font=("Arial", 35))
+
 
         # Email Entry
-        self.email_entry = ctk.CTkEntry(self.login_frame, placeholder_text='E-mail',
+        self.email_entry = ctk.CTkEntry(self.center_frame_login , placeholder_text='E-mail',
                                         placeholder_text_color='#141A1F', corner_radius=22, border_color='white',
                                         fg_color='white', width=315, height=40, text_color='#141A1F')
-        self.email_entry.pack(pady=(10, 0))
+
 
         # Error label for email
-        self.email_error_label = ctk.CTkLabel(self.login_frame, text='', font=("Arial", 15), text_color="red")
-        self.email_error_label.pack(pady=5)
+        self.email_error_label = ctk.CTkLabel(self.center_frame_login , text='', font=("Arial", 15), text_color="red")
+
 
         # Password Frame
-        self.password_frame = ctk.CTkFrame(self.login_frame, fg_color='white', corner_radius=22, bg_color='#222B36',
+        self.password_frame = ctk.CTkFrame(self.center_frame_login , fg_color='white', corner_radius=22, bg_color='#222B36',
                                            height=35, width=300)
-        self.password_frame.pack(pady=(5, 0))
+
 
         # Password Entry
         self.password_entry = ctk.CTkEntry(self.password_frame, show="*", placeholder_text='Password',
@@ -88,12 +91,14 @@ class LoginFrame(ctk.CTkFrame):
         self.show_password_button.pack(side="right", padx=(0,5))
 
         # Error label for password
-        self.password_error_label = ctk.CTkLabel(self.login_frame, text='', font=("Arial", 15), text_color="red")
-        self.password_error_label.pack(pady=5)
+        self.password_error_label = ctk.CTkLabel(self.center_frame_login , text='', font=("Arial", 15), text_color="red")
+
 
         # Forgot password and sign up container
-        self.button_container_frame = ctk.CTkFrame(self.login_frame, fg_color='#222B36')
-        self.button_container_frame.pack(pady=5)
+        
+        # FRAMEEEEEEEEEE
+        self.button_container_frame = ctk.CTkFrame(self.center_frame_login , fg_color='#222B36')
+
 
         # Forgot Password
         self.forgot_password_button = ctk.CTkButton(self.button_container_frame, text='Forgot Password?',
@@ -106,19 +111,30 @@ class LoginFrame(ctk.CTkFrame):
         self.signup_button.pack(side='right', padx=5)
 
         # Login Button
-        self.login_button = ctk.CTkButton(self.login_frame, text="Login", command=self.login_button_click,
+        self.login_button = ctk.CTkButton(self.center_frame_login , text="Login", command=self.login_button_click,
                                           corner_radius=24, width=120, height=45, fg_color='white', text_color='#141A1F')
-        self.login_button.pack(padx=10, pady=20)
 
         self.login_button.bind("<Return>", self.login_button_click)
+        
+        # PACKING ALL LOGIN TANGINA
+        self.profile_button.pack()
+        self.welcome_label.pack(pady=40)
+        self.email_entry.pack(fill='x')
+        self.email_error_label.pack()
+        self.password_frame.pack(fill='x')
+        self.password_error_label.pack()
+        self.button_container_frame.pack(pady=(0,10))
+        self.login_button.pack(pady=10)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
+        
+        self.center_frame_signup = ctk.CTkFrame(self.google_signup_frame, fg_color='#222B36')
+        self.center_frame_signup.pack(expand=True, anchor='center', fill='x', padx=20)
 
         # Create a canvas to draw the lines and "or" text
-        self.upper_line_canvas = tk.Canvas(self.google_signup_frame, width=400, height=40, bg='#222B36',
+        self.upper_line_canvas = tk.Canvas(self.center_frame_signup, width=400, height=40, bg='#222B36',
                                            highlightthickness=0)
-        self.upper_line_canvas.pack(pady=(250, 70))
 
         # Draw the left line
         self.upper_line_canvas.create_line(0, 20, 170, 20, fill='white', width=2)
@@ -132,19 +148,22 @@ class LoginFrame(ctk.CTkFrame):
         # Signup Widgets
         self.google_logo = ctk.CTkImage(Image.open("assets/images/google_logo.png"), size=(130, 130))
 
-        self.google_signup_button = ctk.CTkButton(self.google_signup_frame, image=self.google_logo, text='',
+        self.google_signup_button = ctk.CTkButton(self.center_frame_signup, image=self.google_logo, text='',
                                                   corner_radius=100, fg_color='#222B36', command=self.google_signup)
-        self.google_signup_button.pack(anchor='center')
 
-        self.signup_label = ctk.CTkLabel(self.google_signup_frame, text='No account? Sign-Up', text_color='white')
-        self.signup_label.pack()
+        self.signup_label = ctk.CTkLabel(self.center_frame_signup, text='No account? Sign-Up', text_color='white')
+
 
         # Create a canvas to draw the lower line
-        self.lower_line_canvas = tk.Canvas(self.google_signup_frame, width=400, height=40, bg='#222B36',
+        self.lower_line_canvas = tk.Canvas(self.center_frame_signup, width=400, height=40, bg='#222B36',
                                            highlightthickness=0)
-        self.lower_line_canvas.pack(pady=70)
 
         self.lower_line_canvas.create_line(0, 20, 400, 20, fill='white', width=2)
+        
+        self.upper_line_canvas.pack(pady=(0, 30))
+        self.google_signup_button.pack(pady=(20,0))
+        self.signup_label.pack(pady=(0, 20))
+        self.lower_line_canvas.pack(pady=(30,0))
 
     def toggle_password_visibility(self):
         if self.password_entry.cget('show') == '*':
