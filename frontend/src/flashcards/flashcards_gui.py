@@ -11,9 +11,11 @@ import queue
 
 # Add the common directory to the sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'searchbar')))  # src/common/searchbar
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'loading')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))  # frontend/
 
 from searchbar import SearchBar
+from loading import LoadingFrame
 from config import APP_NAME, BACKGROUND_COLOR, FLASHCARDS_ENDPOINT
 from user_model import UserModel
 
@@ -114,6 +116,7 @@ class FlashcardsFrame(ctk.CTkFrame):
         return flashcards
 
     def tkraise(self, aboveThis=None):
+        self.loading()
         self.fetch_flashcard_sets()
         super().tkraise(aboveThis)
 
@@ -142,6 +145,10 @@ class FlashcardsFrame(ctk.CTkFrame):
         # Hide the back button and progress bar
         self.back_button.pack_forget()
         self.progressbar.pack_forget()
+
+    def loading(self):
+        self.loading_frame = LoadingFrame(self.container, fg_color = BACKGROUND_COLOR)
+        self.loading_frame.pack(expand=True, padx=(50,50), pady=(250,3))
 
     # Method to display a specific flashcard set
     def show_flashcard_set(self, set_id):

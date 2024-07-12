@@ -5,9 +5,12 @@ import os
 import sys
 import threading
 
+loading_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'loading'))
 script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(loading_dir)
 sys.path.append(script_dir)
 
+from loading import LoadingFrame
 from signup import SignupFrame
 
 from typing import Tuple
@@ -23,6 +26,7 @@ class LoginFrame(ctk.CTkFrame):
 
         self.callback = callback
         self.request_lock = threading.Lock()  # Initialize the lock
+        self.loading = None
 
         # Container
         self.container_frame = ctk.CTkFrame(self, fg_color='#141A1F', corner_radius=10)
@@ -47,10 +51,10 @@ class LoginFrame(ctk.CTkFrame):
         self.pack(fill='both')
 
         # Set Profile Button
-        
+
         self.center_frame_login = ctk.CTkFrame(self.login_frame, fg_color='#222B36')
         self.center_frame_login.pack(expand=True, anchor='center', fill='x', padx=20)
-        
+
         self.default_profile = ctk.CTkImage(Image.open("assets/images/default_profile_picture.png"), size=(120, 120))
 
         self.profile_button = ctk.CTkButton(self.center_frame_login , width=120, height=120, image=self.default_profile, text='',
@@ -95,7 +99,7 @@ class LoginFrame(ctk.CTkFrame):
 
 
         # Forgot password and sign up container
-        
+
         # FRAMEEEEEEEEEE
         self.button_container_frame = ctk.CTkFrame(self.center_frame_login , fg_color='#222B36')
 
@@ -115,7 +119,10 @@ class LoginFrame(ctk.CTkFrame):
                                           corner_radius=24, width=120, height=45, fg_color='white', text_color='#141A1F')
 
         self.login_button.bind("<Return>", self.login_button_click)
-        
+
+        # Loading Frame
+        self.loading = LoadingFrame(self.center_frame_login, fg_color="#222B36")
+
         # PACKING ALL LOGIN TANGINA
         self.profile_button.pack()
         self.welcome_label.pack(pady=40)
@@ -128,7 +135,7 @@ class LoginFrame(ctk.CTkFrame):
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
-        
+
         self.center_frame_signup = ctk.CTkFrame(self.google_signup_frame, fg_color='#222B36')
         self.center_frame_signup.pack(expand=True, anchor='center', fill='x', padx=20)
 
@@ -159,7 +166,7 @@ class LoginFrame(ctk.CTkFrame):
                                            highlightthickness=0)
 
         self.lower_line_canvas.create_line(0, 20, 400, 20, fill='white', width=2)
-        
+
         self.upper_line_canvas.pack(pady=(0, 30))
         self.google_signup_button.pack(pady=(20,0))
         self.signup_label.pack(pady=(0, 20))
@@ -240,6 +247,9 @@ class LoginFrame(ctk.CTkFrame):
         login_thread = threading.Thread(target=self.login, args=(email, password))
         login_thread.start()
 
+        self.login_button.pack_forget()
+        self.loading.pack(expand=True)
+
     def login(self, email: str, password: str):
         if not self.request_lock.acquire(blocking=False):
             print("LOGIN GUI: Login Request Prevented. A login request is already being processed.")
@@ -262,6 +272,8 @@ class LoginFrame(ctk.CTkFrame):
                 self.request_lock.release()  # Release the lock
 
     def display_error(self, message):
+        self.loading.pack_forget()
+        self.login_button.pack(pady=10)
         if "password" in message.lower():
             self.password_error_label.configure(text=message)
         elif "email" in message.lower() or "account" in message.lower():
@@ -269,4 +281,5 @@ class LoginFrame(ctk.CTkFrame):
         else:
             self.password_error_label.configure(text=message)
             self.email_error_label.configure(text=message)
+
 
