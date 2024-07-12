@@ -283,10 +283,47 @@ def create_notebook():
         new_user_notebook = UserNotebook(user_id=user_id, notebook_id=new_notebook.id)
         db.session.add(new_user_notebook)
         db.session.commit()
+        new_note = Note(notebook_id=new_notebook.id, title=title, content='Untitled Note')
+        db.session.add(new_note)
+        db.session.commit()
         # return a 201 response
         # return jsonify({'message': 'Notebook created successfully'}), 201
         # return notebook details:
         return jsonify({'message': "Notebook created successfully", 'notebook': new_notebook.to_json()}), 201
+    except Exception as e:
+        return jsonify({'message': str(e)}), 400
+    
+@notes_bp.route('/notebook-title/<int:notebook_id>', methods=['PUT'])
+@jwt_required()
+def update_notebook_title(notebook_id):
+    try:
+        # get the user id from the jwt token
+        user_id = get_jwt_identity()
+        # get the user object
+        user = User.query.get(user_id)
+        # if the user does not exist, return a 404
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+        # get the notebook object
+        notebook = Notebook.query.get(notebook_id)
+        # if the notebook does not exist, return a 404
+        if not notebook:
+            return jsonify({'message': 'Notebook not found'}), 404
+        is_owner = notebook.owner_id == user.id
+        # if the user is not the owner of the notebook, return a 403
+        if not is_owner:
+            return jsonify({'message': 'You do not have access to update the title of this notebook'}), 403
+        # get the data from the request
+        data = request.get_json()
+        title = data.get('title')
+        # if the title is missing, return a 400
+        if not title:
+            return jsonify({'message': 'Title is required'}), 400
+        # update the notebook title
+        notebook.title = title
+        db.session.commit()
+        # return a 200 response
+        return jsonify({'message': 'Notebook title updated successfully'}), 200
     except Exception as e:
         return jsonify({'message': str(e)}), 400
     
@@ -350,12 +387,12 @@ def create_note(notebook_id):
         if not user:
             return jsonify({'message': 'User not found'}), 404
         # get the data from the request
-        data = request.get_json()
-        title = data.get('title')
-        content = data.get('content')
+        # data = request.get_json()
+        title = "Untitled Note"
+        content = 'Untilted Note'
         # if the notebook_id, title or content is missing, return a 400
-        if not notebook_id or not title or not content:
-            return jsonify({'message': 'Notebook id, title and content are required'}), 400
+        if not notebook_id:
+            return jsonify({'message': 'Notebook id is required'}), 400
         # get the notebook object
         notebook = Notebook.query.get(notebook_id)
         # if the notebook does not exist, return a 404
@@ -365,8 +402,13 @@ def create_note(notebook_id):
         new_note = Note(notebook_id=notebook.id, title=title, content=content)
         db.session.add(new_note)
         db.session.commit()
+        note = {
+            'id': new_note.id,
+            'title': new_note.title,
+            'content': new_note.content
+        }
         # return a 201 response
-        return jsonify({'message': 'Note created successfully'}), 201
+        return jsonify({'message': 'Note created successfully', 'note': note}), 201
     except Exception as e:
         return jsonify({'message': str(e)}), 400
     
@@ -582,6 +624,14 @@ def delete_notebook(notebook_id):
         # delete the notebook
         db.session.delete(notebook)
         db.session.commit()
+        user_notebooks = UserNotebook.query.filter_by(notebook_id=notebook_id).all()
+        for user_notebook in user_notebooks:
+            db.session.delete(user_notebook)
+            db.session.commit()
+        notes = Note.query.filter_by(notebook_id=notebook_id).all()
+        for note in notes:
+            db.session.delete(note)
+            db.session.commit()
         # return a 200 response
         return jsonify({'message': 'Notebook deleted successfully'}), 200
     except Exception as e:

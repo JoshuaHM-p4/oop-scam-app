@@ -49,8 +49,7 @@ class NotebookFrame(ctk.CTkFrame):
         self.notebook_page.pack_forget()
         self.top_menu.pack(fill="x", padx=2, pady=(20,0))
         self.container.pack(fill="both", expand=True, padx=2, pady=2)
-        
-            
+        self.container.display_notebooks()
         
 
 class Container(ctk.CTkFrame):
@@ -76,7 +75,6 @@ class Container(ctk.CTkFrame):
 
         if response.status_code == 200: 
             notebooks = response.json()
-            print(notebooks)
             for notebook in notebooks:
                 self.master.notebooks.append(NotebookModel(
                 id=notebook['notebook_id'], 
@@ -118,7 +116,9 @@ class Container(ctk.CTkFrame):
                                           text_color="black")
                 text_title.place(relx=0.5, rely=0.5, anchor="center")
                 if self.master.delete_mode:
-                    notebook_button.configure(hover_color="red", command=lambda i=i: self.delete_notebook(i))
+                    # notebook_button.configure(hover_color="red", command=lambda i=i: self.delete_notebook(i))
+                    notebook_button.configure(hover_color="red", command=lambda i=i: self.delete_notebook(notebook=self.master.notebooks[i], index=i))
+                        
                 
                 notebook_button.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
 
@@ -144,7 +144,6 @@ class Container(ctk.CTkFrame):
             messagebox.showerror("Error", response.json()['message'])
             return
         notebook = response.json()['notebook']
-        print(notebook)
         test_notebook = NotebookModel(id=notebook['id'], owner_id=notebook['user_id'], title=notebook['title']) # Example notes
         self.master.notebooks.append(test_notebook)
         messagebox.showinfo("Success", f"Notebook: {title} created successfully.")
@@ -158,6 +157,7 @@ class Container(ctk.CTkFrame):
         # <fetch notes for the selected notebook>
         self.master.view_notebook(self.current_note_index, notebook)
 
+    # di na ata kailangan
     def edit_notebook_title(self, index, new_title):
         if new_title.strip() == "":
             messagebox.showerror("Error", "Title cannot be empty.")
@@ -165,12 +165,19 @@ class Container(ctk.CTkFrame):
         self.master.notebooks[index].title = new_title
         self.display_notebooks()
 
-    def delete_notebook(self, index):
-        notebook_title = self.master.notebooks[index].title  # Assuming each notebook has a 'title' attribute
+    def delete_notebook(self, notebook, index):
+        notebook_id = notebook.id
+        notebook_title = notebook.title # Assuming each notebook has a 'title' attribute
         # Confirmation dialog
         response = messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete the '{notebook_title}' notebook?")
         if response:  # If user clicks 'Yes'
-            del self.master.notebooks[index]
+            # del self.master.notebooks[index]
+            response = requests.delete(
+                url=NOTES_ENDPOINT + f"/notebook/{notebook_id}",
+                headers={"Authorization": f"Bearer {self.master.controller.access_token}"}
+            )
+            if response.status_code == 200:
+                del self.master.notebooks[index]
             self.display_notebooks()
 
 class TopMenu(ctk.CTkFrame):
@@ -246,21 +253,12 @@ class NotebookPage(ctk.CTkFrame):
         # Database fetch for number of notes, total pages, content, etc.
         # #### DAVID #########
         
-        # Dummy content dictionary
-        self.content_dict = {
-            1: "Content for Page 1\n" * 10,
-            2: "Content for Page 2\n" * 10,
-            3: "Content for Page 3\n" * 10,
-            4: "Content for Page 4\n" * 10,
-            5: "Content for Page 5\n" * 10,
-            6: "Content for Page 6\n" * 10,
-            7: "Content for Page 7\n" * 10,
-            8: "Content for Page 8\n" * 10,
-            9: "Content for Page 9\n" * 10,
-            10: "Content for Page 10\n" * 10,
-        }
+        self.notebook_title = self.notebook.title
+        self.content_dict = {}
         self.current_page = 1  # Start with page 1
+        self.fetch_notes()
         self.total_pages = len(self.content_dict) 
+        print('263', self.total_pages)
         
         self.setup_ui()
         self.update_content()
@@ -281,6 +279,10 @@ class NotebookPage(ctk.CTkFrame):
                                          image=self.return_img, width=25, height=25, corner_radius=20, 
                                          fg_color=BACKGROUND_COLOR, hover_color="#222B36", border_width=0)
         self.back_button.pack(side="left", padx=10, expand=True, anchor="w")
+
+        self.notebook_title = ctk.CTkEntry(self.top_frame, fg_color=BACKGROUND_COLOR, height=1, font=("Arial", 20), placeholder_text="Title:")
+        self.notebook_title.pack(fill="x", padx=10, pady=10)
+        self.notebook_title.insert(0, self.notebook.title)
         
         # self.label_notebook_title = ctk.CTkLabel(self.top_frame, text="Notebook Page", font=("Arial", 20), fg_color="red")
         # self.label_notebook_title.pack(side="left", padx=10, pady=10, expand=True, anchor="center")
@@ -299,16 +301,16 @@ class NotebookPage(ctk.CTkFrame):
         self.save_button.pack(side="left",  anchor="e")
         
         # Title textbox
-        self.title_textbox = ctk.CTkEntry(self, fg_color=BACKGROUND_COLOR, height=1, font=("Arial", 20), placeholder_text="Title:",
+        self.title_entry = ctk.CTkEntry(self, fg_color=BACKGROUND_COLOR, height=1, font=("Arial", 20), placeholder_text="Title:",
                                           border_width=0, corner_radius=0)
-        self.title_textbox.pack(fill="x", padx=10, pady=10)
+        self.title_entry.pack(fill="x", padx=10, pady=10)
         
-        self.title_textbox.insert(0, self.notebook.title)
+        self.title_entry.insert(0, self.content_dict[self.current_page]['title'])
         
         # Content textbox
         self.content_textbox = ctk.CTkTextbox(self, fg_color="white", height=1, text_color="black", border_width=0, corner_radius=0)
         self.content_textbox.pack(fill="both", expand=True, padx=10)
-        self.content_textbox.insert("0.0", "Some example text!\n" * 50)
+        # self.content_textbox.insert("0.0", "Some example text!\n" * 50)
         
         self.lower_frame = ctk.CTkFrame(self, height=20, fg_color=BACKGROUND_COLOR)
         self.lower_frame.pack(fill="x", padx=10, pady=10)
@@ -376,15 +378,28 @@ class NotebookPage(ctk.CTkFrame):
     
     def update_content(self):
         # Fetch and display content for the current page
-        content = self.content_dict.get(self.current_page, "No content available.")
-        self.content_textbox.delete("1.0", "end")  # Clear existing content
-        self.content_textbox.insert("1.0", content)
+        note = self.content_dict[self.current_page]
+        self.title_entry.delete(0, "end")
+        self.title_entry.insert(0, note['title'])
+        self.content_textbox.delete("1.0", "end") 
+        self.content_textbox.insert("1.0", note['content'])
         # Update the page number label
         self.page_number.configure(text=f"Page {self.current_page} of {self.total_pages}")
+        for item in self.content_dict:
+            print(item, self.content_dict[item])
         
     def add_page(self):
+        notebook_id = self.notebook.id
+        response = requests.post(
+            url=NOTES_ENDPOINT + f"/note/{notebook_id}",
+            headers={"Authorization": f"Bearer {self.master.controller.access_token}"}
+        )
+        if response.status_code != 201:
+            messagebox.showerror("Error", response.json()['message'])
+            return
+        note = response.json()['note']
         self.total_pages += 1
-        self.content_dict[self.total_pages] = "New Page Content\n" * 10
+        self.content_dict[self.total_pages] = {'id': note['id'], 'content': note['content'], 'title': note['title']}
         self.current_page = self.total_pages
         self.update_content()
         self.update_button_states()
@@ -408,10 +423,53 @@ class NotebookPage(ctk.CTkFrame):
             messagebox.showerror("Error", "Invalid page number.")
         
     def save_page(self):
-        messagebox.showinfo("Save", "Walang funnctionality")
-        
-        
+        if self.notebook_title.get() != self.notebook.title:
+            self.update_notebook_title()
+        note_id = self.content_dict[self.current_page]['note_id']
+        if self.title_entry.get() != self.content_dict[self.current_page]['title'] or self.content_textbox.get("1.0", "end-1c") != self.content_dict[self.current_page]['content']:
+            response = requests.put(
+                url=NOTES_ENDPOINT + f"/note/{note_id}",
+                headers={"Authorization": f"Bearer {self.master.controller.access_token}"},
+                json={
+                    "title": self.title_entry.get(),
+                    "content": self.content_textbox.get("1.0", "end-1c")
+                }
+            )
+            if response.status_code != 200:
+                messagebox.showerror("Error", response.json()['message'])
+                return
+            messagebox.showinfo("Save", "Note saved successfully.")
+            self.content_dict[self.current_page]['title'] = self.title_entry.get()
+            self.content_dict[self.current_page]['content'] = self.content_textbox.get("1.0", "end-1c")
 
+    def update_notebook_title(self):
+        print('update_notebook_title')
+        notebook_id = self.notebook.id
+        response = requests.put(
+            url=NOTES_ENDPOINT + f"/notebook-title/{notebook_id}",
+            headers={"Authorization": f"Bearer {self.master.controller.access_token}"},
+            json={"title": self.notebook_title.get()}
+        )
+        if response.status_code != 200:
+            messagebox.showerror("Error", response.json()['message'])
+            return
+        self.notebook.title = self.notebook_title.get()
+        self.master.notebooks[self.index].title = self.notebook_title.get()
+        messagebox.showinfo("Success", "Notebook title updated successfully")
+
+    def fetch_notes(self):
+        notebook_id = self.notebook.id
+        response = requests.get(
+            url=NOTES_ENDPOINT + f"/notes/{notebook_id}",
+            headers={"Authorization": f"Bearer {self.master.controller.access_token}"}
+        )
+        if response.status_code != 200:
+            messagebox.showerror("Error", response.json()['message'])
+            return
+        page_number = 1
+        for note in response.json():
+            self.content_dict[page_number] = note # {'content': note['content'], 'title': note['title']}
+            page_number += 1
         
 
     #     self.notebooks: list[NotebookModel] = []
