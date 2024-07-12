@@ -6,11 +6,13 @@ from config import Config
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from app.utils.error_handler import register_error_handlers
+from flask_socketio import SocketIO
 
 db = SQLAlchemy()
 migrate = Migrate()
 bcrypt = Bcrypt()
 jwt = JWTManager()
+socketio = SocketIO()
 
 def create_app():
     app = Flask(__name__)
@@ -21,6 +23,7 @@ def create_app():
     migrate.init_app(app, db)
     bcrypt.init_app(app)
     jwt.init_app(app)
+    socketio.init_app(app, cors_allowed_origins="*")
 
     from app import models
 

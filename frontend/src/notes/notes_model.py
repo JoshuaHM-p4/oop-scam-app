@@ -17,6 +17,12 @@ class NotebookModel:
         Returns the number of pages in the notebook.
         """
         return len(self.notes)  
+    
+    def change_title(self, new_title: str): 
+        """
+        Changes the title of the notebook.
+        """
+        self.title = new_title
 
 class NoteModel:
     """

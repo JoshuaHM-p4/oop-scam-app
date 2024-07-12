@@ -16,7 +16,7 @@ class PageViewer(ctk.CTkToplevel):
         self.pages = notebook.notes
         self.current_page_index = 0
 
-        self.create_widgets()  
+        self.create_widgets()
 
     def create_widgets(self): 
         # Add widgets for the page viewer
