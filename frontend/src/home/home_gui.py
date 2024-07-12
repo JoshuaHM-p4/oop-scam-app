@@ -3,6 +3,7 @@ import os, sys
 from tkinter.simpledialog import askstring
 import tkinter.messagebox as messagebox
 from tkinter import simpledialog, messagebox
+from PIL import Image
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'searchbar')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))  # frontend/
@@ -48,13 +49,18 @@ class HomeFrame(ctk.CTkFrame):
         self.progress_tracker = self.create_button_frame(self.frame_bottom, "Progress Tracker", self.progress_tracker_button_click)
 
         # Edit button
-        self.edit_button = ctk.CTkButton(self.frame_top_top, text="Edit Button", font=("Arial", 20), command=self.edit_button_click, fg_color = bg_color)
+        self.edit_img = ctk.CTkImage(Image.open("assets/images/edit.png").resize((40, 40)))
+        self.edit_button = ctk.CTkButton(self.frame_top_top, text="", font=("Arial", 20), command=self.edit_button_click, fg_color = bg_color,
+                                         image=self.edit_img, width=40, height=40, corner_radius=20)
         self.edit_button.pack(side="right", pady=10, padx = 10)
-
-        self.add_button = ctk.CTkButton(self.frame_top_top, text="Add Button", font=("Arial", 20), command=self.add_button_click, fg_color = bg_color)
+        self.add_button_img = ctk.CTkImage(Image.open("assets/images/plus.png").resize((40, 40)))
+        self.add_button = ctk.CTkButton(self.frame_top_top, text="", font=("Arial", 20), command=self.add_button_click, fg_color = bg_color, 
+                                        image=self.add_button_img, width=40, height=40, corner_radius=100)
         self.add_button.pack(side="right", pady=10, padx = 10)
 
-        self.delete_button = ctk.CTkButton(self.frame_top_top, text="Delete Button", font=("Arial", 20), command=self.delete_button_click, fg_color = bg_color)
+        self.delete_img = ctk.CTkImage(Image.open("assets/images/trash_white.png").resize((40, 40)))
+        self.delete_button = ctk.CTkButton(self.frame_top_top, text="", font=("Arial", 20), command=self.delete_button_click, fg_color = bg_color,
+                                           image=self.delete_img, width=40, height=40, corner_radius=20)
         self.delete_button.pack(side="right", pady=10, padx = 10)
 
         self.button_labels = ["Note", "Event Calendar", "Template", "Task Scheduler", "Progress Tracker"]
@@ -127,6 +133,7 @@ class HomeFrame(ctk.CTkFrame):
                         break
             else:
                 messagebox.showerror("Error", "Function not defined")
+                break
 
 
     def create_button_frame(self, parent, text, command):
@@ -233,7 +240,7 @@ class HomeFrame(ctk.CTkFrame):
                         break
             else:
                 messagebox.showerror("Error", "Function not defined")
-
+                break
     def higher_number_of_widgets_in_frame(self):
         if len(self.frame_top.winfo_children()) >= len(self.frame_bottom.winfo_children()):
             return self.frame_bottom
