@@ -17,6 +17,11 @@ class TemplatesFrame(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        self.save_img = ctk.CTkImage(Image.open("assets/images/save.png"), size=(30, 30))
+        self.save_img_disabled = ctk.CTkImage(Image.open("assets/images/save_disabled.png"), size=(30, 30))
+        self.remove_icon_disabled = ctk.CTkImage(Image.open("assets/images/trash_disabled.png"), size=(30, 30))
+        self.save_img = ctk.CTkImage(Image.open("assets/images/save.png"), size=(30, 30))
+        self.remove_icon = ctk.CTkImage(Image.open("assets/images/trash_white.png"), size=(30, 30))
         self.setup_ui()
                
         
@@ -116,28 +121,28 @@ class TemplateHeaderFrame(ctk.CTkFrame):
     def header_questions(self):
         current_date = datetime.datetime.now().strftime("%B %d, %Y")
         
-        self.subject_entry = ctk.CTkEntry(self.header_frame, placeholder_text="Subject:", width=150)
-        self.title_entry = ctk.CTkEntry(self.header_frame, placeholder_text="Title:", width=150)
+        self.subject_entry = ctk.CTkEntry(self.header_frame, placeholder_text="Subject(Required):", width=150, corner_radius=20)
+        self.title_entry = ctk.CTkEntry(self.header_frame, placeholder_text="Title(Required):", width=150, corner_radius=20)
         
-        self.frame1 = ctk.CTkFrame(self.header_frame, fg_color=BACKGROUND_COLOR)
+        self.frame1 = ctk.CTkFrame(self.header_frame, fg_color=BACKGROUND_COLOR, )
         
-        self.name_entry = ctk.CTkEntry(self.frame1, placeholder_text="Name", width=150)
+        self.name_entry = ctk.CTkEntry(self.frame1, placeholder_text="Name(Required):", width=150, corner_radius=20)
         self.name_entry.pack(side="left")
         
-        self.date_entry = ctk.CTkEntry(self.frame1, placeholder_text="Date", width=150)
+        self.date_entry = ctk.CTkEntry(self.frame1, placeholder_text="Date", width=150, corner_radius=20)
         self.date_entry.insert(0, current_date)
         self.date_entry.pack(side="right")
         
         self.frame2 = ctk.CTkFrame(self.header_frame, fg_color=BACKGROUND_COLOR)
         
-        self.professor_entry = ctk.CTkEntry(self.frame2, placeholder_text="Professor", width=150)
+        self.professor_entry = ctk.CTkEntry(self.frame2, placeholder_text="Professor(Required):", width=150, corner_radius=20)
         self.professor_entry.pack(side="left")
         
-        self.school_entry = ctk.CTkEntry(self.frame2, placeholder_text="School(Optional):", width=150)
+        self.school_entry = ctk.CTkEntry(self.frame2, placeholder_text="School(Optional):", width=150, corner_radius=20)
         self.school_entry.pack(side="right")
-        self.section_entry = ctk.CTkEntry(self.frame2, placeholder_text="Section(Optional)", width=150)
+        self.section_entry = ctk.CTkEntry(self.frame2, placeholder_text="Section(Optional)", width=150, corner_radius=20)
         self.section_entry.pack(side="right")
-        self.instructions_entry = ctk.CTkEntry(self.header_frame, placeholder_text="Instructions(Optional):", width=150)
+        self.instructions_entry = ctk.CTkEntry(self.header_frame, placeholder_text="Instructions(Optional):", width=150, corner_radius=20)
        
     def setup_header_questions(self):
         self.home_work_title = ctk.CTkLabel(self, text=self.frame_name, fg_color=BACKGROUND_COLOR, font=("Arial", 20, "bold"), height=30)
@@ -166,7 +171,7 @@ class TemplateHeaderFrame(ctk.CTkFrame):
             self.title_entry.pack(side="top", padx=20, anchor="w", pady=10)
             self.frame1.pack(side="top", fill="x", padx=20)
             self.frame2.pack(side="top", fill="x", padx=20)
-            self.instructions_entry.pack(side="top", padx=20, anchor="w", pady=10)
+            self.instructions_entry.pack(side="top", padx=20, anchor="w", pady=20, fill="x")
         else:
             self.subject_entry.pack_forget()
             self.title_entry.pack_forget()
@@ -180,6 +185,10 @@ class HomeworkFrame(ctk.CTkFrame):
         super().__init__(master, *args, **kwargs)
         self.master = master
         self.header = self.master.header_frame
+        self.save_img = self.master.save_img
+        self.save_img_disabled = self.master.save_img_disabled
+        self.remove_icon_disabled = self.master.remove_icon_disabled
+        self.remove_icon = self.master.remove_icon
         
         self.questions = []  # List to store questions
         self.setup_ui()
@@ -190,14 +199,18 @@ class HomeworkFrame(ctk.CTkFrame):
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         
         # Entry for question input
-        self.question_entry = ctk.CTkEntry(self, placeholder_text="Type your question here", corner_radius=10, border_width=1)
+        self.question_entry = ctk.CTkEntry(self, placeholder_text="Type your question here", corner_radius=20, border_width=1,
+                                           height=30)
         self.question_entry.pack(pady=5, fill="x", padx=10)
         
         # Button to add question
         self.add_question_btn = ctk.CTkButton(self, text="Add Question", command=self.add_question)
         self.add_question_btn.pack(pady=5)
         
-        self.remove_icon = ctk.CTkImage(Image.open("assets/images/trash.png"), size=(20, 20))
+        self.save_img_disabled = ctk.CTkImage(Image.open("assets/images/save_disabled.png"), size=(30, 30))
+        self.remove_icon_disabled = ctk.CTkImage(Image.open("assets/images/trash_disabled.png"), size=(30, 30))
+        self.save_img = ctk.CTkImage(Image.open("assets/images/save.png"), size=(30, 30))
+        self.remove_icon = ctk.CTkImage(Image.open("assets/images/trash_white.png"), size=(30, 30))
         
         # Listbox to display questions
         self.questions_listbox = CTkListbox(self, corner_radius=10, border_width=1, command=self.toggle_remove_button, multiple_selection=True)
@@ -206,12 +219,15 @@ class HomeworkFrame(ctk.CTkFrame):
         self.lower_frame_buttons = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR)
         self.lower_frame_buttons.pack(fill="both", pady=5, padx=10)
         
-        self.save_homework_btn = ctk.CTkButton(self.lower_frame_buttons, text="Save Homework", command= self.save_homework, 
-                                               corner_radius=10, state="disabled")
+        self.save_homework_btn = ctk.CTkButton(self.lower_frame_buttons, text="", command= self.save_homework, 
+                                               corner_radius=20, state="disabled", image=self.save_img_disabled,
+                                               fg_color = "#222B36")
+        
         self.save_homework_btn.pack(side="left", pady=5, padx=5,expand=True, anchor='e')
         
-        self.remove_question_btn = ctk.CTkButton(self.lower_frame_buttons, text="Remove Question", command=self.remove_question,
-                                                 image=self.remove_icon, compound="left",corner_radius=10, state="disabled")
+        self.remove_question_btn = ctk.CTkButton(self.lower_frame_buttons, text="", command=self.remove_question,
+                                                 image=self.remove_icon_disabled, corner_radius=20, state="disabled", 
+                                                 fg_color="#222B36")
         self.remove_question_btn.pack(side="right", pady=5, anchor='w', expand=True, padx=5)
         
         self.questions_listbox.bind('<<ListboxSelect>>', self.toggle_remove_button)
@@ -219,9 +235,9 @@ class HomeworkFrame(ctk.CTkFrame):
     def toggle_remove_button(self, event=None):
         selected_indices = self.questions_listbox.curselection()
         if selected_indices:  # If there's at least one item selected
-            self.remove_question_btn.configure(state="normal")
+            self.remove_question_btn.configure(state="normal", image=self.remove_icon)
         else:
-            self.remove_question_btn.configure(state="disabled")
+            self.remove_question_btn.configure(state="disabled", image=self.remove_icon_disabled)
         
     def remove_question(self):
         selected_indices = self.questions_listbox.curselection()
@@ -231,9 +247,9 @@ class HomeworkFrame(ctk.CTkFrame):
             print(i)
             self.questions_listbox.delete(i)
             self.questions.pop(i)
-        self.remove_question_btn.configure(state="disabled")
+        self.remove_question_btn.configure(state="disabled", image=self.remove_icon_disabled)
         if self.questions_listbox.size() == 0:
-            self.save_homework_btn.configure(state="disabled")
+            self.save_homework_btn.configure(state="disabled", image=self.save_img_disabled)
         
     def add_question(self):
         question = self.question_entry.get()
@@ -241,7 +257,7 @@ class HomeworkFrame(ctk.CTkFrame):
             self.questions.append(question)  # Add question to the list
             self.questions_listbox.insert(ctk.END, question)  # Display question in the listbox
             self.question_entry.delete(0, ctk.END)  # Clear the entry widget
-            self.save_homework_btn.configure(state="normal")
+            self.save_homework_btn.configure(state="normal", image=self.save_img)
             
     def save_homework(self):
         name: str = self.header.name_entry.get()
@@ -252,7 +268,12 @@ class HomeworkFrame(ctk.CTkFrame):
         section: str = self.header.section_entry.get()  # optional
         school: str = self.header.school_entry.get()  # optional
         date: str = self.header.date_entry.get()  # auto    
+        
 
+        if self.header.check_var.get() == "on" and (name == "" or title == "" or subject == "" or professor == ""):
+            messagebox.showerror("Error", "Name, title, subject, professor, and date are required")
+            return
+        
         questions: list[str] = self.questions
         
         homework_template = HomeworkModel(
@@ -279,7 +300,7 @@ class HomeworkFrame(ctk.CTkFrame):
                     self.questions_listbox.delete(0, ctk.END)
                     messagebox.showinfo("Save Success", f"The file was saved successfully")
                     if self.questions_listbox.size() == 0:
-                        self.save_homework_btn.configure(state="disabled")
+                        self.save_homework_btn.configure(state="disabled", image=self.save_img_disabled)
         except Exception as e:
             messagebox.showerror("Save Error", f"The file was not saved")       
         
@@ -288,6 +309,8 @@ class LetterFrame(ctk.CTkFrame):
         super().__init__(master, *args, **kwargs)
         self.master = master
         self.header = self.master.header_frame
+        self.save_img = self.master.save_img
+
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.setup_ui()
     
@@ -295,9 +318,10 @@ class LetterFrame(ctk.CTkFrame):
         # self.letter = LetterModel()
         
         self.frame_container = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR, corner_radius=20, border_width=1)
-        self.recipient_entry = ctk.CTkEntry(self.frame_container, placeholder_text="Recipient's Name", height=30)
-        self.address_entry = ctk.CTkEntry(self.frame_container, placeholder_text="Address", height=30)
-        self.save_button = ctk.CTkButton(self, text="Save Letter", fg_color="black", height=30, corner_radius=20, command= self.save_letter)
+        self.recipient_entry = ctk.CTkEntry(self.frame_container, placeholder_text="Recipient's Name", height=30, corner_radius=20, width=350)
+        self.address_entry = ctk.CTkEntry(self.frame_container, placeholder_text="Address", height=30, corner_radius=20, width=350)
+        self.save_button = ctk.CTkButton(self, text="", fg_color="#222B36", height=30, corner_radius=20, command= self.save_letter, 
+                                         image=self.save_img)
         
         self.pack_letter()
         
@@ -318,6 +342,14 @@ class LetterFrame(ctk.CTkFrame):
         date: str = self.header.date_entry.get()  # auto
         recepient: str = self.recipient_entry.get()
         address: str = self.address_entry.get()
+        
+        if not recepient or not address:
+            messagebox.showerror("Error", "Recipient's name and address are required")
+            return
+        
+        if self.header.check_var.get() == "on" and (name == "" or title == "" or subject == "" or professor == ""):
+            messagebox.showerror("Error", "Name, title, subject, professor, and date are required")
+            return
         
         letter_template = LetterModel(
             name = name,
@@ -350,14 +382,16 @@ class EssayFrame(ctk.CTkFrame):
         super().__init__(master, *args, **kwargs)
         self.master = master
         self.header = self.master.header_frame
+        self.save_img = self.master.save_img
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
         self.setup_ui()
     
     def setup_ui(self):
         
         self.frame_container = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR, corner_radius=20, border_width=1)
-        self.essay_topic_entry = ctk.CTkEntry(self.frame_container, placeholder_text="Essay Topic", height=30)
-        self.save_button = ctk.CTkButton(self, text="Save Essay", fg_color="black", height=30, corner_radius=20, command= self.save_essay)
+        self.essay_topic_entry = ctk.CTkEntry(self.frame_container, placeholder_text="Essay Topic", height=30, width=150, corner_radius=20)
+        self.save_button = ctk.CTkButton(self, text="", fg_color="#222B36", height=30, corner_radius=20, command= self.save_essay,
+                                         image=self.save_img)
         self.pack_essay()
         
     def pack_essay(self):
@@ -376,6 +410,13 @@ class EssayFrame(ctk.CTkFrame):
         date: str = self.header.date_entry.get()  # auto
         topic: str = self.essay_topic_entry.get()
         
+        if not topic:
+            messagebox.showerror("Error", "Essay topic is required")
+            return
+
+        if self.header.check_var.get() == "on" and (name == "" or title == "" or subject == "" or professor == ""):
+            messagebox.showerror("Error", "Name, title, subject, professor, and date are required")
+            return
         
         essay_template = EssayModel(
             name = name,
@@ -411,6 +452,10 @@ class MathFrame(ctk.CTkFrame):
         self.master = master
         self.header = self.master.header_frame
         self.math_questions = []
+        self.save_img = self.master.save_img
+        self.save_img_disabled = self.master.save_img_disabled
+        self.remove_icon_disabled = self.master.remove_icon_disabled
+        self.remove_icon = self.master.remove_icon
         self.setup_ui()
     
     def setup_ui(self):
@@ -424,8 +469,6 @@ class MathFrame(ctk.CTkFrame):
         self.add_question_btn = ctk.CTkButton(self, text="Add Question", command=self.add_question)
         self.add_question_btn.pack(pady=5)
         
-        self.remove_icon = ctk.CTkImage(Image.open("assets/images/trash.png"), size=(20, 20))
-        
         # Listbox to display questions
         self.questions_listbox = CTkListbox(self, corner_radius=10, border_width=1, command=self.toggle_remove_button, multiple_selection=True)
         self.questions_listbox.pack(fill="both", expand=True, pady=5, padx=10)
@@ -433,12 +476,14 @@ class MathFrame(ctk.CTkFrame):
         self.lower_frame_buttons = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR)
         self.lower_frame_buttons.pack(fill="both", pady=5, padx=10)
         
-        self.save_homework_btn = ctk.CTkButton(self.lower_frame_buttons, text="Save Homework", command= self.save_math, 
-                                               corner_radius=10)
+        self.save_homework_btn = ctk.CTkButton(self.lower_frame_buttons, text="", command= self.save_math, 
+                                               corner_radius=10, state="disabled", image=self.save_img_disabled,
+                                               fg_color="#222B36")
         self.save_homework_btn.pack(side="left", pady=5, padx=5,expand=True, anchor='e')
         
-        self.remove_question_btn = ctk.CTkButton(self.lower_frame_buttons, text="Remove Question", command=self.remove_question,
-                                                 image=self.remove_icon, compound="left",corner_radius=10, state="disabled")
+        self.remove_question_btn = ctk.CTkButton(self.lower_frame_buttons, text="", command=self.remove_question,
+                                                 compound="left",corner_radius=10, state="disabled", image=self.remove_icon_disabled,
+                                                 fg_color="#222B36")
         self.remove_question_btn.pack(side="right", pady=5, anchor='w', expand=True, padx=5)
         
         self.questions_listbox.bind('<<ListboxSelect>>', self.toggle_remove_button)
@@ -446,9 +491,9 @@ class MathFrame(ctk.CTkFrame):
     def toggle_remove_button(self, event=None):
         selected_indices = self.questions_listbox.curselection()
         if selected_indices:  # If there's at least one item selected
-            self.remove_question_btn.configure(state="normal")
+            self.remove_question_btn.configure(state="normal", image=self.remove_icon)
         else:
-            self.remove_question_btn.configure(state="disabled")
+            self.remove_question_btn.configure(state="disabled", image=self.remove_icon_disabled)
         
     def remove_question(self):
         selected_indices = self.questions_listbox.curselection()
@@ -458,9 +503,9 @@ class MathFrame(ctk.CTkFrame):
             print(i)
             self.questions_listbox.delete(i)
             self.questions.pop(i)
-        self.remove_question_btn.configure(state="disabled")
+        self.remove_question_btn.configure(state="disabled", image=self.remove_icon_disabled)
         if self.questions_listbox.size() == 0:
-            self.save_homework_btn.configure(state="disabled")
+            self.save_homework_btn.configure(state="disabled", image=self.save_img_disabled)
         
 
     def add_question(self):
@@ -478,7 +523,11 @@ class MathFrame(ctk.CTkFrame):
         instructions: str = self.header.instructions_entry.get()  # optional
         section: str = self.header.section_entry.get()  # optional
         school: str = self.header.school_entry.get()  # optional
-        date: str = self.header.date_entry.get()  # auto    
+        date: str = self.header.date_entry.get()  # auto
+        
+        if self.header.check_var.get() == "on" and (name == "" or title == "" or subject == "" or professor == ""):
+            messagebox.showerror("Error", "Name, title, subject, professor, and date are required")
+            return
 
         math_questions: list[str] = self.math_questions
         
