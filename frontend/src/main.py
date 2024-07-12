@@ -31,7 +31,7 @@ class MainApp(ctk.CTk):
         width = self.winfo_screenwidth() * 100
         height = self.winfo_screenheight() * 100
         self.geometry(f"{width}x{height}")
-        self.attributes('-fullscreen', True)
+        # self.attributes('-fullscreen', True)
         self.configure(fg_color='#222B36')
         ctk.set_appearance_mode("dark")
 

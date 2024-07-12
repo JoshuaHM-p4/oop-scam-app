@@ -59,9 +59,10 @@ class TasksFrame(ctk.CTkFrame):
         if not self.filter_window or not self.filter_window.winfo_exists():
             self.filter_window = ctk.CTkToplevel(self)
             self.filter_window.title("Filter Options")
-            self.filter_window.geometry("1000x275")
+            self.filter_window.geometry(f"1000x350+{self.tasks_frame.winfo_rootx()}+{self.tasks_frame.winfo_rooty()}")
             self.filter_window.configure(fg_color='#141A1F', bg='#141A1F')
             self.filter_window.resizable(False, False)
+            self.filter_window.attributes('-topmost', 1)
 
             # Create variables to store selected options
             name_var = StringVar()
@@ -72,7 +73,9 @@ class TasksFrame(ctk.CTkFrame):
 
             # Create a main frame for filter options
             main_frame = ctk.CTkFrame(self.filter_window, fg_color='#141A1F')
-            main_frame.pack(fill='both', expand=True, padx=10, pady=10)
+            main_frame.pack(fill='both', expand=True, padx=10, pady=(10,0))
+            bottom_frame = ctk.CTkFrame(self.filter_window, fg_color='#141A1F')
+            bottom_frame.pack(fill='both', expand=True, padx=10, pady=(10,10))
 
             # Categories and their options
             categories = {
@@ -120,11 +123,11 @@ class TasksFrame(ctk.CTkFrame):
                         radio_button.pack(anchor='w', padx=10, pady=10)
 
             # Apply button
-            apply_button = ctk.CTkButton(main_frame, text="Apply",
+            apply_button = ctk.CTkButton(bottom_frame, text="Apply", fg_color='#222B36', 
                                          command=lambda: self.apply_filter(name_var.get(), date_var.get(),
                                                                            status_var.get(),
                                                                            type_var.get(), priority_var.get()))
-            apply_button.pack(pady=20, padx=20, fill='both', expand=True)
+            apply_button.pack(pady=(0,10), padx=10, fill='both', expand=True)
 
         else:
             self.filter_window.lift()
@@ -133,8 +136,9 @@ class TasksFrame(ctk.CTkFrame):
         if not self.new_task_window or not self.new_task_window.winfo_exists():
             self.new_task_window = ctk.CTkToplevel(self)
             self.new_task_window.title("New Task")
-            self.new_task_window.geometry("600x400")
+            self.new_task_window.geometry(f"300x400+{self.winfo_width()-(self.new_task_window.winfo_width()//4)}+{self.tasks_frame.winfo_rooty()}")
             self.new_task_window.configure(fg_color='#141A1F', bg='#141A1F')
+            self.new_task_window.attributes('-topmost', 1)
 
             # Create variables to store task details
             task_name_var = StringVar()
@@ -144,20 +148,20 @@ class TasksFrame(ctk.CTkFrame):
             priority_var = StringVar()
 
             # Create a main frame for new task options
-            main_frame = ctk.CTkFrame(self.new_task_window, fg_color='#141A1F')
+            main_frame = ctk.CTkScrollableFrame(self.new_task_window, fg_color='#141A1F')
             main_frame.pack(fill='both', expand=True, padx=10, pady=10)
 
             # Task name entry
             task_name_label = ctk.CTkLabel(main_frame, text="Task Name:", text_color='white', font=('Montserrat', 15))
             task_name_label.pack(anchor='w', padx=10, pady=10)
-            task_name_entry = ctk.CTkEntry(main_frame, textvariable=task_name_var, width=50)
-            task_name_entry.pack(anchor='w', padx=10, pady=10)
+            task_name_entry = ctk.CTkEntry(main_frame, textvariable=task_name_var, width=250, placeholder_text="Title")
+            task_name_entry.pack(anchor='w', padx=(10,23), pady=10)
 
             # Deadline entry
             deadline_label = ctk.CTkLabel(main_frame, text="Deadline:", text_color='white', font=('Montserrat', 15))
             deadline_label.pack(anchor='w', padx=10, pady=10)
-            deadline_entry = ctk.CTkEntry(main_frame, textvariable=deadline_var, width=50)
-            deadline_entry.pack(anchor='w', padx=10, pady=10)
+            deadline_entry = ctk.CTkEntry(main_frame, textvariable=deadline_var, width=250, placeholder_text="Due Date")
+            deadline_entry.pack(anchor='w', padx=(10,23), pady=10)
 
             # Status options
             status_label = ctk.CTkLabel(main_frame, text="Status:", text_color='white', font=('Montserrat', 15))
@@ -187,12 +191,12 @@ class TasksFrame(ctk.CTkFrame):
                 radio_button.pack(anchor='w', padx=10, pady=5)
 
             # Save button
-            save_button = ctk.CTkButton(main_frame, text="Save", command=lambda: self.save_new_task(task_name_var.get(),
+            save_button = ctk.CTkButton(main_frame, text="Save", fg_color='#222B36', command=lambda: self.save_new_task(task_name_var.get(),
                                                                                                   deadline_var.get(),
                                                                                                   status_var.get(),
                                                                                                   type_var.get(),
                                                                                                   priority_var.get()))
-            save_button.pack(pady=20, padx=20, fill='both', expand=True)
+            save_button.pack(pady=(20,10), padx=(10,23), fill='both', expand=True)
 
         else:
             self.new_task_window.lift()
