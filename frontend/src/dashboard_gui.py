@@ -104,8 +104,8 @@ class DashboardFrame(ctk.CTkFrame):
     def __init__(self, master, command, frames: list[ctk.CTkFrame],  *args, **kwargs):
         super().__init__(master, *args, **kwargs) # self: Parent Dashboard Frame
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
+        self.pack_configure(padx=15, pady=15)
         self.main_app = master
-
         self.profile_frame = ProfileFrame(self) # profile_frame: Profile Frame
         dashboard_image = ctk.CTkImage(Image.open("./assets/images/dashboard_logo.png"), size=(250, 50))
         self.label = ctk.CTkLabel(self, image=dashboard_image, text=" ")
