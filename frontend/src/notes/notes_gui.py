@@ -24,7 +24,6 @@ class NotebookFrame(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
-        self.user = self.controller.user
 
         self.notebooks: list[NotebookModel] = []
         self.current_notebook_id = None
@@ -39,6 +38,7 @@ class NotebookFrame(ctk.CTkFrame):
 
         sio.connect('http://localhost:5000')
         sio.on('note_received', self.note_received)
+        sio.on('notebook_received', self.notebook_received)
         self.current_room = None
     
     def tkraise(self):
@@ -48,8 +48,8 @@ class NotebookFrame(ctk.CTkFrame):
 
     def join_room(self, room_name):
         if self.current_room:
-            sio.emit('leave_room', {'user_id': self.user.user_id, 'room': self.current_room})
-        sio.emit('join_room', {'user_id': self.user.user_id, 'room': room_name})
+            sio.emit('leave_room', {'user_id': self.controller.user.user_id, 'room': self.current_room})
+        sio.emit('join_room', {'user_id': self.controller.user.user_id, 'room': room_name})
         self.current_room = room_name   
 
     @sio.event
@@ -64,6 +64,20 @@ class NotebookFrame(ctk.CTkFrame):
             if str(note['note_id']) == str(room_id):
                 self.notebook_page.content_dict[page_number]['content'] = data['content']
                 break
+
+    @sio.event
+    def notebook_received(self, data):
+        print('Received notebook update:', data['notebook_id'])
+        print(str(data['user_id']) == str(self.controller.user.user_id))
+        print(data['user_id'], type(data['user_id'])) # 1 (right)
+        print(self.controller.user.user_id, type(self.controller.user.user_id)) # 0 (wrong)
+        if str(data['user_id']) == str(self.controller.user.user_id):
+            self.container.fetch_notebooks()
+            self.container.display_notebooks()
+
+    def send_notebook_update(self, data):
+        sio.emit('notebook_update', {'notebook_id': data['notebook_id'], "user_id": data['user_id']})
+        print('Sent notebook update:', data)
 
     def send_note_update(self, data):
         sio.emit('note_update', {'content': data, 'room': self.current_room})
@@ -87,7 +101,6 @@ class Container(ctk.CTkFrame):
         self.master = master
         self.current_note_index = 0
         self.setup_ui()
-        self.user = self.master.user
 
     def setup_ui(self):
         self.configure(fg_color=BACKGROUND_COLOR, corner_radius=10)
@@ -205,8 +218,9 @@ class Container(ctk.CTkFrame):
                 url=NOTES_ENDPOINT + f"/notebook/{notebook_id}",
                 headers={"Authorization": f"Bearer {self.master.controller.access_token}"}
             )
-            if response.status_code == 200:
-                del self.master.notebooks[index]
+            if response.status_code != 200:
+                messagebox.showerror("Error", response.json()['message'])   
+            del self.master.notebooks[index]
             self.display_notebooks()
 
 class TopMenu(ctk.CTkFrame):
@@ -298,6 +312,10 @@ class NotebookPage(ctk.CTkFrame):
         self.add_img = ctk.CTkImage(Image.open("assets/images/plus.png"), size=(25, 25))
         self.save_img = ctk.CTkImage(Image.open("assets/images/save.png"), size=(25, 25))
         
+        self.notebook_title = ctk.CTkEntry(self, fg_color=BACKGROUND_COLOR, height=1, font=("Arial", 20), placeholder_text="Title:", width=200)
+        self.notebook_title.pack( padx=10, pady=10, anchor="center")
+        self.notebook_title.insert(0, self.notebook.title)
+        
         self.top_frame = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR)
         self.top_frame.pack(fill="x", pady=(10,0))
         
@@ -305,16 +323,19 @@ class NotebookPage(ctk.CTkFrame):
                                          image=self.return_img, width=25, height=25, corner_radius=20, 
                                          fg_color=BACKGROUND_COLOR, hover_color="#222B36", border_width=0)
         self.back_button.pack(side="left", padx=10, expand=True, anchor="w")
-
-        self.notebook_title = ctk.CTkEntry(self.top_frame, fg_color=BACKGROUND_COLOR, height=1, font=("Arial", 20), placeholder_text="Title:")
-        self.notebook_title.pack(fill="x", padx=10, pady=10)
-        self.notebook_title.insert(0, self.notebook.title)
         
         # self.label_notebook_title = ctk.CTkLabel(self.top_frame, text="Notebook Page", font=("Arial", 20), fg_color="red")
         # self.label_notebook_title.pack(side="left", padx=10, pady=10, expand=True, anchor="center")
         
         self.right_frame = ctk.CTkFrame(self.top_frame, fg_color=BACKGROUND_COLOR)
         self.right_frame.pack(side="left", padx=10,  expand=True, anchor="e")
+        
+        self.share_img = ctk.CTkImage(Image.open("assets/images/share.png"), size=(25, 25))
+        self.share_button = ctk.CTkButton(self.right_frame, text="", image=self.share_img, 
+                                            width=25, height=25, corner_radius=20,
+                                            fg_color=BACKGROUND_COLOR, hover_color="#222B36", border_width=0, 
+                                            command=self.share_notebook)
+        self.share_button.pack(side="left", anchor="e")
         
         self.add_page_button = ctk.CTkButton(self.right_frame, text="", command= self.add_page,
                                              image=self.add_img, width=25, height=25, corner_radius=20,
@@ -439,6 +460,23 @@ class NotebookPage(ctk.CTkFrame):
         title = dialog.get_input()
         if title:
             self.jump_to_page(title)
+        
+    def share_notebook(self):
+        dialog = ctk.CTkInputDialog(title="Share Notebook", text="Enter the email of the user you want to share the notebook with:")
+        email = dialog.get_input()
+        if email:
+            response = requests.post(
+                url=NOTES_ENDPOINT + f"/notebook/share/{self.notebook.id}",
+                headers={"Authorization": f"Bearer {self.master.controller.access_token}"},
+                json={"email": email}
+            )
+            if response.status_code != 200:
+                messagebox.showerror("Error", response.json()['message'])
+                return
+            messagebox.showinfo("Success", f"Notebook shared with {email}")
+            user_to_share_with_id = response.json()['user_id']
+            # self.master.send_notebook_update({"notebook_id": self.notebook_id, "user_id": user_to_share_with_id})
+            self.master.send_notebook_update({"notebook_id": self.notebook.id, "user_id": user_to_share_with_id})
         
     def jump_to_page(self, page_number_str):
         try:

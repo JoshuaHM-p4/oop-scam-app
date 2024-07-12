@@ -550,8 +550,9 @@ def share_notebook(notebook_id):
         new_user_notebook = UserNotebook(user_id=user_to_share_with.id, notebook_id=notebook.id)
         db.session.add(new_user_notebook)
         db.session.commit()
+        user_to_share_with_id = str(user_to_share_with.id)
         # return a 200 response
-        return jsonify({'message': 'Notebook shared successfully'}), 200
+        return jsonify({'message': 'Notebook shared successfully', "user_id": user_to_share_with_id}), 200
     except Exception as e:
         return jsonify({'message': str(e)}), 400
     
