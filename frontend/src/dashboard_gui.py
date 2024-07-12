@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from config import BACKGROUND_COLOR
+from config import BACKGROUND_COLOR, FONT_FAMILY
 from PIL import Image
 import sys,os
 
@@ -23,9 +23,9 @@ class ProfileFrame(ctk.CTkFrame):
 
         self.user_email_frame = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR)
         self.username_label = ctk.CTkLabel(self.user_email_frame, textvariable=self.username_var, 
-                                           height=2, font=("Montserrat", 18, 'bold'))
+                                           height=2, font=(FONT_FAMILY, 21, 'bold'))
         self.email_label = ctk.CTkLabel(self.user_email_frame, textvariable=self.email_var, 
-                                           height=2, font=("Montserrat", 11))
+                                           height=2, font=(FONT_FAMILY, 12))
 
     def pack(self, *args, **kwargs):
         self.dp_label.pack(side='left', padx=5, pady=[20, 15])
@@ -56,7 +56,7 @@ class ButtonsFrame(ctk.CTkFrame):
         for i, feature in enumerate(self.module_frames):
             frame_name = feature.__name__
 
-            if frame_name[:-5] != 'Settings':
+            if frame_name[:-5] != 'Exit':
                 button = ctk.CTkButton(
                     self.buttons_container,
                     text=frame_name[:-5].upper(),
@@ -64,7 +64,7 @@ class ButtonsFrame(ctk.CTkFrame):
                     height=40,
                     corner_radius=25,
                     anchor='w',
-                    font=("Montserrat", 13),
+                    font=(FONT_FAMILY, 16),
                     fg_color='transparent',
                     hover_color='#222B36',
                     command=lambda frame_name=frame_name: show_frame(frame_name)
@@ -73,20 +73,20 @@ class ButtonsFrame(ctk.CTkFrame):
             else:
                 button = ctk.CTkButton(
                     self.settings_container,
-                    text='⚙  ' + frame_name[:-5].upper(),
+                    text='X  ' + frame_name[:-5].upper(),
                     width=200,
                     height=40,
                     corner_radius=25,
                     anchor='w',
-                    font=("MOntserrat", 13),
+                    font=(FONT_FAMILY, 16),
                     fg_color='transparent',
                     hover_color='#222B36',
                     command=lambda frame_name=frame_name: show_frame(frame_name)
                 )
-            if frame_name[:8] != 'Settings':
-                button.pack(fill='x', expand=True)
+            if frame_name[:8] != 'Exit':
+                button.pack(pady=2, fill='x', expand=True)
             else:
-                button.pack(pady=[0, 5], fill='x', side='bottom')
+                button.pack(pady=[0, 2], fill='x', side='bottom')
             button.bind("<Button-1>", self.create_click_handler(button))
             self.features.append(button)
 
