@@ -56,7 +56,9 @@ class ButtonsFrame(ctk.CTkFrame):
         for i, feature in enumerate(self.module_frames):
             frame_name = feature.__name__
 
-            if frame_name[:-5] != 'Exit':
+            print(f"Frame Name: {frame_name}")
+            
+            if frame_name != 'ExitFrame':
                 button = ctk.CTkButton(
                     self.buttons_container,
                     text=frame_name[:-5].upper(),
@@ -82,11 +84,11 @@ class ButtonsFrame(ctk.CTkFrame):
                     fg_color='transparent',
                     hover_color='#222B36',
                     command=lambda frame_name=frame_name: show_frame(frame_name)
-                )
-            if frame_name[:8] != 'Exit':
+                 )
+            if frame_name != 'ExitFrame':
                 button.pack(pady=2, fill='x', expand=True)
-            else:
-                button.pack(pady=[0, 2], fill='x', side='bottom')
+            else: # 
+                button.pack(pady=(0, 5), fill='x', side='bottom')
             button.bind("<Button-1>", self.create_click_handler(button))
             self.features.append(button)
 
