@@ -6,6 +6,7 @@ import sys
 import os
 import json
 import requests
+import socketio
 
 # Append paths to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'searchbar')))  # src/common/searchbar
@@ -16,6 +17,8 @@ from config import APP_NAME, BACKGROUND_COLOR, NOTES_ENDPOINT
 from searchbar import SearchBar  # Import SearchBar class
 from .notes_model import NoteModel, NotebookModel
 from .notes_page_view import PageViewer
+
+sio = socketio.Client()
 
 class NotebookFrame(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -33,14 +36,26 @@ class NotebookFrame(ctk.CTkFrame):
         self.configure(fg_color=BACKGROUND_COLOR,
                        corner_radius=10)
         self.grid_configure(padx=10, pady=10)
+
+        sio.connect('http://192.168.2.108:5000')
+        sio.on('note_received', self.note_received)
     
     def tkraise(self):
         self.container.fetch_notebooks()
         self.container.display_notebooks()
         super().tkraise()
+
+    @sio.event
+    def note_received(self, data):
+        print('Received note update:', data['content'])
+        self.notebook_page.content_textbox.delete("1.0", "end")
+        self.notebook_page.content_textbox.insert("1.0", data['content'])
+
+    def send_note_update(self, data):
+        sio.emit('note_update', {'content': data})
+        print('Sent note update:', data)
         
     def view_notebook(self, index, notebook):
-        
         self.top_menu.pack_forget()
         self.container.pack_forget()
         self.notebook_page = NotebookPage(self, index, notebook)
@@ -311,6 +326,8 @@ class NotebookPage(ctk.CTkFrame):
         self.content_textbox = ctk.CTkTextbox(self, fg_color="white", height=1, text_color="black", border_width=0, corner_radius=0)
         self.content_textbox.pack(fill="both", expand=True, padx=10)
         # self.content_textbox.insert("0.0", "Some example text!\n" * 50)
+
+        self.content_textbox.bind("<KeyRelease>", lambda event: self.master.send_note_update(self.content_textbox.get("1.0", "end-1c")))
         
         self.lower_frame = ctk.CTkFrame(self, height=20, fg_color=BACKGROUND_COLOR)
         self.lower_frame.pack(fill="x", padx=10, pady=10)
@@ -347,8 +364,7 @@ class NotebookPage(ctk.CTkFrame):
                                           command=self.next_page)
         self.right_button.pack(side="left", padx=10, expand=True)
         
-        
-    
+
     def next_page(self):
         if self.current_page < self.total_pages:
             self.current_page += 1
