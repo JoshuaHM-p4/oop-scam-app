@@ -44,5 +44,12 @@ def handle_note_update(data):
     # emit('note_received', {'content': content, 'room': room}, room=room, skip_sid=request.sid)
     emit('note_received', {'content': content, 'room': room}, broadcast=True, skip_sid=request.sid)
 
+@socketio.on('notebook_update')
+def handle_notebook_update(data):
+    print('Notebook update received')
+    user_id = data['user_id']
+    notebook_id = data['notebook_id']
+    emit('notebook_received', {'notebook_id': notebook_id, "user_id": user_id}, broadcast=True, skip_sid=request.sid)
+
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
