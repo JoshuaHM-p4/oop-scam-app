@@ -2,6 +2,7 @@ import customtkinter as ctk
 import os, sys
 from tkinter.simpledialog import askstring
 import tkinter.messagebox as messagebox
+from tkinter import simpledialog, messagebox
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'searchbar')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))  # frontend/
@@ -47,11 +48,86 @@ class HomeFrame(ctk.CTkFrame):
         self.progress_tracker = self.create_button_frame(self.frame_bottom, "Progress Tracker", self.progress_tracker_button_click)
 
         # Edit button
-        self.edit_button = ctk.CTkButton(self.main_frame, text="Edit Button", font=("Arial", 20), command=self.edit_button_click)
-        self.edit_button.pack(side="top", pady=10)
+        self.edit_button = ctk.CTkButton(self.frame_top_top, text="Edit Button", font=("Arial", 20), command=self.edit_button_click, fg_color = bg_color)
+        self.edit_button.pack(side="right", pady=10, padx = 10)
+
+        self.add_button = ctk.CTkButton(self.frame_top_top, text="Add Button", font=("Arial", 20), command=self.add_button_click, fg_color = bg_color)
+        self.add_button.pack(side="right", pady=10, padx = 10)
+
+        self.delete_button = ctk.CTkButton(self.frame_top_top, text="Delete Button", font=("Arial", 20), command=self.delete_button_click, fg_color = bg_color)
+        self.delete_button.pack(side="right", pady=10, padx = 10)
 
         self.button_labels = ["Note", "Event Calendar", "Template", "Task Scheduler", "Progress Tracker"]
         self.all_buttons_labels = ["Note", "Event Calendar", "Template", "Task Scheduler", "Progress Tracker", "Flashcard", "Collaboration"]
+
+    def delete_button_click(self):
+        target_button = askstring("Delete Button", "Enter button you want to delete:")
+        if target_button in self.button_labels:
+            for i in self.button_labels:
+                if target_button == i:
+                    self.button_labels.remove(i)
+                    if target_button == "Note":
+                        self.notes_frame.pack_forget()
+                        self.notes_frame.destroy()
+                    elif target_button == "Event Calendar":
+                        self.event_calendar_frame.pack_forget()
+                        self.event_calendar_frame.destroy()
+                    elif target_button == "Template":
+                        self.templates.pack_forget()
+                        self.templates.destroy()
+                    elif target_button == "Task Scheduler":
+                        self.task_scheduler.pack_forget()
+                        self.task_scheduler.destroy()
+                    elif target_button == "Progress Tracker":
+                        self.progress_tracker.pack_forget()
+                        self.progress_tracker.destroy()
+                    elif target_button == "Flashcard":
+                        self.flashcard.pack_forget()
+                        self.flashcard.destroy()
+                    elif target_button == "Collaboration":
+                        self.collaboration.pack_forget()
+                        self.collaboration.destroy()
+        else:
+            messagebox.showerror("Error", "Button not found")
+
+    def add_button_click(self):
+        if len(self.button_labels) == 7:
+            messagebox.showerror("Error", "Cannot add more than 7 buttons")
+            return
+        while True:
+            text = askstring("Add Button", "Enter new button label:")
+            if text in self.all_buttons_labels:
+                if text in self.button_labels:
+                    messagebox.showerror("Error", "Button already exists")
+                    continue
+                new_text = text
+                new_command = self.choose_new_command(new_text)
+                self.button_labels.append(new_text)
+                if new_command:
+                    if new_text == "Note":
+                        self.notes_frame = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
+                    if new_text == "Event Calendar":
+                        self.event_calendar_frame = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
+                    if new_text == "Template":
+                        self.templates = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
+                    if new_text == "Task Scheduler":
+                        self.task_scheduler = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
+                    if new_text == "Progress Tracker":
+                        self.progress_tracker = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
+                    if new_text == "Flashcard":
+                        self.flashcard = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
+                    if new_text == "Collaboration":
+                        self.collaboration = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
+                        break
+            else:
+                messagebox.showerror("Error", "Function not defined")
+
 
     def create_button_frame(self, parent, text, command):
         frame = ctk.CTkFrame(parent, fg_color=bg_color, border_width=10, border_color=second_main_bg_color, corner_radius=40)
@@ -120,8 +196,6 @@ class HomeFrame(ctk.CTkFrame):
         else:
             messagebox.showerror("Error", "Button not found")
 
-                    
-
     def new_text(self, target_button):
         while True:
             text = askstring("Edit Button", "Enter new button label:")
@@ -133,7 +207,7 @@ class HomeFrame(ctk.CTkFrame):
                     if new_text == "Note":
                         self.notes_frame = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
                         break
-                        
+
                     if new_text == "Event Calendar":
                         self.event_calendar_frame = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
                         break
@@ -159,8 +233,6 @@ class HomeFrame(ctk.CTkFrame):
                         break  
             else:
                 messagebox.showerror("Error", "Function not defined")
-
-
 
     def higher_number_of_widgets_in_frame(self):
         if len(self.frame_top.winfo_children()) >= len(self.frame_bottom.winfo_children()):
