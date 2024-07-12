@@ -67,6 +67,28 @@ def share_flashcard_set_users(flashcard_set_id):
         db.session.rollback()
         return jsonify({"error": f"An error occurred while sharing the flashcard set: {e}"}), 500
 
+@flashcards_bp.route('/unshare_flashcard_set_self/<int:flashcard_set_id>', methods=['DELETE'])
+@jwt_required()
+def unshare_flashcard_set_self(flashcard_set_id):
+    try:
+        current_user_id = get_jwt_identity()
+        flashcard_set = FlashcardSet.query.get(flashcard_set_id)
+
+        if current_user_id == flashcard_set.user_id:
+            return jsonify({'error': 'You cannot unshare a flashcard set that you own. Try deleting instead.'}), 403
+
+        user_flashcard_set = UserFlashcardSet.query.filter_by(user_id=current_user_id, flashcard_set_id=flashcard_set_id).first()
+
+        if user_flashcard_set is None:
+            return jsonify({'error': 'No shared flashcard sets found for the provided user IDs.'}), 404
+
+        db.session.delete(user_flashcard_set)
+        db.session.commit()
+        return jsonify({'msg': 'Flashcard set unshared from self successfully.'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An error occurred while unsharing the flashcard set: {e}"}), 500
+
 @flashcards_bp.route('/unshare_flashcard_set/<int:flashcard_set_id>', methods=['DELETE'])
 @jwt_required()
 def unshare_flashcard_set(flashcard_set_id):
@@ -100,7 +122,7 @@ def unshare_flashcard_set(flashcard_set_id):
 
         db.session.commit()
 
-        return jsonify({'message': 'Flashcard set unshared successfully.'}), 200
+        return jsonify({'msg': 'Flashcard set unshared successfully.'}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"An error occurred while unsharing the flashcard set: {e}"}), 500

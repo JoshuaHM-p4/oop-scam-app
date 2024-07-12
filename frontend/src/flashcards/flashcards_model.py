@@ -1,6 +1,7 @@
 class FlashcardSetModel:
-    def __init__(self, id, name):
+    def __init__(self, id, user_id, name):
         self.id = id
+        self.user_id = user_id
         self.name = name
         self.starred = False
         self.flashcards = []
