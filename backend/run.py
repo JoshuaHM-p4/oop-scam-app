@@ -1,7 +1,7 @@
 from app import create_app, db, socketio
 import sqlalchemy as sa
 from app.models import User, Flashcard, FlashcardSet, UserFlashcardSet
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
 
 app = create_app()
@@ -39,9 +39,10 @@ def handle_leave_room(data):
 @socketio.on('note_update')
 def handle_note_update(data):
     print('Note update received')
-    text = data['text']
+    content = data['content']
     room = data['room']
-    emit('note_received', text, room=room)
+    # emit('note_received', {'content': content, 'room': room}, room=room, skip_sid=request.sid)
+    emit('note_received', {'content': content, 'room': room}, broadcast=True, skip_sid=request.sid)
 
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)

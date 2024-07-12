@@ -39,20 +39,34 @@ class NotebookFrame(ctk.CTkFrame):
 
         sio.connect('http://192.168.2.108:5000')
         sio.on('note_received', self.note_received)
+        self.current_room = None
     
     def tkraise(self):
         self.container.fetch_notebooks()
         self.container.display_notebooks()
         super().tkraise()
 
+    def join_room(self, room_name):
+        if self.current_room:
+            sio.emit('leave_room', {'user_id': self.user.user_id, 'room': self.current_room})
+        sio.emit('join_room', {'user_id': self.user.user_id, 'room': room_name})
+        self.current_room = room_name   
+
     @sio.event
     def note_received(self, data):
         print('Received note update:', data['content'])
-        self.notebook_page.content_textbox.delete("1.0", "end")
-        self.notebook_page.content_textbox.insert("1.0", data['content'])
+        print('Current room:', data['room'])
+        room_id = data['room'].split('-')[1]
+        if str(room_id) == str(self.notebook_page.content_dict[self.notebook_page.current_page]['note_id']):
+            self.notebook_page.content_textbox.delete("1.0", "end")
+            self.notebook_page.content_textbox.insert("1.0", data['content'])
+        for page_number, note in self.notebook_page.content_dict.items():
+            if str(note['note_id']) == str(room_id):
+                self.notebook_page.content_dict[page_number]['content'] = data['content']
+                break
 
     def send_note_update(self, data):
-        sio.emit('note_update', {'content': data})
+        sio.emit('note_update', {'content': data, 'room': self.current_room})
         print('Sent note update:', data)
         
     def view_notebook(self, index, notebook):
@@ -265,15 +279,12 @@ class NotebookPage(ctk.CTkFrame):
         self.index = index
         self.notebook = notebook
         
-        # Database fetch for number of notes, total pages, content, etc.
-        # #### DAVID #########
-        
         self.notebook_title = self.notebook.title
         self.content_dict = {}
         self.current_page = 1  # Start with page 1
         self.fetch_notes()
         self.total_pages = len(self.content_dict) 
-        print('263', self.total_pages)
+        self.master.join_room(f"note-{self.content_dict[self.current_page]['note_id']}")
         
         self.setup_ui()
         self.update_content()
@@ -370,12 +381,14 @@ class NotebookPage(ctk.CTkFrame):
             self.current_page += 1
             self.update_content()
             self.update_button_states()
+            self.master.join_room(f"note-{self.content_dict[self.current_page]['note_id']}")
 
     def previous_page(self):
         if self.current_page > 1:
             self.current_page -= 1
             self.update_content()
             self.update_button_states()
+            self.master.join_room(f"note-{self.content_dict[self.current_page]['note_id']}")
 
     def update_button_states(self):
     # Enable or disable buttons based on the current page
@@ -415,10 +428,11 @@ class NotebookPage(ctk.CTkFrame):
             return
         note = response.json()['note']
         self.total_pages += 1
-        self.content_dict[self.total_pages] = {'id': note['id'], 'content': note['content'], 'title': note['title']}
+        self.content_dict[self.total_pages] = {'note_id': note['id'], 'content': note['content'], 'title': note['title']}
         self.current_page = self.total_pages
         self.update_content()
         self.update_button_states()
+        self.master.join_room(f"note-{note['id']}")
         
     def create_jump_to_page_popup(self):
         dialog = ctk.CTkInputDialog(title="Jump to:", text="Enter the page number:")
@@ -433,6 +447,7 @@ class NotebookPage(ctk.CTkFrame):
                 self.current_page = page_number
                 self.update_content()  # Assuming this method updates the content for the current page
                 self.update_button_states()  # Update the state of navigation buttons
+                self.master.join_room(f"note-{self.content_dict[self.current_page]['note_id']}")
             else:
                 messagebox.showerror("Error", "Page number out of range.")
         except ValueError:

@@ -403,7 +403,7 @@ def create_note(notebook_id):
         db.session.add(new_note)
         db.session.commit()
         note = {
-            'id': new_note.id,
+            'note_id': new_note.id,
             'title': new_note.title,
             'content': new_note.content
         }
