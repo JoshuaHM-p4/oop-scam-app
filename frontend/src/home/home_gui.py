@@ -150,7 +150,7 @@ class HomeFrame(ctk.CTkFrame):
         self.controller.app_frame.show_frame("TasksFrame")
 
     def progress_tracker_button_click(self):
-        self.controller.app_frame.show_frame("CalendarFrame")
+        self.controller.app_frame.show_frame("ProgressFrame")
 
     def flashcard_button_click(self):
         self.controller.app_frame.show_frame("FlashcardsFrame")
