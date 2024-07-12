@@ -102,10 +102,10 @@ class ProgressFrame(ctk.CTkFrame):
         self.steps_label.pack(anchor="w")
         
         self.progressbar = ctk.CTkProgressBar(self.progressbar_frame, orientation="horizontal", mode="determinate", height=25, width=810)
-        self.progressbar.pack(side="right")
+        self.progressbar.pack(side="left", expand=True, fill="x", padx=(10,0))
         
         # steps checklist
-        self.checklist_frame = ctk.CTkFrame(self.bottom_inner_frame, fg_color="yellow")
+        self.checklist_frame = ctk.CTkFrame(self.bottom_inner_frame, fg_color=back_ground_color)
         self.checklist_frame.pack(fill="both", padx=(15), pady=(0,10), expand=True)
         
         # add step button
