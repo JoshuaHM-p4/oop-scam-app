@@ -5,6 +5,7 @@ import tkinter.messagebox as messagebox
 from tkinter import simpledialog, messagebox
 from PIL import Image
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'searchbar')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))  # frontend/
 
@@ -67,30 +68,31 @@ class HomeFrame(ctk.CTkFrame):
         self.all_buttons_labels = ["Note", "Event Calendar", "Template", "Task Scheduler", "Progress Tracker", "Flashcard", "Collaboration"]
 
     def delete_button_click(self):
-        target_button = askstring("Delete Button", "Enter button you want to delete:")
-        if target_button in self.button_labels:
+        target_button = ctk.CTkInputDialog(title="Delete Button", text="Enter button you want to delete:")
+        targeted_button = target_button.get_input()
+        if targeted_button in self.button_labels:
             for i in self.button_labels:
-                if target_button == i:
+                if targeted_button == i:
                     self.button_labels.remove(i)
-                    if target_button == "Note":
+                    if targeted_button == "Note":
                         self.notes_frame.pack_forget()
                         self.notes_frame.destroy()
-                    elif target_button == "Event Calendar":
+                    elif targeted_button == "Event Calendar":
                         self.event_calendar_frame.pack_forget()
                         self.event_calendar_frame.destroy()
-                    elif target_button == "Template":
+                    elif targeted_button == "Template":
                         self.templates.pack_forget()
                         self.templates.destroy()
-                    elif target_button == "Task Scheduler":
+                    elif targeted_button == "Task Scheduler":
                         self.task_scheduler.pack_forget()
                         self.task_scheduler.destroy()
-                    elif target_button == "Progress Tracker":
+                    elif targeted_button == "Progress Tracker":
                         self.progress_tracker.pack_forget()
                         self.progress_tracker.destroy()
-                    elif target_button == "Flashcard":
+                    elif targeted_button == "Flashcard":
                         self.flashcard.pack_forget()
                         self.flashcard.destroy()
-                    elif target_button == "Collaboration":
+                    elif targeted_button == "Collaboration":
                         self.collaboration.pack_forget()
                         self.collaboration.destroy()
         else:
@@ -101,7 +103,8 @@ class HomeFrame(ctk.CTkFrame):
             messagebox.showerror("Error", "Cannot add more than 7 buttons")
             return
         while True:
-            text = askstring("Add Button", "Enter new button label:")
+            text_input = ctk.CTkInputDialog(title="Add Button", text="Enter new button label:")
+            text = text_input.get_input()
             if text in self.all_buttons_labels:
                 if text in self.button_labels:
                     messagebox.showerror("Error", "Button already exists")
@@ -166,46 +169,47 @@ class HomeFrame(ctk.CTkFrame):
         self.controller.app_frame.show_frame("CollaborationFrame")
 
     def edit_button_click(self):
-        self.target_button_askstring = askstring("Edit Button", "Enter button you want to edit:")
-        if self.target_button_askstring in self.button_labels:
-            target_button = self.target_button_askstring
+        target_button = ctk.CTkInputDialog(title="Edit Button", text="Enter button you want to Edit:")
+        targeted_button = target_button.get_input()
+        if targeted_button in self.button_labels:
             for i in self.button_labels:
-                if target_button == i:
+                if targeted_button == i:
                     self.button_labels.remove(i)
-                    if target_button == "Note":
+                    if targeted_button == "Note":
                         self.notes_frame.pack_forget()
                         self.notes_frame.destroy()
-                        self.new_text(target_button)
-                    elif target_button == "Event Calendar":
+                        self.new_text(targeted_button)
+                    elif targeted_button == "Event Calendar":
                         self.event_calendar_frame.pack_forget()
                         self.event_calendar_frame.destroy()
-                        self.new_text(target_button)
-                    elif target_button == "Template":
+                        self.new_text(targeted_button)
+                    elif targeted_button == "Template":
                         self.templates.pack_forget()
                         self.templates.destroy()
-                        self.new_text(target_button)
-                    elif target_button == "Task Scheduler":
+                        self.new_text(targeted_button)
+                    elif targeted_button == "Task Scheduler":
                         self.task_scheduler.pack_forget()
                         self.task_scheduler.destroy()
-                        self.new_text(target_button)
-                    elif target_button == "Progress Tracker":
+                        self.new_text(targeted_button)
+                    elif targeted_button == "Progress Tracker":
                         self.progress_tracker.pack_forget()
                         self.progress_tracker.destroy()
-                        self.new_text(target_button)
-                    elif target_button == "Flashcard":
+                        self.new_text(targeted_button)
+                    elif targeted_button == "Flashcard":
                         self.flashcard.pack_forget()
                         self.flashcard.destroy()
-                        self.new_text(target_button)
-                    elif target_button == "Collaboration":
+                        self.new_text(targeted_button)
+                    elif targeted_button == "Collaboration":
                         self.collaboration.pack_forget()
                         self.collaboration.destroy()
-                        self.new_text(target_button)
+                        self.new_text(targeted_button) 
         else:
             messagebox.showerror("Error", "Button not found")
 
     def new_text(self, target_button):
         while True:
-            text = askstring("Edit Button", "Enter new button label:")
+            text_input = ctk.CTkInputDialog(title="Add Button", text="Enter new button label:")
+            text = text_input.get_input()
             if text in self.all_buttons_labels:
                 new_text = text
                 new_command = self.choose_new_command(new_text)
@@ -238,9 +242,11 @@ class HomeFrame(ctk.CTkFrame):
                     if new_text == "Collaboration":
                         self.collaboration = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
                         break
-            else:
-                messagebox.showerror("Error", "Function not defined")
-                break
+
+                    else:
+                        messagebox.showerror("Error", "Function not defined")
+                        break
+
     def higher_number_of_widgets_in_frame(self):
         if len(self.frame_top.winfo_children()) >= len(self.frame_bottom.winfo_children()):
             return self.frame_bottom
@@ -259,5 +265,3 @@ class HomeFrame(ctk.CTkFrame):
             "collaboration": self.collaboration_button_click,
         }
         return commands.get(target_button.lower(), lambda: print(f"{target_button} function not defined"))
-
-
