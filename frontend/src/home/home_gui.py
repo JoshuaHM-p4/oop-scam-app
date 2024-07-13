@@ -4,12 +4,6 @@ from tkinter.simpledialog import askstring
 import tkinter.messagebox as messagebox
 from tkinter import simpledialog, messagebox
 from PIL import Image
-
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'searchbar')))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))  # frontend/
-
-from searchbar import SearchBar
 from config import BACKGROUND_COLOR
 
 bg_color = "#222B36"
@@ -32,14 +26,11 @@ class HomeFrame(ctk.CTkFrame):
         self.label = ctk.CTkLabel(self.frame_top_top, text="WHAT WILL YOU DO TODAY?", font=("Arial", 40))
         self.label.pack(side="left", fill="x", pady=10, padx=20)
 
-        self.searchbar = SearchBar(self.main_frame)
-        self.searchbar.pack(side="top", fill="x", pady=1)
-
         self.frame_top = ctk.CTkFrame(self.main_frame, fg_color = second_main_bg_color)
         self.frame_top.pack(side="top", fill="both", expand=True)
 
         self.notes_frame = self.create_button_frame(self.frame_top, "Notes", self.notes_button_click)
-        self.event_calendar_frame = self.create_button_frame(self.frame_top, "Event Calendar", self.event_calender_click)
+        self.collaboration = self.create_button_frame(self.frame_top, "Collaboration", self.collaboration_button_click)
 
         self.frame_bottom = ctk.CTkFrame(self.main_frame, fg_color = second_main_bg_color)
         self.frame_bottom.pack(side="top", fill="both", expand=True)
@@ -64,8 +55,8 @@ class HomeFrame(ctk.CTkFrame):
                                            image=self.delete_img, width=40, height=40, corner_radius=20)
         self.delete_button.pack(side="right", pady=10, padx = 10)
 
-        self.button_labels = ["Note", "Event Calendar", "Template", "Task Scheduler", "Progress Tracker"]
-        self.all_buttons_labels = ["Note", "Event Calendar", "Template", "Task Scheduler", "Progress Tracker", "Flashcard", "Collaboration"]
+        self.button_labels = ["Note", "Template", "Collaboration", "Task Scheduler", "Progress Tracker"]
+        self.all_buttons_labels = ["Note", "Template", "Task Scheduler", "Progress Tracker", "Flashcard", "Collaboration"]
 
     def delete_button_click(self):
         target_button = ctk.CTkInputDialog(title="Delete Button", text="Enter button you want to delete:")
@@ -77,9 +68,6 @@ class HomeFrame(ctk.CTkFrame):
                     if targeted_button == "Note":
                         self.notes_frame.pack_forget()
                         self.notes_frame.destroy()
-                    elif targeted_button == "Event Calendar":
-                        self.event_calendar_frame.pack_forget()
-                        self.event_calendar_frame.destroy()
                     elif targeted_button == "Template":
                         self.templates.pack_forget()
                         self.templates.destroy()
@@ -99,7 +87,7 @@ class HomeFrame(ctk.CTkFrame):
             messagebox.showerror("Error", "Button not found")
 
     def add_button_click(self):
-        if len(self.button_labels) == 7:
+        if len(self.button_labels) == 6:
             messagebox.showerror("Error", "Cannot add more than 7 buttons")
             return
         while True:
@@ -115,9 +103,6 @@ class HomeFrame(ctk.CTkFrame):
                 if new_command:
                     if new_text == "Note":
                         self.notes_frame = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
-                        break
-                    if new_text == "Event Calendar":
-                        self.event_calendar_frame = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
                         break
                     if new_text == "Template":
                         self.templates = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
@@ -150,9 +135,6 @@ class HomeFrame(ctk.CTkFrame):
     def notes_button_click(self):
         self.controller.app_frame.show_frame("NotebookFrame")
 
-    def event_calender_click(self):
-        self.controller.app_frame.show_frame("CalendarFrame")
-
     def templates_button_click(self):
         self.controller.app_frame.show_frame("TemplatesFrame")
 
@@ -178,10 +160,6 @@ class HomeFrame(ctk.CTkFrame):
                     if targeted_button == "Note":
                         self.notes_frame.pack_forget()
                         self.notes_frame.destroy()
-                        self.new_text(targeted_button)
-                    elif targeted_button == "Event Calendar":
-                        self.event_calendar_frame.pack_forget()
-                        self.event_calendar_frame.destroy()
                         self.new_text(targeted_button)
                     elif targeted_button == "Template":
                         self.templates.pack_forget()
@@ -219,10 +197,6 @@ class HomeFrame(ctk.CTkFrame):
                         self.notes_frame = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
                         break
 
-                    if new_text == "Event Calendar":
-                        self.event_calendar_frame = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
-                        break
-
                     if new_text == "Template":
                         self.templates = self.create_button_frame(self.higher_number_of_widgets_in_frame(), new_text, new_command)
                         break
@@ -257,7 +231,6 @@ class HomeFrame(ctk.CTkFrame):
     def choose_new_command(self, target_button):
         commands = {
             "note": self.notes_button_click,
-            "calendar": self.event_calender_click,
             "template": self.templates_button_click,
             "task scheduler": self.task_scheduler_button_click,
             "progress tracker": self.progress_tracker_button_click,
