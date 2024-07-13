@@ -105,9 +105,9 @@ class LoginFrame(ctk.CTkFrame):
 
 
         # Forgot Password
-        self.forgot_password_button = ctk.CTkButton(self.button_container_frame, text='Forgot Password?',
-                                                    fg_color='#222B36', command=self.forgot_password)
-        self.forgot_password_button.pack(side='left', padx=5)
+        # self.forgot_password_button = ctk.CTkButton(self.button_container_frame, text='Forgot Password?',
+        #                                             fg_color='#222B36', command=self.forgot_password)
+        # self.forgot_password_button.pack(side='left', padx=5)
 
         # Signup button
         self.signup_button = ctk.CTkButton(self.button_container_frame, text='Sign-Up', fg_color='#222B36',
