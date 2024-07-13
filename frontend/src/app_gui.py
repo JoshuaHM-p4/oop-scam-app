@@ -5,11 +5,12 @@ from auth import LoginFrame
 from notes import NotebookFrame
 from home import HomeFrame
 from template import TemplatesFrame
+from event_calendar import CalendarFrame
 from tasks import TasksFrame
 from flashcards import FlashcardsFrame
 from progress import ProgressFrame
 from collaboration import CollaborationFrame
-from exit import ExitFrame
+from settings import SettingsFrame
 
 from config import APP_NAME, BACKGROUND_COLOR
 
@@ -24,11 +25,12 @@ class AppFrame(ctk.CTkFrame):
             HomeFrame,
             NotebookFrame,
             TemplatesFrame,
+            CalendarFrame,
             TasksFrame,
             FlashcardsFrame,
             ProgressFrame,
             CollaborationFrame,
-            ExitFrame
+            SettingsFrame
         )
         self.main_screen_frames = {}
         self.container = self.dashboard_frame = None
