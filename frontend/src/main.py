@@ -32,7 +32,7 @@ class MainApp(ctk.CTk):
         self.geometry(f"{width}x{height}")
         self.attributes('-fullscreen', True)
         self.configure(fg_color='#222B36')
-        ctk.tings_appearance_mode("dark")
+        ctk.set_appearance_mode("dark")
 
         # Bindings to make the search bar focus out when clicked outside
         self.bind_all("<Button-1>", self.handle_focus)
@@ -44,6 +44,10 @@ class MainApp(ctk.CTk):
         self.user = UserModel()
         self.access_token = ''
 
+        self.create_widgets()
+        self.pack_login()
+
+    def create_widgets(self):
         ### Frames ###
         # Login
         self.login_frame = LoginFrame(self, callback=self.set_session_data)
@@ -58,10 +62,6 @@ class MainApp(ctk.CTk):
             width=200,
         )
 
-        self.pack_login()
-
-        # Binding to make the enter key press the login button
-        self.bind("<Return>", lambda event: self.login_frame.login_button_click())
 
     def pack_mainscreen(self):
         # Dashboard Frame
@@ -72,6 +72,9 @@ class MainApp(ctk.CTk):
         self.app_frame.pack_configure(padx=1, pady=1)
         self.app_frame.configure(fg_color='#222B36')
         self.app_frame.show_frame('HomeFrame')
+
+        # Binding to make the enter key press the login button
+        self.bind("<Return>", lambda event: self.login_frame.login_button_click())
 
     def pack_login(self) -> None:
         # Add the Login Frame
