@@ -698,7 +698,7 @@ class AddSetFrame(ctk.CTkFrame):
                     response = requests.post(f"{FLASHCARDS_ENDPOINT}/flashcard_sets", json=set_data, headers=header)
                     data = response.json()['data']
 
-                    flashcard_set = FlashcardSetModel(id=data["id"], name=data["name"])
+                    flashcard_set = FlashcardSetModel(id=data["id"], name=data["name"], user_id=data["user_id"])
                     self.master.flashcard_sets.append(flashcard_set)
 
                     with self.condition:
