@@ -10,7 +10,7 @@ class TasksFrame(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
-        self.filter_window = None
+        # self.filter_window = None
         self.new_task_window = None
         self.tasks_list = []
         self.task_deadline = []
@@ -26,13 +26,13 @@ class TasksFrame(ctk.CTkFrame):
         self.top_frame.pack(side='top', fill='x', padx=20, pady=20)
 
         # Open filter image
-        self.filter_icon = ctk.CTkImage(Image.open("assets/images/filter_icon.png"), size=(25, 25))
+        # self.filter_icon = ctk.CTkImage(Image.open("assets/images/filter_icon.png"), size=(25, 25))
 
-        # Filter button
-        self.filter_button = ctk.CTkButton(self.top_frame, text='+ Filter', hover_color='gray', width=80, height=30,
-                                           font=('Montserrat', 30), corner_radius=10, image=self.filter_icon,
-                                           text_color='black', fg_color='white', command=self.show_filter_window)
-        self.filter_button.pack(side='left')
+        # # Filter button
+        # self.filter_button = ctk.CTkButton(self.top_frame, text='+ Filter', hover_color='gray', width=80, height=30,
+        #                                    font=('Montserrat', 30), corner_radius=10, image=self.filter_icon,
+        #                                    text_color='black', fg_color='white', command=self.show_filter_window)
+        # self.filter_button.pack(side='left')
 
         # Add new icon
         self.add_new_icon = ctk.CTkImage(Image.open("assets/images/arrow_down.png"), size=(25, 25))
@@ -152,82 +152,82 @@ class TasksFrame(ctk.CTkFrame):
         del self.task_priority[idx]
         self.load_tasks()
 
-    def show_filter_window(self):
-        if not self.filter_window or not self.filter_window.winfo_exists():
-            self.filter_window = ctk.CTkToplevel(self)
-            self.filter_window.title("Filter Options")
-            self.filter_window.geometry(f"1000x350+{self.tasks_frame.winfo_rootx()}+{self.tasks_frame.winfo_rooty()}")
-            self.filter_window.configure(fg_color='#141A1F', bg='#141A1F')
-            self.filter_window.resizable(False, False)
-            self.filter_window.attributes('-topmost', 1)
+    # def show_filter_window(self):
+    #     if not self.filter_window or not self.filter_window.winfo_exists():
+    #         self.filter_window = ctk.CTkToplevel(self)
+    #         self.filter_window.title("Filter Options")
+    #         self.filter_window.geometry(f"1000x350+{self.tasks_frame.winfo_rootx()}+{self.tasks_frame.winfo_rooty()}")
+    #         self.filter_window.configure(fg_color='#141A1F', bg='#141A1F')
+    #         self.filter_window.resizable(False, False)
+    #         self.filter_window.attributes('-topmost', 1)
 
-            # Create variables to store selected options
-            name_var = StringVar()
-            date_var = StringVar()
-            status_var = StringVar()
-            type_var = StringVar()
-            priority_var = StringVar()
+    #         # Create variables to store selected options
+    #         name_var = StringVar()
+    #         date_var = StringVar()
+    #         status_var = StringVar()
+    #         type_var = StringVar()
+    #         priority_var = StringVar()
 
-            # Create a main frame for filter options
-            main_frame = ctk.CTkFrame(self.filter_window, fg_color='#141A1F')
-            main_frame.pack(fill='both', expand=True, padx=10, pady=(10,0))
-            bottom_frame = ctk.CTkFrame(self.filter_window, fg_color='#141A1F')
-            bottom_frame.pack(fill='both', expand=True, padx=10, pady=(10,10))
+    #         # Create a main frame for filter options
+    #         main_frame = ctk.CTkFrame(self.filter_window, fg_color='#141A1F')
+    #         main_frame.pack(fill='both', expand=True, padx=10, pady=(10,0))
+    #         bottom_frame = ctk.CTkFrame(self.filter_window, fg_color='#141A1F')
+    #         bottom_frame.pack(fill='both', expand=True, padx=10, pady=(10,10))
 
-            # Categories and their options
-            categories = {
-                "Name": ["A-Z", "Z-A"],
-                "Date": ["Closest to deadline first", "Farthest to deadline first"],
-                "Status": ["Completed", "In Progress", "Not Started"],
-                "Type": ["Tasks", "Review", "Assignment", "Exam"],
-                "Priority": ["Low", "Mid", "High"]
-            }
+    #         # Categories and their options
+    #         categories = {
+    #             "Name": ["A-Z", "Z-A"],
+    #             "Date": ["Closest to deadline first", "Farthest to deadline first"],
+    #             "Status": ["Completed", "In Progress", "Not Started"],
+    #             "Type": ["Tasks", "Review", "Assignment", "Exam"],
+    #             "Priority": ["Low", "Mid", "High"]
+    #         }
 
-            # Create frames to organize the layout
-            name_frame = ctk.CTkFrame(main_frame, fg_color='#222B36')
-            name_frame.pack(side='left', padx=10, pady=10, fill='both', expand=True)
+    #         # Create frames to organize the layout
+    #         name_frame = ctk.CTkFrame(main_frame, fg_color='#222B36')
+    #         name_frame.pack(side='left', padx=10, pady=10, fill='both', expand=True)
 
-            date_frame = ctk.CTkFrame(main_frame, fg_color='#222B36')
-            date_frame.pack(side='left', padx=10, pady=10, fill='both', expand=True)
+    #         date_frame = ctk.CTkFrame(main_frame, fg_color='#222B36')
+    #         date_frame.pack(side='left', padx=10, pady=10, fill='both', expand=True)
 
-            status_frame = ctk.CTkFrame(main_frame, fg_color='#222B36')
-            status_frame.pack(side='left', padx=10, pady=10, fill='both', expand=True)
+    #         status_frame = ctk.CTkFrame(main_frame, fg_color='#222B36')
+    #         status_frame.pack(side='left', padx=10, pady=10, fill='both', expand=True)
 
-            type_frame = ctk.CTkFrame(main_frame, fg_color='#222B36')
-            type_frame.pack(side='left', padx=10, pady=10, fill='both', expand=True)
+    #         type_frame = ctk.CTkFrame(main_frame, fg_color='#222B36')
+    #         type_frame.pack(side='left', padx=10, pady=10, fill='both', expand=True)
 
-            priority_frame = ctk.CTkFrame(main_frame, fg_color='#222B36')
-            priority_frame.pack(side='left', padx=10, pady=10, fill='both', expand=True)
+    #         priority_frame = ctk.CTkFrame(main_frame, fg_color='#222B36')
+    #         priority_frame.pack(side='left', padx=10, pady=10, fill='both', expand=True)
 
-            frames = {
-                "Name": name_frame,
-                "Date": date_frame,
-                "Status": status_frame,
-                "Type": type_frame,
-                "Priority": priority_frame
-            }
+    #         frames = {
+    #             "Name": name_frame,
+    #             "Date": date_frame,
+    #             "Status": status_frame,
+    #             "Type": type_frame,
+    #             "Priority": priority_frame
+    #         }
 
-            for category, options in categories.items():
-                category_frame = frames.get(category, None)
-                if category_frame:
-                    category_label = ctk.CTkLabel(category_frame, text=category, text_color='white',
-                                                  font=('Montserrat', 15))
-                    category_label.pack(anchor='w', padx=10, pady=10)
+    #         for category, options in categories.items():
+    #             category_frame = frames.get(category, None)
+    #             if category_frame:
+    #                 category_label = ctk.CTkLabel(category_frame, text=category, text_color='white',
+    #                                               font=('Montserrat', 15))
+    #                 category_label.pack(anchor='w', padx=10, pady=10)
 
-                    for option in options:
-                        radio_button = ctk.CTkRadioButton(category_frame, text=option, text_color='white',
-                                                          font=('Montserrat', 12), value=option)
-                        radio_button.pack(anchor='w', padx=10, pady=10)
+    #                 for option in options:
+    #                     radio_button = ctk.CTkRadioButton(category_frame, text=option, text_color='white',
+    #                                                       font=('Montserrat', 12), value=option)
+    #                     radio_button.pack(anchor='w', padx=10, pady=10)
 
-            # Apply button
-            apply_button = ctk.CTkButton(bottom_frame, text="Apply", fg_color='#222B36',
-                                         command=lambda: self.apply_filter(name_var.get(), date_var.get(),
-                                                                           status_var.get(),
-                                                                           type_var.get(), priority_var.get()))
-            apply_button.pack(pady=(0,10), padx=10, fill='both', expand=True)
+    #         # Apply button
+    #         apply_button = ctk.CTkButton(bottom_frame, text="Apply", fg_color='#222B36',
+    #                                      command=lambda: self.apply_filter(name_var.get(), date_var.get(),
+    #                                                                        status_var.get(),
+    #                                                                        type_var.get(), priority_var.get()))
+    #         apply_button.pack(pady=(0,10), padx=10, fill='both', expand=True)
 
-        else:
-            self.filter_window.lift()
+    #     else:
+    #         self.filter_window.lift()
 
     def show_new_task_window(self):
         if not self.new_task_window or not self.new_task_window.winfo_exists():

@@ -63,7 +63,7 @@ class FlashcardsFrame(ctk.CTkFrame):
     def update_flashcard_sets(self):
         self.container.display_flashcard_sets(self.flashcard_sets)
 
-        if self.top_menu.active_set:
+        if self.top_menu.active_set and not isinstance(self.top_menu.active_set, AddSetFrame):
             self.top_menu.active_set.update_set_selection()
 
     def filter_flashcard_sets(self, query: str):
@@ -148,7 +148,7 @@ class FlashcardsFrame(ctk.CTkFrame):
 
     def loading(self):
         self.loading_frame = LoadingFrame(self.container, fg_color = BACKGROUND_COLOR)
-        self.loading_frame.pack(expand=True, padx=(50,50), pady=(250,3))
+        self.loading_frame.pack(expand=True, padx=(50,50), pady=(100,3))
 
     # Method to display a specific flashcard set
     def show_flashcard_set(self, set_id):
@@ -737,7 +737,7 @@ class AddSetFrame(ctk.CTkFrame):
 
                 flashcard_data_api = flashcard_response.json()
                 flashcard_set.flashcards.append(FlashcardModel(id=flashcard_data_api["id"], set_id=flashcard_set.id, word=flashcard_data_api["word"], definition=flashcard_data_api["definition"]))
-
+                self.after(0, self.master.update_flashcard_sets)
             except ConnectionError:
                 tk.messagebox.showerror("Connection Error", "Could not connect to server")
             finally:

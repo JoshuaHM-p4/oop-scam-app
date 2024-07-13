@@ -453,7 +453,7 @@ class NotebookPage(ctk.CTkFrame):
         self.current_page = self.total_pages
         self.update_content()
         self.update_button_states()
-        self.master.join_room(f"note-{note['id']}")
+        self.master.join_room(f"note-{note['note_id']}")
 
     def create_jump_to_page_popup(self):
         dialog = ctk.CTkInputDialog(title="Jump to:", text="Enter the page number:")
