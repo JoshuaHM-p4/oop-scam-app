@@ -12,7 +12,6 @@ from auth import LoginFrame, SignupFrame
 from notes import NotebookFrame
 from home import HomeFrame
 from template import TemplatesFrame
-from event_calendar import CalendarFrame
 from tasks import TasksFrame
 from flashcards import FlashcardsFrame
 from progress import ProgressFrame
@@ -31,9 +30,9 @@ class MainApp(ctk.CTk):
         width = self.winfo_screenwidth() * 100
         height = self.winfo_screenheight() * 100
         self.geometry(f"{width}x{height}")
-        # self.attributes('-fullscreen', True)
+        self.attributes('-fullscreen', True)
         self.configure(fg_color='#222B36')
-        ctk.set_appearance_mode("dark")
+        ctk.tings_appearance_mode("dark")
 
         # Bindings to make the search bar focus out when clicked outside
         self.bind_all("<Button-1>", self.handle_focus)
