@@ -12,11 +12,12 @@ from auth import LoginFrame, SignupFrame
 from notes import NotebookFrame
 from home import HomeFrame
 from template import TemplatesFrame
+from event_calendar import CalendarFrame
 from tasks import TasksFrame
 from flashcards import FlashcardsFrame
 from progress import ProgressFrame
 from collaboration import CollaborationFrame
-from exit import ExitFrame
+from settings import SettingsFrame
 
 # Append the parent directory to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -30,7 +31,7 @@ class MainApp(ctk.CTk):
         width = self.winfo_screenwidth() * 100
         height = self.winfo_screenheight() * 100
         self.geometry(f"{width}x{height}")
-        self.attributes('-fullscreen', True)
+        # self.attributes('-fullscreen', True)
         self.configure(fg_color='#222B36')
         ctk.set_appearance_mode("dark")
 
@@ -44,10 +45,6 @@ class MainApp(ctk.CTk):
         self.user = UserModel()
         self.access_token = ''
 
-        self.create_widgets()
-        self.pack_login()
-
-    def create_widgets(self):
         ### Frames ###
         # Login
         self.login_frame = LoginFrame(self, callback=self.set_session_data)
@@ -62,6 +59,10 @@ class MainApp(ctk.CTk):
             width=200,
         )
 
+        self.pack_login()
+
+        # Binding to make the enter key press the login button
+        self.bind("<Return>", lambda event: self.login_frame.login_button_click())
 
     def pack_mainscreen(self):
         # Dashboard Frame
@@ -72,9 +73,6 @@ class MainApp(ctk.CTk):
         self.app_frame.pack_configure(padx=1, pady=1)
         self.app_frame.configure(fg_color='#222B36')
         self.app_frame.show_frame('HomeFrame')
-
-        # Binding to make the enter key press the login button
-        self.bind("<Return>", lambda event: self.login_frame.login_button_click())
 
     def pack_login(self) -> None:
         # Add the Login Frame
