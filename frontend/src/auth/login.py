@@ -6,6 +6,7 @@ import sys
 import threading
 
 loading_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'common', 'loading'))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(loading_dir)
 sys.path.append(script_dir)
@@ -16,8 +17,7 @@ from signup import SignupFrame
 from typing import Tuple
 import requests
 
-LOGIN_ENDPOINT = "http://localhost:5000/auth/login"
-
+from config import LOGIN_ENDPOINT
 class LoginFrame(ctk.CTkFrame):
     def __init__(self, master, callback):
         super().__init__(master)

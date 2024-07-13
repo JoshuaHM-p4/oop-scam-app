@@ -22,9 +22,9 @@ LOGO_PATH = "assets/images/logo.png"
 STYLESHEET_PATH = "assets/styles/stylesheet.css"
 
 # API Endpoints
-API_BASE_URL = "http://localhost:5000/"
+API_BASE_URL = "http://192.168.142.214:5000/"
 LOGIN_ENDPOINT = f"{API_BASE_URL}/auth/login"
-SIGNUP_ENDPOINT = f"{API_BASE_URL}/auth/signup"
+SIGNUP_ENDPOINT = f"{API_BASE_URL}/auth/register"
 NOTES_ENDPOINT = f"{API_BASE_URL}/notes"
 EVENTS_ENDPOINT = f"{API_BASE_URL}/events"
 TASKS_ENDPOINT = f"{API_BASE_URL}/tasks"

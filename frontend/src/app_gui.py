@@ -5,7 +5,6 @@ from auth import LoginFrame
 from notes import NotebookFrame
 from home import HomeFrame
 from template import TemplatesFrame
-from event_calendar import CalendarFrame
 from tasks import TasksFrame
 from flashcards import FlashcardsFrame
 from progress import ProgressFrame
@@ -25,7 +24,6 @@ class AppFrame(ctk.CTkFrame):
             HomeFrame,
             NotebookFrame,
             TemplatesFrame,
-            CalendarFrame,
             TasksFrame,
             FlashcardsFrame,
             ProgressFrame,

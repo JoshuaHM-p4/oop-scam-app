@@ -3,8 +3,10 @@ from tkinter import messagebox
 import requests
 import threading
 from PIL import Image
+import sys, os
 
-SIGNUP_ENDPOINT = "http://localhost:5000/auth/register"
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from config import SIGNUP_ENDPOINT
 
 
 class SignupFrame(ctk.CTkFrame):
@@ -20,7 +22,7 @@ class SignupFrame(ctk.CTkFrame):
         # Back button
         self.container_frame_gray = ctk.CTkFrame(self, corner_radius=20, fg_color='#222B36')
         self.container_frame_gray.pack(fill='both', expand=True, padx=10, pady=10)
-        
+
         self.back_button_logo = ctk.CTkImage(Image.open("assets/images/left_arrow.png"), size=(25, 25))
         self.back_button = ctk.CTkButton(self.container_frame_gray, text='Login page', text_color='white', fg_color='#222B36',
                                          hover_color='gray',
@@ -102,7 +104,7 @@ class SignupFrame(ctk.CTkFrame):
                                            hover_color='navy blue',
                                            width=120, height=40, corner_radius=20)
         self.signup_button.pack(pady=20)
-        
+
     def toggle_password_visibility(self):
         if self.password_entry.cget('show') == '*':
             self.password_entry.configure(show='')
