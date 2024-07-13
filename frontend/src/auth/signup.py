@@ -138,7 +138,7 @@ class SignupFrame(ctk.CTkFrame):
             return
 
         # Email domain validation
-        valid_domains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com"]
+        valid_domains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "pup.edu.ph"]
         domain = email.split('@')[-1]
         if domain not in valid_domains:
             self.email_error_label.configure(text="Please enter a valid email domain.")
