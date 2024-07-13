@@ -324,24 +324,17 @@ class LetterFrame(ctk.CTkFrame):
         # self.letter = LetterModel()
         
         self.frame_container = ctk.CTkFrame(self, fg_color=BACKGROUND_COLOR, corner_radius=20, border_width=1)
-        self.center_frame = ctk.CTkFrame(self.frame_container, fg_color=BACKGROUND_COLOR)
-        self.recipient_entry = ctk.CTkEntry(self.center_frame, placeholder_text="Recipient's Name", height=30, corner_radius=20, width=350)
-        self.street_entry = ctk.CTkEntry(self.center_frame, placeholder_text="1234 Example St.", height=30, corner_radius=20, width=350)
-        self.city_entry = ctk.CTkEntry(self.center_frame, placeholder_text="City", height=30, corner_radius=20, width=350)
-        self.zip_entry = ctk.CTkEntry(self.center_frame, placeholder_text="Zip", height=30, corner_radius=20, width=350)
+        self.recipient_entry = ctk.CTkEntry(self.frame_container, placeholder_text="Recipient's Name", height=30, corner_radius=20, width=350)
+        self.address_entry = ctk.CTkEntry(self.frame_container, placeholder_text="Address", height=30, corner_radius=20, width=350)
         self.save_button = ctk.CTkButton(self, text="", fg_color="#222B36", height=30, corner_radius=20, command= self.save_letter, 
                                          image=self.save_img)
-
+        
         self.pack_letter()
         
     def pack_letter(self):
         self.frame_container.pack(pady=10, padx=10, fill="both", expand=True)
-        self.center_frame.pack(expand=True)
-        self.recipient_entry.pack(padx=10, pady=10)
-        # "1234 Example St.", "City, State, Zip"
-        self.street_entry.pack(padx=10, pady=10)
-        self.city_entry.pack(padx=10, pady=10)
-        self.zip_entry.pack(padx=10,   pady=10)
+        self.recipient_entry.pack(padx=10, expand=True, anchor="s", pady=10)
+        self.address_entry.pack(padx=10, expand=True, anchor="n", pady=10)
         self.save_button.pack( padx=10)
     
     def save_letter(self):
@@ -354,7 +347,7 @@ class LetterFrame(ctk.CTkFrame):
         school: str = self.header.school_entry.get()  # optional
         date: str = self.header.date_entry.get()  # auto
         recepient: str = self.recipient_entry.get()
-        address: list = [self.street_entry.get(), self.city_entry.get(), self.zip_entry.get()]
+        address: str = self.address_entry.get()
         
         if not recepient or not address:
             messagebox.showerror("Error", "Recipient's name and address are required")
@@ -363,6 +356,14 @@ class LetterFrame(ctk.CTkFrame):
         if self.header.check_var.get() == "on" and (name == "" or title == "" or subject == "" or professor == ""):
             messagebox.showerror("Error", "Name, title, subject, professor, and date are required")
             return
+        else:
+            name = ""
+            title = ""
+            subject = ""
+            professor = ""
+            instructions = ""
+            section = ""
+            school = ""
         
         letter_template = LetterModel(
             name = name,
@@ -387,13 +388,10 @@ class LetterFrame(ctk.CTkFrame):
                 letter_template.write_letter(file_path)
                 messagebox.showinfo("Save Success", f"The file was saved successfully")
                 self.recipient_entry.delete(0, ctk.END)
-                self.street_entry.delete(0, ctk.END)
-                self.city_entry.delete(0, ctk.END)
-                self.zip_entry.delete(0, ctk.END)
+                self.address_entry.delete(0, ctk.END)
                 
         except Exception as e:
             messagebox.showerror("Save Error", f"The file was not saved")
-        
         
         
 class EssayFrame(ctk.CTkFrame):
