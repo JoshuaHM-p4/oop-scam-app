@@ -433,18 +433,10 @@ class EssayFrame(ctk.CTkFrame):
             messagebox.showerror("Error", "Essay topic is required")
             return
 
-        if self.header.check_var.get() == "on" and (name == "" or title == "" or subject == "" or professor == ""):
-            messagebox.showerror("Error", "Name, title, subject, professor, and date are required")
-            return
-        
-        else:
-            name = ""
-            title = ""
-            subject = ""
-            professor = ""
-            instructions = ""
-            section = ""
-            school = ""
+        # if self.header.check_var.get() == "on" and (name == "" or title == "" or subject == "" or professor == ""):
+        #     messagebox.showerror("Error", "Name, title, subject, professor, and date are required")
+        #     return
+
         
         essay_template = EssayModel(
             name = name,
