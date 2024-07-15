@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from tkinter import messagebox, simpledialog
 from .progress_model import ProgressModel
+from functools import partial
 
 back_ground_color = "#222B36"
 first_color = "#141a1f"
@@ -17,6 +18,9 @@ class ProgressFrame(ctk.CTkFrame):
         self.goal_description = ""
         self.purpose_text = ""
         self.value = 0
+        self.goals = {}
+        self.steps = ""
+        self.total_steps = 0
         
         self.controller = controller
         
@@ -63,8 +67,8 @@ class ProgressFrame(ctk.CTkFrame):
         self.middle_left_frame = ctk.CTkFrame(self.middle_frame, fg_color=back_ground_color)
         self.middle_left_frame.pack(side="left", fill="x", expand=True, padx=(5,10))
         
-        goal_description_label = ctk.CTkLabel(self.middle_left_frame, fg_color=back_ground_color, text="Goal Description", text_color="white", font=('arial',25))
-        goal_description_label.pack(anchor="w", pady=(15,10), padx=(10,0))
+        self.goal_description_label = ctk.CTkLabel(self.middle_left_frame, fg_color=back_ground_color, text="Goal Description", text_color="white", font=('arial',25))
+        self.goal_description_label.pack(anchor="w", pady=(15,10), padx=(10,0))
         
         # description text
         self.description_textbox = ctk.CTkTextbox(self.middle_left_frame, height=65, fg_color=back_ground_color, activate_scrollbars=False)
@@ -102,7 +106,9 @@ class ProgressFrame(ctk.CTkFrame):
         self.steps_label = ctk.CTkLabel(self.left_progressbar_frame, text="Steps", text_color="white", font=('arial',25))
         self.steps_label.pack(anchor="w")
         
-        # self.progressbar = ctk.CTkProgressBar(self.progressbar_frame, orientation="horizontal", mode="determinate", height=25, width=810)
+        self.progressbar = ctk.CTkProgressBar(self.progressbar_frame, orientation="horizontal", mode="determinate", height=25, width=810)
+        self.progressbar.set(0)
+        self.progressbar.pack(fill="x", side="top", padx=15, pady=(10,10))
         
         # steps checklist
         self.checklist_frame = ctk.CTkFrame(self.bottom_inner_frame, fg_color=back_ground_color)
@@ -113,9 +119,19 @@ class ProgressFrame(ctk.CTkFrame):
         self.add_step_button.pack(side="left", padx=10, pady=(10,10))
         self.add_step_button.configure(height=30, width=100)
         
+    def update_progress_bar(self):
+        self.total_steps = len(self.goals)
+        print(self.total_steps)
+        if self.total_steps > 0:  # Ensure there is no division by zero
+            # Calculate the percentage of completed steps
+            progress_value = (self.steps_completed / self.total_steps)
+            self.progressbar.set(progress_value)  # Update the progress bar with the calculated value
+        else:
+            self.progressbar.set(0)  # Set progress to 0 if there are no steps
+        
     def set_new_goal(self):
         
-        goal, due_date, description, purpose, new_goal = None, None, None, None, None
+        goal, due_date, description, purpose, steps = None, None, None, None, None
 
         # Show the "New Goal" input dialog
         goal = ctk.CTkInputDialog(title="New Goal", text="Enter your new goal").get_input()
@@ -134,12 +150,14 @@ class ProgressFrame(ctk.CTkFrame):
 
         # Show the final input dialog if purpose is provided
         if purpose:
-            new_goal = ctk.CTkInputDialog(title="New Goal Confirmation", text="Confirm your new goal").get_input()
-
-        # Configure GUI elements only if all inputs are provided
-        if new_goal:
-            self.goal_name = goal
-            self.goalname_label.configure(text=self.goal_name)
+            number_of_steps = ctk.CTkInputDialog(title="Enter how many steps to accomplish", text="How many steps").get_input()
+            self.number_of_steps = number_of_steps
+        if number_of_steps:
+            for i in range(int(number_of_steps)):
+                steps = ctk.CTkInputDialog(title="Step", text=f"Enter step {i+1}").get_input()
+                if steps:
+                    self.goals[steps] = 0
+            self.goalname_label.configure(text=goal)
             self.due_date = due_date
             self.top_right_goal_due_display.configure(text=f"Due Date: {self.due_date}")
 
@@ -154,25 +172,72 @@ class ProgressFrame(ctk.CTkFrame):
             self.purpose_textbox.delete("1.0", "end")
             self.purpose_textbox.insert("end", purpose)
             self.purpose_textbox.configure(state="disabled")
-
             
             # self.progressbar.configure(value=0)
-            self.new_checklist()
+            self.add_step_button.configure(state="normal")
+            self.load_checklist()
+            self.update_progress_bar()
+            
         
-    def new_checklist(self):
-        self.checklist_new = ctk.CTkCheckBox(self.checklist_frame, fg_color=back_ground_color, corner_radius=10, text=self.goal_name, command=self.plus)
-        self.checklist_new.pack(fill="both", pady=5, padx=5)
-        self.add_step_button.configure(state="normal")
-        
-        
-    def add_step(self):
-        goal = ctk.CTkInputDialog(title="Add Step", text="Enter your step").get_input()
-        if goal:
-            self.checklist_new = ctk.CTkCheckBox(self.checklist_frame, fg_color=back_ground_color, corner_radius=10, text=goal, command=self.plus)
-            self.checklist_new.pack(fill="both", pady=5, padx=5)
-            self.steps_completed += 1
-            self.top_right_completed_steps_display.configure(text=f"Steps Completed: {self.steps_completed}")
-    
-    def plus(self):
+    def load_checklist(self):
+        for widgets in self.checklist_frame.winfo_children():
+            widgets.destroy()
+
+        if self.goals:
+            for goal, checked in self.goals.items():
+                checklist = ctk.CTkCheckBox(self.checklist_frame, fg_color=back_ground_color, corner_radius=10, text=goal)
+                checklist.pack(fill="both", pady=5, padx=5)
+                if checked:
+                    checklist.select()  # Check the checkbox if its value is 1
+                    checklist.configure(command=lambda checklist=checklist, goal=goal: self.undone_checklist(goal, checklist))
+                else:
+                    checklist.configure(command=lambda checklist=checklist, goal=goal: self.done_checklist(goal, checklist))
+            
+    def done_checklist(self, i, checklist):
         self.steps_completed += 1
         self.top_right_completed_steps_display.configure(text=f"Steps Completed: {self.steps_completed}")
+        self.goals[i] = 1
+        self.load_checklist()
+        self.update_progress_bar()
+        
+    def undone_checklist(self, i, checklist):
+        self.steps_completed -= 1
+        self.top_right_completed_steps_display.configure(text=f"Steps Completed: {self.steps_completed}")
+        self.goals[i] = 0
+        self.load_checklist()
+        self.update_progress_bar()
+        
+        # self.progressbar.configure(value=(self.steps_completed / len(self.goals)) * 100
+        # self.progressbar.update()
+    #     self.completed_step()
+        
+    # def completed_step(self):
+    #     if self.steps_completed == len(self.goals):
+    #         messagebox.showinfo("Congratulations!", "You have completed all your steps!")
+    #         self.add_step_button.configure(state="normal")
+    #         self.steps_completed = 0
+    #         self.top_right_completed_steps_display.configure(text=f"Steps Completed: {self.steps_completed}")
+    #         self.goals = []
+    #         self.load_checklist()
+    #     else:
+    #         self.steps_completed += 1
+    #         self.top_right_completed_steps_display.configure(text=f"Steps Completed: {self.steps_completed}")
+                
+    def add_step(self):
+        step = ctk.CTkInputDialog(title="Add Step", text="Enter your step").get_input()
+        if step:
+            self.goals[step] = 0
+            self.load_checklist()
+            self.update_progress_bar()
+        
+    # def add_step(self):
+    #     goal = ctk.CTkInputDialog(title="Add Step", text="Enter your step").get_input()
+    #     if goal:
+    #         self.checklist_new = ctk.CTkCheckBox(self.checklist_frame, fg_color=back_ground_color, corner_radius=10, text=goal, command=self.plus)
+    #         self.checklist_new.pack(fill="both", pady=5, padx=5)
+    #         self.steps_completed += 1
+    #         self.top_right_completed_steps_display.configure(text=f"Steps Completed: {self.steps_completed}")
+    
+    # def plus(self, i):
+    #     self.steps_completed += 1
+    #     self.top_right_completed_steps_display.configure(text=f"Steps Completed: {self.steps_completed}")
