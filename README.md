@@ -19,4 +19,4 @@ Contributions are welcome! If you'd like to contribute to Not a S.C.A.M., please
 - Submit a pull request.
 
 Demo Link:
-https://mern-project-with-auth.vercel.app
+Website Version: https://mern-project-with-auth.vercel.app
